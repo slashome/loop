@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "loadingMessageLinkinPark": "I'm breaking the habit tonight",
+  "loadingMessagePreparingLoops": "Preparing your loops...",
+  "loadingMessageAlmostThere": "Almost there...",
+  "loadingMessageLoadingDay": "Loading your day...",
+  "moduleLabelTask": "Task",
+  "moduleDescriptionTask": "Simple task without extra module parameters.",
+  "moduleLabelClock": "Clock",
+  "moduleDescriptionClock": "Wake-up alarm with optional gradual wake and dismiss gesture.",
+  "moduleLabelMemoryGame": "Memory game",
+  "moduleDescriptionMemoryGame": "Short memory training session.",
+  "moduleLabelBirthday": "Birthday",
+  "moduleDescriptionBirthday": "Birthday reminder with optional gift reminder.",
+  "moduleLabelSport": "Sport",
+  "moduleDescriptionSport": "Simple reps-based sport session.",
+  "moduleLabelCleaning": "Cleaning",
+  "moduleDescriptionCleaning": "Timed cleaning session."
+}

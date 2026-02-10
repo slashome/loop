@@ -1,0 +1,19 @@
+{
+  "@@locale": "fr",
+  "loadingMessageLinkinPark": "Je brise la routine ce soir",
+  "loadingMessagePreparingLoops": "PrÃ©paration de tes boucles...",
+  "loadingMessageAlmostThere": "Presque prÃªt...",
+  "loadingMessageLoadingDay": "Chargement de ta journÃ©e...",
+  "moduleLabelTask": "Tâche",
+  "moduleDescriptionTask": "Tâche simple sans paramètres supplémentaires.",
+  "moduleLabelClock": "Réveil",
+  "moduleDescriptionClock": "Réveil pour se lever avec un réveil progressif et un geste de désactivation en option.",
+  "moduleLabelMemoryGame": "Jeu de mémoire",
+  "moduleDescriptionMemoryGame": "Courte séance d'entraînement de la mémoire.",
+  "moduleLabelBirthday": "Anniversaire",
+  "moduleDescriptionBirthday": "Rappel d'anniversaire avec rappel de cadeau facultatif.",
+  "moduleLabelSport": "Sport",
+  "moduleDescriptionSport": "Séance de sport simple basée sur des répétitions.",
+  "moduleLabelCleaning": "Nettoyage",
+  "moduleDescriptionCleaning": "Séance de nettoyage chronométrée."
+}

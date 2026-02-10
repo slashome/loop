@@ -1,0 +1,58 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+.fvm/
+build/
+coverage/
+**/doc/api/
+lib/generated_plugin_registrant.dart
+
+# Android/Gradle
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/debug.keystore
+android/app/build/
+android/build/
+android/app/src/main/java/**/GeneratedPluginRegistrant.java
+
+# iOS/Xcode
+ios/Flutter/.last_build_id
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/App.framework
+ios/Flutter/App.framework.dSYM
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
+ios/.symlinks/
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Symbolication/obfuscation
+app.*.symbols
+app.*.map.json
+
+# IDE/editor
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Misc
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+*.keystore
+*.jks
