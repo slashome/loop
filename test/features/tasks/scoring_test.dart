@@ -29,17 +29,20 @@ void main() {
   group('taskScore', () {
     test('à âge nul, le score vaut exactement la priorité', () {
       final t = makeTask(id: 'a', priority: 4);
-      expect(taskScore(t, ScoringConfig.defaults, now: kNow), closeTo(4.0, 1e-9));
+      expect(
+          taskScore(t, ScoringConfig.defaults, now: kNow), closeTo(4.0, 1e-9));
     });
 
     test('un âge négatif ne donne aucun bonus', () {
       final t = makeTask(id: 'a', priority: 2, age: const Duration(days: -5));
-      expect(taskScore(t, ScoringConfig.defaults, now: kNow), closeTo(2.0, 1e-9));
+      expect(
+          taskScore(t, ScoringConfig.defaults, now: kNow), closeTo(2.0, 1e-9));
     });
 
     test('le score croît avec l\'ancienneté mais reste borné par k', () {
       const cfg = ScoringConfig(k: 2, tauDays: 14);
-      final young = makeTask(id: 'y', priority: 2, age: const Duration(days: 1));
+      final young =
+          makeTask(id: 'y', priority: 2, age: const Duration(days: 1));
       final old = makeTask(id: 'o', priority: 2, age: const Duration(days: 60));
       final ancient =
           makeTask(id: 'x', priority: 2, age: const Duration(days: 3650));
@@ -63,22 +66,26 @@ void main() {
     const cfg = ScoringConfig(k: 2, tauDays: 14); // borné
 
     test('une vieille P2 négligée finit par dépasser une P3 fraîche', () {
-      final oldLow = makeTask(id: 'old', priority: 2, age: const Duration(days: 90));
+      final oldLow =
+          makeTask(id: 'old', priority: 2, age: const Duration(days: 90));
       final freshMid = makeTask(id: 'fresh', priority: 3);
       final ordered = nextActions([freshMid, oldLow], config: cfg, now: kNow);
       expect(ordered.first.id, 'old'); // score ~4 > 3
     });
 
-    test('mais une vieille P1 ne dépasse JAMAIS une P4 fraîche (priorité domine)',
+    test(
+        'mais une vieille P1 ne dépasse JAMAIS une P4 fraîche (priorité domine)',
         () {
       final ancientLow =
           makeTask(id: 'anc', priority: 1, age: const Duration(days: 3650));
       final freshHigh = makeTask(id: 'p4', priority: 4);
-      final ordered = nextActions([ancientLow, freshHigh], config: cfg, now: kNow);
+      final ordered =
+          nextActions([ancientLow, freshHigh], config: cfg, now: kNow);
       expect(ordered.first.id, 'p4'); // ~3 < 4
     });
 
-    test('anti-famine total (k>=4) laisse une vieille P1 remonter au sommet', () {
+    test('anti-famine total (k>=4) laisse une vieille P1 remonter au sommet',
+        () {
       const total = ScoringConfig(k: 4, tauDays: 14);
       final ancientLow =
           makeTask(id: 'anc', priority: 1, age: const Duration(days: 3650));
@@ -142,7 +149,8 @@ void main() {
     const caps = PriorityCaps({5: 3, 4: 5});
 
     test('un palier non listé est illimité', () {
-      final many = List.generate(100, (i) => makeTask(id: 'p1-$i', priority: 1));
+      final many =
+          List.generate(100, (i) => makeTask(id: 'p1-$i', priority: 1));
       expect(caps.canAssign(1, many), isTrue);
     });
 

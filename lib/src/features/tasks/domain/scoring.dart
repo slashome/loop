@@ -46,9 +46,8 @@ class ScoringConfig {
 double taskScore(Task task, ScoringConfig config, {required DateTime now}) {
   final ageDays = now.difference(task.createdAt).inMicroseconds /
       Duration.microsecondsPerDay;
-  final aging = ageDays <= 0
-      ? 0.0
-      : config.k * (1 - math.exp(-ageDays / config.tauDays));
+  final aging =
+      ageDays <= 0 ? 0.0 : config.k * (1 - math.exp(-ageDays / config.tauDays));
   return task.priority + aging;
 }
 

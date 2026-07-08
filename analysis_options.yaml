@@ -8,5 +8,4 @@ analyzer:
 linter:
   rules:
     - prefer_final_locals
-    - require_trailing_commas
     - unawaited_futures
