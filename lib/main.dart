@@ -31,8 +31,15 @@ class _HomePlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Loop')),
-      body: const Center(
-        child: Text('Prochaines actions — à venir'),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/branding/logo.png', width: 200),
+            const SizedBox(height: 24),
+            const Text('Prochaines actions — à venir'),
+          ],
+        ),
       ),
     );
   }
