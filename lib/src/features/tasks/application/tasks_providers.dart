@@ -25,6 +25,12 @@ final scoringConfigProvider = Provider<ScoringConfig>(
   (ref) => ScoringConfig.defaults,
 );
 
+/// Caps par palier de priorité. Défaut = {5:3, 4:5}. À terme lu depuis
+/// la feature `settings`.
+final priorityCapsProvider = Provider<PriorityCaps>(
+  (ref) => PriorityCaps.defaults,
+);
+
 /// Source des tâches. En mémoire pour l'instant (voir [seedTasks]).
 final tasksProvider = NotifierProvider<TasksNotifier, List<Task>>(
   TasksNotifier.new,
@@ -40,6 +46,47 @@ class TasksNotifier extends Notifier<List<Task>> {
       for (final t in state)
         if (t.id == id)
           t.copyWith(status: TaskStatus.done, completedAt: DateTime.now())
+        else
+          t,
+    ];
+  }
+
+  /// Applique une édition. Reconstruit la tâche directement (et non via
+  /// copyWith) pour pouvoir EFFACER un champ optionnel (envie/impacts) en
+  /// passant `null`. Ne vérifie pas les caps — l'arbitrage se fait dans l'UI.
+  void applyEdit(
+    String id, {
+    required String title,
+    String? description,
+    required int priority,
+    double? envie,
+    double? impactSelf,
+    double? impactOthers,
+  }) {
+    state = [
+      for (final t in state)
+        if (t.id == id)
+          Task(
+            id: t.id,
+            ownerId: t.ownerId,
+            title: title,
+            description: description,
+            envie: envie,
+            impactSelf: impactSelf,
+            impactOthers: impactOthers,
+            priority: priority,
+            categoryId: t.categoryId,
+            status: t.status,
+            dueAt: t.dueAt,
+            recurrenceId: t.recurrenceId,
+            occurrenceDate: t.occurrenceDate,
+            source: t.source,
+            sourceRef: t.sourceRef,
+            createdAt: t.createdAt,
+            updatedAt: DateTime.now(),
+            completedAt: t.completedAt,
+            deletedAt: t.deletedAt,
+          )
         else
           t,
     ];

@@ -10,11 +10,13 @@ class TaskCard extends StatelessWidget {
     required this.task,
     required this.score,
     this.onComplete,
+    this.onTap,
   });
 
   final Task task;
   final double score;
   final VoidCallback? onComplete;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -26,43 +28,53 @@ class TaskCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: theme.colorScheme.outlineVariant),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _PriorityBadge(priority: task.priority),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task.title,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _ageLabel(task.createdAt),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _PriorityBadge(priority: task.priority),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(task.title, style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      _subtitle(task),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            _ScorePill(score: score),
-            IconButton(
-              tooltip: 'Terminer',
-              icon: const Icon(Icons.check_circle_outline),
-              onPressed: onComplete,
-            ),
-          ],
+              const SizedBox(width: 8),
+              _ScorePill(score: score),
+              IconButton(
+                tooltip: 'Terminer',
+                icon: const Icon(Icons.check_circle_outline),
+                onPressed: onComplete,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Sous-titre : âge, et l'envie si elle est réglée (envie stockée 0..1,
+/// affichée sur 10).
+String _subtitle(Task task) {
+  final age = _ageLabel(task.createdAt);
+  if (task.envie == null) return age;
+  final envie10 = (task.envie! * 9 + 1).round();
+  return '$age · envie $envie10/10';
 }
 
 /// Pastille ronde avec le numéro de priorité. Bleu/vert (marque) pour le bas,

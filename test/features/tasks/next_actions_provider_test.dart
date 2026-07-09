@@ -16,6 +16,45 @@ void main() {
     }
   });
 
+  test('applyEdit met à jour priorité et envie', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final id = container.read(nextActionsProvider).first.task.id;
+    container.read(tasksProvider.notifier).applyEdit(
+          id,
+          title: 'Titre modifié',
+          priority: 5,
+          envie: 1.0,
+        );
+
+    final task = container.read(tasksProvider).firstWhere((t) => t.id == id);
+    expect(task.title, 'Titre modifié');
+    expect(task.priority, 5);
+    expect(task.envie, 1.0);
+  });
+
+  test('applyEdit peut effacer un champ optionnel (envie -> null)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final id = container.read(nextActionsProvider).first.task.id;
+    // d'abord on la règle, puis on l'efface.
+    container.read(tasksProvider.notifier).applyEdit(
+          id,
+          title: 'x',
+          priority: 3,
+          envie: 0.5,
+        );
+    container.read(tasksProvider.notifier).applyEdit(
+          id,
+          title: 'x',
+          priority: 3,
+        );
+    final task = container.read(tasksProvider).firstWhere((t) => t.id == id);
+    expect(task.envie, isNull);
+  });
+
   test('compléter une tâche la retire de l\'onglet 1', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
