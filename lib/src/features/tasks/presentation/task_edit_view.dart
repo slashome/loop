@@ -20,8 +20,8 @@ double _toUi(double v01) => v01 * 9 + 1;
 
 /// Écran d'édition d'une tâche : priorité (avec caps) + envie + impacts.
 class TaskEditView extends ConsumerStatefulWidget {
-  const TaskEditView({super.key, required this.taskId});
-  final String taskId;
+  const TaskEditView({super.key, required this.task});
+  final Task task;
 
   @override
   ConsumerState<TaskEditView> createState() => _TaskEditViewState();
@@ -38,8 +38,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   @override
   void initState() {
     super.initState();
-    final task =
-        ref.read(tasksProvider).firstWhere((t) => t.id == widget.taskId);
+    final task = widget.task;
     _title = TextEditingController(text: task.title);
     _description = TextEditingController(text: task.description ?? '');
     _priority = task.priority;
@@ -64,8 +63,8 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
       return;
     }
     final desc = _description.text.trim();
-    ref.read(tasksProvider.notifier).applyEdit(
-          widget.taskId,
+    ref.read(taskRepositoryProvider).applyEdit(
+          widget.task.id,
           title: title,
           description: desc.isEmpty ? null : desc,
           priority: _priority,
@@ -79,7 +78,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tasks = ref.watch(tasksProvider);
+    final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
     final caps = ref.watch(priorityCapsProvider);
 
     return Scaffold(
@@ -121,7 +120,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             selected: _priority,
             caps: caps,
             tasks: tasks,
-            taskId: widget.taskId,
+            taskId: widget.task.id,
             onChanged: (p) => setState(() => _priority = p),
           ),
           const SizedBox(height: 24),

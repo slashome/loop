@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'src/core/db/app_database.dart';
+import 'src/features/tasks/application/tasks_providers.dart';
+import 'src/features/tasks/data/task_repository.dart';
 import 'src/features/tasks/presentation/next_actions_view.dart';
 
-void main() {
-  runApp(const ProviderScope(child: LoopApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final db = AppDatabase();
+  // Seed au premier lancement + génération des occurrences du jour.
+  await TaskRepository(db).bootstrap();
+  runApp(
+    ProviderScope(
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
+      child: const LoopApp(),
+    ),
+  );
 }
 
 /// Racine de l'application Loop.
-///
-/// Pour l'instant, l'app s'ouvre directement sur l'onglet 1 (Prochaines
-/// actions). La navigation par onglets (Repeats, Calendrier) viendra ensuite.
 class LoopApp extends StatelessWidget {
   const LoopApp({super.key});
 

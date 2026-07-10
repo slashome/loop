@@ -1,19 +1,16 @@
-/// Données d'amorçage de la feature `tasks` (temporaire — sera remplacé par le
-/// TaskRepository/Drift).
+/// Données d'amorçage (seed) — insérées en base au premier lancement.
 ///
 /// ⚠️ CONTENU PUBLIC : ce fichier est versionné. N'y mets AUCUNE donnée
-/// personnelle. Pour amorcer l'app avec tes vraies tâches en local sans les
-/// pousser, édite ce fichier puis protège-le :
-///     git update-index --skip-worktree lib/src/features/tasks/application/fixtures.dart
-/// (annuler : `--no-skip-worktree`). Tes modifications resteront locales.
-///
-/// La démo ci-dessous est conçue pour montrer l'anti-famine BORNÉ : les deux
-/// vieilles P2 remontent au-dessus des P3 fraîches, mais restent SOUS la P4
-/// fraîche — la priorité domine, personne ne meurt de faim.
+/// personnelle. Pour amorcer avec tes vraies données en local sans les pousser,
+/// édite ce fichier puis protège-le :
+///     git update-index --skip-worktree lib/src/features/tasks/data/fixtures.dart
+/// (annuler : `--no-skip-worktree`).
 library;
 
+import '../../recurrences/domain/recurrence.dart';
 import '../domain/task.dart';
 
+/// Tâches ponctuelles. Démo conçue pour montrer l'anti-famine borné.
 List<Task> seedTasks(DateTime now) {
   Task t(
     String id,
@@ -43,8 +40,34 @@ List<Task> seedTasks(DateTime now) {
         const Duration(hours: 5)),
     t('t6', 'Répondre au mail de Léa', 3, const Duration(days: 1)),
     t('t7', 'Lire l\'article sur Riverpod', 1, const Duration(days: 3)),
-    // Terminée : prouve que le filtre « vivant » l'exclut de l'onglet 1.
     t('t8', 'Réserver le restaurant', 5, const Duration(hours: 3),
         status: TaskStatus.done),
+  ];
+}
+
+/// Définitions de récurrence (démo).
+List<Recurrence> seedRecurrences(DateTime now) {
+  return [
+    Recurrence(
+      id: 'rec-demo-weekly',
+      title: 'Revue hebdomadaire',
+      freq: RecurrenceFreq.weekly,
+      byWeekday: DateTime.monday,
+      byHours: const [9],
+      rrule: 'FREQ=WEEKLY;BYDAY=MO',
+      dtstart: now,
+      createdAt: now,
+      updatedAt: now,
+    ),
+    Recurrence(
+      id: 'rec-demo-daily',
+      title: 'Boire un grand verre d\'eau',
+      freq: RecurrenceFreq.daily,
+      byHours: const [8, 20],
+      rrule: 'FREQ=DAILY;BYHOUR=8,20',
+      dtstart: now,
+      createdAt: now,
+      updatedAt: now,
+    ),
   ];
 }
