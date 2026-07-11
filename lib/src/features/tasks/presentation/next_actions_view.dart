@@ -7,16 +7,11 @@ import '../domain/task_filters.dart';
 import 'task_edit_view.dart';
 import 'widgets/task_card.dart';
 
-const Map<TaskNature, String> _natureLabels = {
-  TaskNature.noDate: 'Sans date',
-  TaskNature.dated: 'Datée',
-  TaskNature.recurring: 'Récurrente',
-};
-
-const Map<TaskState, String> _stateLabels = {
-  TaskState.overdue: 'En retard',
-  TaskState.today: 'Aujourd\'hui',
-  TaskState.upcoming: 'À venir',
+const Map<TaskView, String> _viewLabels = {
+  TaskView.aFaire: 'À faire',
+  TaskView.enRetard: 'En retard',
+  TaskView.datees: 'Datées',
+  TaskView.aVenir: 'À venir',
 };
 
 /// Onglet 1 — Prochaines actions. Cœur de l'app : la liste triée par score.
@@ -26,6 +21,7 @@ class NextActionsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(nextActionsProvider);
+    final view = ref.watch(viewProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,8 +35,19 @@ class NextActionsView extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _FilterBar(),
+          const _ViewBar(),
+          if (view == TaskView.aFaire)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+              child: Text(
+                'urgences + backlog',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
           Expanded(
             child: async.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -74,16 +81,15 @@ class NextActionsView extends ConsumerWidget {
   }
 }
 
-/// Barre de chips à facettes (Nature / État) avec compteurs.
-class _FilterBar extends ConsumerWidget {
-  const _FilterBar();
+/// Sélecteur de vue (Smart Lists) : chips mono-sélection avec compteurs.
+class _ViewBar extends ConsumerWidget {
+  const _ViewBar();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filter = ref.watch(filterProvider);
+    final view = ref.watch(viewProvider);
     final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
     final now = DateTime.now();
-    final notifier = ref.read(filterProvider.notifier);
 
     return SizedBox(
       height: 48,
@@ -91,53 +97,19 @@ class _FilterBar extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
-          for (final n in TaskNature.values)
-            _chip(
-              label: _natureLabels[n]!,
-              count: countByNature(tasks, filter, now, n),
-              selected: filter.natures.contains(n),
-              onTap: () => notifier.toggleNature(n),
-            ),
-          const _Separator(),
-          for (final s in TaskState.values)
-            _chip(
-              label: _stateLabels[s]!,
-              count: countByState(tasks, filter, now, s),
-              selected: filter.states.contains(s),
-              onTap: () => notifier.toggleState(s),
+          for (final v in TaskView.values)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(
+                  '${_viewLabels[v]} (${tasksForView(tasks, v, now).length})',
+                ),
+                selected: view == v,
+                showCheckmark: false,
+                onSelected: (_) => ref.read(viewProvider.notifier).state = v,
+              ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _chip({
-    required String label,
-    required int count,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text('$label ($count)'),
-        selected: selected,
-        onSelected: (_) => onTap(),
-      ),
-    );
-  }
-}
-
-class _Separator extends StatelessWidget {
-  const _Separator();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-      child: VerticalDivider(
-        width: 8,
-        color: Theme.of(context).colorScheme.outlineVariant,
       ),
     );
   }

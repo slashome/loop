@@ -97,13 +97,32 @@ void main() {
       ),
     );
 
-    await repo.generateOccurrences(on: monday);
-    // lundi : quotidienne 2× + hebdo-lundi 1× = 3 occurrences.
+    await repo.generateOccurrences(on: monday, horizonDays: 0);
+    // lundi seul : quotidienne 2× + hebdo-lundi 1× = 3 occurrences.
     expect(
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
 
-    await repo.generateOccurrences(on: DateTime(2026, 7, 6, 18));
+    await repo.generateOccurrences(
+        on: DateTime(2026, 7, 6, 18), horizonDays: 0);
     expect(
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
+  });
+
+  test('génère les occurrences sur un horizon (jours à venir)', () async {
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-daily',
+        title: 'Quotidien',
+        freq: 'daily',
+        byHours: const Value('8,20'),
+        dtstart: monday,
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+    // 3 jours (lundi..mercredi) × 2 heures = 6 occurrences.
+    await repo.generateOccurrences(on: monday, horizonDays: 2);
+    expect(
+        (await db.allTasks()).where((r) => r.recurrenceId != null).length, 6);
   });
 }

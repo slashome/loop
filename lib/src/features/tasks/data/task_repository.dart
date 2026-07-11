@@ -124,28 +124,37 @@ class TaskRepository {
     await generateOccurrences(on: now);
   }
 
-  /// Crée les lignes-tâches des occurrences du jour pour chaque récurrence
-  /// active. Réexécutable sans doublon (id déterministe + insertOrIgnore).
-  Future<void> generateOccurrences({required DateTime on}) async {
+  /// Matérialise les occurrences de chaque récurrence active de [on] jusqu'à
+  /// [on] + [horizonDays] (roulant). Réexécutable sans doublon (id déterministe
+  /// + insertOrIgnore). L'onglet Actions masque les occurrences « à venir » par
+  /// défaut ; elles restent accessibles via le filtre « À venir ».
+  Future<void> generateOccurrences({
+    required DateTime on,
+    int horizonDays = 14,
+  }) async {
     final recs = await _db.activeRecurrences();
+    final today = DateTime(on.year, on.month, on.day);
     for (final row in recs) {
       final rec = recurrenceFromRow(row);
-      for (final occ in rec.occurrencesOn(on)) {
-        final id = 'occ_${rec.id}_${occ.toIso8601String()}';
-        await _db.insertOccurrenceIfAbsent(
-          TaskRowsCompanion.insert(
-            id: id,
-            title: rec.title,
-            description: Value(rec.description),
-            priority: Value(rec.defPriority),
-            recurrenceId: Value(rec.id),
-            occurrenceDate: Value(occ),
-            dueAt: Value(occ),
-            // Créée MAINTENANT (fraîche), due à l'heure de l'occurrence.
-            createdAt: on,
-            updatedAt: on,
-          ),
-        );
+      for (var d = 0; d <= horizonDays; d++) {
+        final day = today.add(Duration(days: d));
+        for (final occ in rec.occurrencesOn(day)) {
+          final id = 'occ_${rec.id}_${occ.toIso8601String()}';
+          await _db.insertOccurrenceIfAbsent(
+            TaskRowsCompanion.insert(
+              id: id,
+              title: rec.title,
+              description: Value(rec.description),
+              priority: Value(rec.defPriority),
+              recurrenceId: Value(rec.id),
+              occurrenceDate: Value(occ),
+              dueAt: Value(occ),
+              // Créée MAINTENANT (fraîche), due à l'heure de l'occurrence.
+              createdAt: on,
+              updatedAt: on,
+            ),
+          );
+        }
       }
     }
   }

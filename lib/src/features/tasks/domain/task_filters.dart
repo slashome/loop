@@ -1,17 +1,20 @@
-/// Filtres de l'onglet 1 — Dart PUR, testable. Couche orthogonale au score
-/// (décision de design) : réduit le sous-ensemble visible, ne le classe pas.
+/// Vues de l'onglet 1 — Dart PUR, testable. Couche orthogonale au score.
 ///
-/// Modèle à facettes : deux axes indépendants. Plusieurs valeurs d'un même axe
-/// = OU (union) ; entre axes = ET (intersection). Un axe vide n'impose rien.
+/// Modèle « Smart Lists » : une seule vue active à la fois, chacune = un
+/// prédicat pré-écrit (peut mêler OU/ET/NON librement). L'utilisateur ne
+/// compose jamais de filtre → l'union « sans date + aujourd'hui » est native.
 library;
 
 import 'task.dart';
 
-/// Axe « Nature » — partition : une tâche est dans exactement une case.
+/// Nature d'une tâche (usage interne au diagnostic / futurs besoins).
 enum TaskNature { noDate, dated, recurring }
 
-/// Axe « État » temporel — n'existe que pour les tâches avec une échéance.
+/// État temporel — n'existe que pour les tâches avec une échéance.
 enum TaskState { overdue, today, upcoming }
+
+/// Les 4 vues nommées de l'onglet Actions.
+enum TaskView { aFaire, enRetard, datees, aVenir }
 
 TaskNature natureOf(Task t) {
   if (t.recurrenceId != null) return TaskNature.recurring;
@@ -29,60 +32,50 @@ TaskState? stateOf(Task t, DateTime now) {
   return dueDay.isAtSameMomentAs(today) ? TaskState.today : TaskState.upcoming;
 }
 
-/// Sélection de filtres (immutable).
-class TaskFilter {
-  const TaskFilter({this.natures = const {}, this.states = const {}});
-
-  final Set<TaskNature> natures;
-  final Set<TaskState> states;
-
-  bool get isEmpty => natures.isEmpty && states.isEmpty;
-
-  TaskFilter toggleNature(TaskNature n) =>
-      TaskFilter(natures: _toggled(natures, n), states: states);
-
-  TaskFilter toggleState(TaskState s) =>
-      TaskFilter(natures: natures, states: _toggled(states, s));
-}
-
-Set<T> _toggled<T>(Set<T> set, T v) =>
-    set.contains(v) ? ({...set}..remove(v)) : {...set, v};
-
-bool _matchesNatureAxis(Task t, TaskFilter f) =>
-    f.natures.isEmpty || f.natures.contains(natureOf(t));
-
-bool _matchesStateAxis(Task t, TaskFilter f, DateTime now) {
-  if (f.states.isEmpty) return true;
+/// Prédicat d'appartenance d'une tâche à une vue.
+///
+/// - [TaskView.aFaire] : le « maintenant » = sans date OU en retard OU
+///   aujourd'hui (et PAS à venir). « Sans date » n'est pas un état : c'est
+///   juste un terme de ce prédicat, jamais immunisé ailleurs.
+/// - [TaskView.enRetard] : datée & échéance passée.
+/// - [TaskView.datees] : a une date (tous états) — sans-date exclues.
+/// - [TaskView.aVenir] : datée & future.
+bool matchesView(Task t, TaskView v, DateTime now) {
   final s = stateOf(t, now);
-  return s != null && f.states.contains(s);
+  return switch (v) {
+    TaskView.aFaire =>
+      s == null || s == TaskState.overdue || s == TaskState.today,
+    TaskView.enRetard => s == TaskState.overdue,
+    TaskView.datees => t.dueAt != null,
+    TaskView.aVenir => s == TaskState.upcoming,
+  };
 }
 
-/// Prédicat complet : OU dans chaque axe, ET entre les axes.
-bool matchesFilter(Task t, TaskFilter f, DateTime now) =>
-    _matchesNatureAxis(t, f) && _matchesStateAxis(t, f, now);
+/// Tâches vivantes d'une vue. Applique le repli anti-noyade dans [datees] :
+/// les occurrences récurrentes FUTURES sont réduites à la prochaine par
+/// récurrence (le déroulé complet des 14 jours n'existe que dans [aVenir]).
+List<Task> tasksForView(Iterable<Task> tasks, TaskView v, DateTime now) {
+  final selected =
+      tasks.where((t) => t.isLive && matchesView(t, v, now)).toList();
+  if (v == TaskView.datees) return _collapseFutureRecurring(selected, now);
+  return selected;
+}
 
-/// Compteur d'un chip Nature : nombre de tâches vivantes de cette nature, en
-/// tenant compte de l'AUTRE axe (convention facettes), pas de l'axe Nature
-/// lui-même.
-int countByNature(
-  Iterable<Task> tasks,
-  TaskFilter f,
-  DateTime now,
-  TaskNature n,
-) =>
-    tasks
-        .where(
-            (t) => t.isLive && _matchesStateAxis(t, f, now) && natureOf(t) == n)
-        .length;
-
-/// Compteur d'un chip État (tient compte de l'axe Nature seulement).
-int countByState(
-  Iterable<Task> tasks,
-  TaskFilter f,
-  DateTime now,
-  TaskState s,
-) =>
-    tasks
-        .where(
-            (t) => t.isLive && _matchesNatureAxis(t, f) && stateOf(t, now) == s)
-        .length;
+List<Task> _collapseFutureRecurring(List<Task> tasks, DateTime now) {
+  final out = <Task>[];
+  final nextByRec = <String, Task>{};
+  for (final t in tasks) {
+    final isFutureRecurring =
+        t.recurrenceId != null && stateOf(t, now) == TaskState.upcoming;
+    if (!isFutureRecurring) {
+      out.add(t);
+      continue;
+    }
+    final cur = nextByRec[t.recurrenceId];
+    if (cur == null || t.dueAt!.isBefore(cur.dueAt!)) {
+      nextByRec[t.recurrenceId!] = t;
+    }
+  }
+  out.addAll(nextByRec.values);
+  return out;
+}

@@ -41,35 +41,21 @@ final tasksProvider = StreamProvider<List<Task>>(
   (ref) => ref.watch(taskRepositoryProvider).watchTasks(),
 );
 
-/// Filtres actifs de l'onglet 1 (facettes Nature/État).
-class FilterNotifier extends Notifier<TaskFilter> {
-  @override
-  TaskFilter build() => const TaskFilter();
+/// Vue active de l'onglet 1 (Smart Lists). NON persistée entre sessions :
+/// on rouvre toujours sur « À faire ».
+final viewProvider = StateProvider<TaskView>((ref) => TaskView.aFaire);
 
-  void toggleNature(TaskNature n) => state = state.toggleNature(n);
-  void toggleState(TaskState s) => state = state.toggleState(s);
-  void clear() => state = const TaskFilter();
-}
-
-final filterProvider = NotifierProvider<FilterNotifier, TaskFilter>(
-  FilterNotifier.new,
-);
-
-/// L'onglet 1 : tâches vivantes filtrées puis triées par score.
+/// L'onglet 1 : tâches de la vue active, triées par score.
 final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {
   final async = ref.watch(tasksProvider);
   final config = ref.watch(scoringConfigProvider);
-  final filter = ref.watch(filterProvider);
+  final view = ref.watch(viewProvider);
   return async.whenData((tasks) {
     final now = DateTime.now();
-    final sorted = nextActions(
-      tasks,
-      config: config,
-      now: now,
-      filter: (t) => matchesFilter(t, filter, now),
-    );
+    final selected = tasksForView(tasks, view, now)
+      ..sort((a, b) => compareByScore(a, b, config, now));
     return [
-      for (final t in sorted) ScoredTask(t, taskScore(t, config, now: now)),
+      for (final t in selected) ScoredTask(t, taskScore(t, config, now: now)),
     ];
   });
 });
