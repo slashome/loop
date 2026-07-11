@@ -73,7 +73,7 @@ void main() {
         id: 'r-weekly-mon',
         title: 'Hebdo lundi',
         freq: 'weekly',
-        byWeekday: const Value(DateTime.monday),
+        byWeekdays: const Value('1'), // lundi
         dtstart: monday,
         createdAt: monday,
         updatedAt: monday,

@@ -40,8 +40,11 @@ class RecurrenceRows extends Table {
   TextColumn get ownerId => text().withDefault(const Constant('local'))();
   TextColumn get title => text()();
   TextColumn get description => text().nullable()();
-  TextColumn get freq => text()(); // DAILY | WEEKLY | MONTHLY
-  IntColumn get byWeekday => integer().nullable()(); // 1..7 (lun..dim)
+  TextColumn get freq => text()(); // daily | weekly | monthly
+  TextColumn get byWeekdays =>
+      text().withDefault(const Constant(''))(); // "1,3,5" (lun..dim)
+  TextColumn get byMonthDays =>
+      text().withDefault(const Constant(''))(); // "1,15"
   TextColumn get byHours =>
       text().withDefault(const Constant('9'))(); // "10,22"
   IntColumn get byMinute => integer().withDefault(const Constant(0))();
@@ -78,7 +81,21 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          // v2 : cadence de récurrence multi-valuée (byWeekdays/byMonthDays).
+          // La table des récurrences est recréée (données re-seedées au
+          // bootstrap) ; les tâches et leurs éditions sont préservées.
+          if (from < 2) {
+            await m.deleteTable(recurrenceRows.actualTableName);
+            await m.createTable(recurrenceRows);
+          }
+        },
+      );
 
   Stream<List<TaskRow>> watchTasks() {
     return (select(taskRows)..where((t) => t.deletedAt.isNull())).watch();

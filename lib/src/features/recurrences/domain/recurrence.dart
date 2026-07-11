@@ -1,9 +1,12 @@
 /// Modèle métier d'une définition de récurrence — PUR (aucune dépendance
 /// Flutter/Drift), comme [Task].
 ///
-/// La cadence est structurée ([freq] + [byWeekday] + [byHours]) — « rrule ou
-/// équivalent » (décision de design). [rrule] garde la chaîne équivalente pour
-/// le futur parseur complet (onglet Repeats).
+/// Cadence structurée façon RRULE (« rrule ou équivalent », décision de
+/// design), toutes les dimensions multiples :
+///   - [byWeekdays] : jours de semaine (BYDAY) pour [RecurrenceFreq.weekly] ;
+///   - [byMonthDays] : jours du mois (BYMONTHDAY) pour [RecurrenceFreq.monthly] ;
+///   - [byHours] : heures dans la journée (BYHOUR), toutes fréquences.
+/// [rrule] garde la chaîne équivalente pour le futur parseur complet.
 library;
 
 enum RecurrenceFreq { daily, weekly, monthly }
@@ -18,7 +21,8 @@ class Recurrence {
     required this.updatedAt,
     this.ownerId = 'local',
     this.description,
-    this.byWeekday,
+    this.byWeekdays = const [],
+    this.byMonthDays = const [],
     this.byHours = const [9],
     this.byMinute = 0,
     this.rrule,
@@ -35,8 +39,11 @@ class Recurrence {
   final String? description;
   final RecurrenceFreq freq;
 
-  /// Jour de la semaine 1..7 (lun..dim), pour [RecurrenceFreq.weekly].
-  final int? byWeekday;
+  /// Jours de semaine 1..7 (lun..dim), pour [RecurrenceFreq.weekly].
+  final List<int> byWeekdays;
+
+  /// Jours du mois 1..31, pour [RecurrenceFreq.monthly].
+  final List<int> byMonthDays;
 
   /// Heures d'occurrence dans la journée (ex: [10, 22] = deux fois par jour).
   final List<int> byHours;
@@ -59,8 +66,8 @@ class Recurrence {
   List<DateTime> occurrencesOn(DateTime day) {
     final matches = switch (freq) {
       RecurrenceFreq.daily => true,
-      RecurrenceFreq.weekly => day.weekday == byWeekday,
-      RecurrenceFreq.monthly => day.day == dtstart.day,
+      RecurrenceFreq.weekly => byWeekdays.contains(day.weekday),
+      RecurrenceFreq.monthly => byMonthDays.contains(day.day),
     };
     if (!matches) return const [];
     return [

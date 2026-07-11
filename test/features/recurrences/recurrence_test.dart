@@ -6,7 +6,8 @@ void main() {
 
   Recurrence rec({
     required RecurrenceFreq freq,
-    int? weekday,
+    List<int> weekdays = const [],
+    List<int> monthDays = const [],
     List<int> hours = const [9],
     DateTime? dtstart,
   }) =>
@@ -14,7 +15,8 @@ void main() {
         id: 'r',
         title: 't',
         freq: freq,
-        byWeekday: weekday,
+        byWeekdays: weekdays,
+        byMonthDays: monthDays,
         byHours: hours,
         dtstart: dtstart ?? anchor,
         createdAt: anchor,
@@ -28,15 +30,31 @@ void main() {
     expect(occ.every((d) => d.day == 8), isTrue);
   });
 
-  test('weekly : seulement le bon jour de semaine', () {
-    final r = rec(freq: RecurrenceFreq.weekly, weekday: DateTime.thursday);
-    expect(r.occurrencesOn(DateTime(2026, 7, 9)), hasLength(1)); // jeudi
-    expect(r.occurrencesOn(DateTime(2026, 7, 10)), isEmpty); // vendredi
+  test('weekly : plusieurs jours de semaine', () {
+    final r = rec(
+      freq: RecurrenceFreq.weekly,
+      weekdays: const [DateTime.monday, DateTime.wednesday, DateTime.friday],
+    );
+    expect(r.occurrencesOn(DateTime(2026, 7, 6)), hasLength(1)); // lundi ✓
+    expect(r.occurrencesOn(DateTime(2026, 7, 8)), hasLength(1)); // mercredi ✓
+    expect(r.occurrencesOn(DateTime(2026, 7, 9)), isEmpty); // jeudi ✗
   });
 
-  test('monthly : seulement le jour du mois de dtstart', () {
-    final r = rec(freq: RecurrenceFreq.monthly, dtstart: DateTime(2026, 7, 9));
-    expect(r.occurrencesOn(DateTime(2026, 8, 9)), hasLength(1));
-    expect(r.occurrencesOn(DateTime(2026, 8, 10)), isEmpty);
+  test('monthly : plusieurs jours du mois', () {
+    final r = rec(freq: RecurrenceFreq.monthly, monthDays: const [1, 15]);
+    expect(r.occurrencesOn(DateTime(2026, 8, 1)), hasLength(1));
+    expect(r.occurrencesOn(DateTime(2026, 8, 15)), hasLength(1));
+    expect(r.occurrencesOn(DateTime(2026, 8, 9)), isEmpty);
+  });
+
+  test('combine plusieurs jours ET plusieurs heures', () {
+    final r = rec(
+      freq: RecurrenceFreq.weekly,
+      weekdays: const [DateTime.monday, DateTime.thursday],
+      hours: const [8, 12, 20],
+    );
+    // lundi : 3 heures ; mardi : rien.
+    expect(r.occurrencesOn(DateTime(2026, 7, 6)), hasLength(3));
+    expect(r.occurrencesOn(DateTime(2026, 7, 7)), isEmpty);
   });
 }

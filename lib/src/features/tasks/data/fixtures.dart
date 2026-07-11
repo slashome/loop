@@ -52,7 +52,7 @@ List<Recurrence> seedRecurrences(DateTime now) {
       id: 'rec-demo-weekly',
       title: 'Revue hebdomadaire',
       freq: RecurrenceFreq.weekly,
-      byWeekday: DateTime.monday,
+      byWeekdays: const [DateTime.monday],
       byHours: const [9],
       rrule: 'FREQ=WEEKLY;BYDAY=MO',
       dtstart: now,

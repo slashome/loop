@@ -67,12 +67,14 @@ class TaskRepository {
   /// du jour. Idempotent (occurrences dédupliquées par id déterministe).
   Future<void> bootstrap({DateTime? clock}) async {
     final now = clock ?? DateTime.now();
-    final empty =
-        await _db.countTasks() == 0 && await _db.countRecurrences() == 0;
-    if (empty) {
+    // Seed indépendant par entité : après une migration qui recrée la table
+    // des récurrences, celles-ci se re-seedent sans toucher aux tâches.
+    if (await _db.countTasks() == 0) {
       for (final t in seedTasks(now)) {
         await _db.upsertTask(_toCompanion(t));
       }
+    }
+    if (await _db.countRecurrences() == 0) {
       for (final r in seedRecurrences(now)) {
         await _db.insertRecurrence(_toRecCompanion(r));
       }
@@ -157,12 +159,9 @@ class TaskRepository {
         title: r.title,
         description: r.description,
         freq: RecurrenceFreq.values.byName(r.freq),
-        byWeekday: r.byWeekday,
-        byHours: r.byHours
-            .split(',')
-            .where((s) => s.isNotEmpty)
-            .map(int.parse)
-            .toList(),
+        byWeekdays: _parseInts(r.byWeekdays),
+        byMonthDays: _parseInts(r.byMonthDays),
+        byHours: _parseInts(r.byHours),
         byMinute: r.byMinute,
         rrule: r.rrule,
         dtstart: r.dtstart,
@@ -182,7 +181,8 @@ class TaskRepository {
         title: r.title,
         description: Value(r.description),
         freq: r.freq.name,
-        byWeekday: Value(r.byWeekday),
+        byWeekdays: Value(r.byWeekdays.join(',')),
+        byMonthDays: Value(r.byMonthDays.join(',')),
         byHours: Value(r.byHours.join(',')),
         byMinute: Value(r.byMinute),
         rrule: Value(r.rrule),
@@ -196,3 +196,7 @@ class TaskRepository {
         deletedAt: Value(r.deletedAt),
       );
 }
+
+/// Parse une liste d'entiers stockée en CSV ("1,3,5" -> [1,3,5]). Vide -> [].
+List<int> _parseInts(String csv) =>
+    csv.split(',').where((s) => s.isNotEmpty).map(int.parse).toList();

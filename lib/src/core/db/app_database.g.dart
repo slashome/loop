@@ -930,12 +930,22 @@ class $RecurrenceRowsTable extends RecurrenceRows
   late final GeneratedColumn<String> freq = GeneratedColumn<String>(
       'freq', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _byWeekdayMeta =
-      const VerificationMeta('byWeekday');
+  static const VerificationMeta _byWeekdaysMeta =
+      const VerificationMeta('byWeekdays');
   @override
-  late final GeneratedColumn<int> byWeekday = GeneratedColumn<int>(
-      'by_weekday', aliasedName, true,
-      type: DriftSqlType.int, requiredDuringInsert: false);
+  late final GeneratedColumn<String> byWeekdays = GeneratedColumn<String>(
+      'by_weekdays', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _byMonthDaysMeta =
+      const VerificationMeta('byMonthDays');
+  @override
+  late final GeneratedColumn<String> byMonthDays = GeneratedColumn<String>(
+      'by_month_days', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
   static const VerificationMeta _byHoursMeta =
       const VerificationMeta('byHours');
   @override
@@ -1019,7 +1029,8 @@ class $RecurrenceRowsTable extends RecurrenceRows
         title,
         description,
         freq,
-        byWeekday,
+        byWeekdays,
+        byMonthDays,
         byHours,
         byMinute,
         rrule,
@@ -1069,9 +1080,17 @@ class $RecurrenceRowsTable extends RecurrenceRows
     } else if (isInserting) {
       context.missing(_freqMeta);
     }
-    if (data.containsKey('by_weekday')) {
-      context.handle(_byWeekdayMeta,
-          byWeekday.isAcceptableOrUnknown(data['by_weekday']!, _byWeekdayMeta));
+    if (data.containsKey('by_weekdays')) {
+      context.handle(
+          _byWeekdaysMeta,
+          byWeekdays.isAcceptableOrUnknown(
+              data['by_weekdays']!, _byWeekdaysMeta));
+    }
+    if (data.containsKey('by_month_days')) {
+      context.handle(
+          _byMonthDaysMeta,
+          byMonthDays.isAcceptableOrUnknown(
+              data['by_month_days']!, _byMonthDaysMeta));
     }
     if (data.containsKey('by_hours')) {
       context.handle(_byHoursMeta,
@@ -1146,8 +1165,10 @@ class $RecurrenceRowsTable extends RecurrenceRows
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
       freq: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}freq'])!,
-      byWeekday: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}by_weekday']),
+      byWeekdays: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}by_weekdays'])!,
+      byMonthDays: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}by_month_days'])!,
       byHours: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}by_hours'])!,
       byMinute: attachedDatabase.typeMapping
@@ -1185,7 +1206,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
   final String title;
   final String? description;
   final String freq;
-  final int? byWeekday;
+  final String byWeekdays;
+  final String byMonthDays;
   final String byHours;
   final int byMinute;
   final String? rrule;
@@ -1203,7 +1225,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       required this.title,
       this.description,
       required this.freq,
-      this.byWeekday,
+      required this.byWeekdays,
+      required this.byMonthDays,
       required this.byHours,
       required this.byMinute,
       this.rrule,
@@ -1225,9 +1248,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       map['description'] = Variable<String>(description);
     }
     map['freq'] = Variable<String>(freq);
-    if (!nullToAbsent || byWeekday != null) {
-      map['by_weekday'] = Variable<int>(byWeekday);
-    }
+    map['by_weekdays'] = Variable<String>(byWeekdays);
+    map['by_month_days'] = Variable<String>(byMonthDays);
     map['by_hours'] = Variable<String>(byHours);
     map['by_minute'] = Variable<int>(byMinute);
     if (!nullToAbsent || rrule != null) {
@@ -1257,9 +1279,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           ? const Value.absent()
           : Value(description),
       freq: Value(freq),
-      byWeekday: byWeekday == null && nullToAbsent
-          ? const Value.absent()
-          : Value(byWeekday),
+      byWeekdays: Value(byWeekdays),
+      byMonthDays: Value(byMonthDays),
       byHours: Value(byHours),
       byMinute: Value(byMinute),
       rrule:
@@ -1288,7 +1309,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
       freq: serializer.fromJson<String>(json['freq']),
-      byWeekday: serializer.fromJson<int?>(json['byWeekday']),
+      byWeekdays: serializer.fromJson<String>(json['byWeekdays']),
+      byMonthDays: serializer.fromJson<String>(json['byMonthDays']),
       byHours: serializer.fromJson<String>(json['byHours']),
       byMinute: serializer.fromJson<int>(json['byMinute']),
       rrule: serializer.fromJson<String?>(json['rrule']),
@@ -1311,7 +1333,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
       'freq': serializer.toJson<String>(freq),
-      'byWeekday': serializer.toJson<int?>(byWeekday),
+      'byWeekdays': serializer.toJson<String>(byWeekdays),
+      'byMonthDays': serializer.toJson<String>(byMonthDays),
       'byHours': serializer.toJson<String>(byHours),
       'byMinute': serializer.toJson<int>(byMinute),
       'rrule': serializer.toJson<String?>(rrule),
@@ -1332,7 +1355,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           String? title,
           Value<String?> description = const Value.absent(),
           String? freq,
-          Value<int?> byWeekday = const Value.absent(),
+          String? byWeekdays,
+          String? byMonthDays,
           String? byHours,
           int? byMinute,
           Value<String?> rrule = const Value.absent(),
@@ -1350,7 +1374,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
         title: title ?? this.title,
         description: description.present ? description.value : this.description,
         freq: freq ?? this.freq,
-        byWeekday: byWeekday.present ? byWeekday.value : this.byWeekday,
+        byWeekdays: byWeekdays ?? this.byWeekdays,
+        byMonthDays: byMonthDays ?? this.byMonthDays,
         byHours: byHours ?? this.byHours,
         byMinute: byMinute ?? this.byMinute,
         rrule: rrule.present ? rrule.value : this.rrule,
@@ -1372,7 +1397,10 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       description:
           data.description.present ? data.description.value : this.description,
       freq: data.freq.present ? data.freq.value : this.freq,
-      byWeekday: data.byWeekday.present ? data.byWeekday.value : this.byWeekday,
+      byWeekdays:
+          data.byWeekdays.present ? data.byWeekdays.value : this.byWeekdays,
+      byMonthDays:
+          data.byMonthDays.present ? data.byMonthDays.value : this.byMonthDays,
       byHours: data.byHours.present ? data.byHours.value : this.byHours,
       byMinute: data.byMinute.present ? data.byMinute.value : this.byMinute,
       rrule: data.rrule.present ? data.rrule.value : this.rrule,
@@ -1398,7 +1426,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('freq: $freq, ')
-          ..write('byWeekday: $byWeekday, ')
+          ..write('byWeekdays: $byWeekdays, ')
+          ..write('byMonthDays: $byMonthDays, ')
           ..write('byHours: $byHours, ')
           ..write('byMinute: $byMinute, ')
           ..write('rrule: $rrule, ')
@@ -1421,7 +1450,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       title,
       description,
       freq,
-      byWeekday,
+      byWeekdays,
+      byMonthDays,
       byHours,
       byMinute,
       rrule,
@@ -1442,7 +1472,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           other.title == this.title &&
           other.description == this.description &&
           other.freq == this.freq &&
-          other.byWeekday == this.byWeekday &&
+          other.byWeekdays == this.byWeekdays &&
+          other.byMonthDays == this.byMonthDays &&
           other.byHours == this.byHours &&
           other.byMinute == this.byMinute &&
           other.rrule == this.rrule &&
@@ -1462,7 +1493,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
   final Value<String> title;
   final Value<String?> description;
   final Value<String> freq;
-  final Value<int?> byWeekday;
+  final Value<String> byWeekdays;
+  final Value<String> byMonthDays;
   final Value<String> byHours;
   final Value<int> byMinute;
   final Value<String?> rrule;
@@ -1481,7 +1513,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.freq = const Value.absent(),
-    this.byWeekday = const Value.absent(),
+    this.byWeekdays = const Value.absent(),
+    this.byMonthDays = const Value.absent(),
     this.byHours = const Value.absent(),
     this.byMinute = const Value.absent(),
     this.rrule = const Value.absent(),
@@ -1501,7 +1534,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     required String title,
     this.description = const Value.absent(),
     required String freq,
-    this.byWeekday = const Value.absent(),
+    this.byWeekdays = const Value.absent(),
+    this.byMonthDays = const Value.absent(),
     this.byHours = const Value.absent(),
     this.byMinute = const Value.absent(),
     this.rrule = const Value.absent(),
@@ -1526,7 +1560,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     Expression<String>? title,
     Expression<String>? description,
     Expression<String>? freq,
-    Expression<int>? byWeekday,
+    Expression<String>? byWeekdays,
+    Expression<String>? byMonthDays,
     Expression<String>? byHours,
     Expression<int>? byMinute,
     Expression<String>? rrule,
@@ -1546,7 +1581,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       if (title != null) 'title': title,
       if (description != null) 'description': description,
       if (freq != null) 'freq': freq,
-      if (byWeekday != null) 'by_weekday': byWeekday,
+      if (byWeekdays != null) 'by_weekdays': byWeekdays,
+      if (byMonthDays != null) 'by_month_days': byMonthDays,
       if (byHours != null) 'by_hours': byHours,
       if (byMinute != null) 'by_minute': byMinute,
       if (rrule != null) 'rrule': rrule,
@@ -1568,7 +1604,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       Value<String>? title,
       Value<String?>? description,
       Value<String>? freq,
-      Value<int?>? byWeekday,
+      Value<String>? byWeekdays,
+      Value<String>? byMonthDays,
       Value<String>? byHours,
       Value<int>? byMinute,
       Value<String?>? rrule,
@@ -1587,7 +1624,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       title: title ?? this.title,
       description: description ?? this.description,
       freq: freq ?? this.freq,
-      byWeekday: byWeekday ?? this.byWeekday,
+      byWeekdays: byWeekdays ?? this.byWeekdays,
+      byMonthDays: byMonthDays ?? this.byMonthDays,
       byHours: byHours ?? this.byHours,
       byMinute: byMinute ?? this.byMinute,
       rrule: rrule ?? this.rrule,
@@ -1621,8 +1659,11 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     if (freq.present) {
       map['freq'] = Variable<String>(freq.value);
     }
-    if (byWeekday.present) {
-      map['by_weekday'] = Variable<int>(byWeekday.value);
+    if (byWeekdays.present) {
+      map['by_weekdays'] = Variable<String>(byWeekdays.value);
+    }
+    if (byMonthDays.present) {
+      map['by_month_days'] = Variable<String>(byMonthDays.value);
     }
     if (byHours.present) {
       map['by_hours'] = Variable<String>(byHours.value);
@@ -1671,7 +1712,8 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('freq: $freq, ')
-          ..write('byWeekday: $byWeekday, ')
+          ..write('byWeekdays: $byWeekdays, ')
+          ..write('byMonthDays: $byMonthDays, ')
           ..write('byHours: $byHours, ')
           ..write('byMinute: $byMinute, ')
           ..write('rrule: $rrule, ')
@@ -2088,7 +2130,8 @@ typedef $$RecurrenceRowsTableCreateCompanionBuilder = RecurrenceRowsCompanion
   required String title,
   Value<String?> description,
   required String freq,
-  Value<int?> byWeekday,
+  Value<String> byWeekdays,
+  Value<String> byMonthDays,
   Value<String> byHours,
   Value<int> byMinute,
   Value<String?> rrule,
@@ -2109,7 +2152,8 @@ typedef $$RecurrenceRowsTableUpdateCompanionBuilder = RecurrenceRowsCompanion
   Value<String> title,
   Value<String?> description,
   Value<String> freq,
-  Value<int?> byWeekday,
+  Value<String> byWeekdays,
+  Value<String> byMonthDays,
   Value<String> byHours,
   Value<int> byMinute,
   Value<String?> rrule,
@@ -2148,8 +2192,11 @@ class $$RecurrenceRowsTableFilterComposer
   ColumnFilters<String> get freq => $composableBuilder(
       column: $table.freq, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get byWeekday => $composableBuilder(
-      column: $table.byWeekday, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get byWeekdays => $composableBuilder(
+      column: $table.byWeekdays, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get byMonthDays => $composableBuilder(
+      column: $table.byMonthDays, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get byHours => $composableBuilder(
       column: $table.byHours, builder: (column) => ColumnFilters(column));
@@ -2210,8 +2257,11 @@ class $$RecurrenceRowsTableOrderingComposer
   ColumnOrderings<String> get freq => $composableBuilder(
       column: $table.freq, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get byWeekday => $composableBuilder(
-      column: $table.byWeekday, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get byWeekdays => $composableBuilder(
+      column: $table.byWeekdays, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get byMonthDays => $composableBuilder(
+      column: $table.byMonthDays, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get byHours => $composableBuilder(
       column: $table.byHours, builder: (column) => ColumnOrderings(column));
@@ -2272,8 +2322,11 @@ class $$RecurrenceRowsTableAnnotationComposer
   GeneratedColumn<String> get freq =>
       $composableBuilder(column: $table.freq, builder: (column) => column);
 
-  GeneratedColumn<int> get byWeekday =>
-      $composableBuilder(column: $table.byWeekday, builder: (column) => column);
+  GeneratedColumn<String> get byWeekdays => $composableBuilder(
+      column: $table.byWeekdays, builder: (column) => column);
+
+  GeneratedColumn<String> get byMonthDays => $composableBuilder(
+      column: $table.byMonthDays, builder: (column) => column);
 
   GeneratedColumn<String> get byHours =>
       $composableBuilder(column: $table.byHours, builder: (column) => column);
@@ -2341,7 +2394,8 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             Value<String> title = const Value.absent(),
             Value<String?> description = const Value.absent(),
             Value<String> freq = const Value.absent(),
-            Value<int?> byWeekday = const Value.absent(),
+            Value<String> byWeekdays = const Value.absent(),
+            Value<String> byMonthDays = const Value.absent(),
             Value<String> byHours = const Value.absent(),
             Value<int> byMinute = const Value.absent(),
             Value<String?> rrule = const Value.absent(),
@@ -2361,7 +2415,8 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             title: title,
             description: description,
             freq: freq,
-            byWeekday: byWeekday,
+            byWeekdays: byWeekdays,
+            byMonthDays: byMonthDays,
             byHours: byHours,
             byMinute: byMinute,
             rrule: rrule,
@@ -2381,7 +2436,8 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             required String title,
             Value<String?> description = const Value.absent(),
             required String freq,
-            Value<int?> byWeekday = const Value.absent(),
+            Value<String> byWeekdays = const Value.absent(),
+            Value<String> byMonthDays = const Value.absent(),
             Value<String> byHours = const Value.absent(),
             Value<int> byMinute = const Value.absent(),
             Value<String?> rrule = const Value.absent(),
@@ -2401,7 +2457,8 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             title: title,
             description: description,
             freq: freq,
-            byWeekday: byWeekday,
+            byWeekdays: byWeekdays,
+            byMonthDays: byMonthDays,
             byHours: byHours,
             byMinute: byMinute,
             rrule: rrule,
