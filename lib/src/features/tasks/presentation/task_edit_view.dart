@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../recurrences/application/recurrences_providers.dart';
+import '../../recurrences/domain/recurrence.dart';
+import '../../recurrences/presentation/recurrence_edit_view.dart';
 import '../application/tasks_providers.dart';
 import '../domain/scoring.dart';
 import '../domain/task.dart';
@@ -104,11 +107,24 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     Navigator.of(context).pop();
   }
 
+  Recurrence? _recurrenceFor(String? id) {
+    if (id == null) return null;
+    final recs = ref.watch(recurrencesProvider).valueOrNull ?? const [];
+    for (final r in recs) {
+      if (r.id == id) return r;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
     final caps = ref.watch(priorityCapsProvider);
+
+    // Récurrence source, si cette tâche est une occurrence (final -> promotion
+    // OK même capturée dans la closure onTap).
+    final recurrence = _recurrenceFor(widget.task.recurrenceId);
 
     return Scaffold(
       appBar: AppBar(
@@ -123,6 +139,25 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (recurrence != null) ...[
+            Card(
+              color: theme.colorScheme.secondaryContainer,
+              elevation: 0,
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                leading: const Icon(Icons.repeat),
+                title: Text('Occurrence de « ${recurrence.title} »'),
+                subtitle: const Text('Modifier la récurrence'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => RecurrenceEditView(recurrence: recurrence),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           TextField(
             controller: _title,
             decoration: const InputDecoration(
