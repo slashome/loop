@@ -44,15 +44,17 @@ class TaskCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(task.title, style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle.text,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: subtitle.isLate
-                            ? theme.colorScheme.error
-                            : theme.colorScheme.onSurfaceVariant,
+                    if (subtitle.text.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle.text,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: subtitle.isLate
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -71,22 +73,20 @@ class TaskCard extends StatelessWidget {
   }
 }
 
-/// Sous-titre : échéance si définie (sinon âge), + envie si réglée.
-/// `isLate` = échéance dépassée (affiché en rouge).
+/// Sous-titre : échéance si définie, + envie si réglée. Rien pour une tâche
+/// sans date (l'âge de création reste interne au score). `isLate` = en retard.
 ({String text, bool isLate}) _subtitle(Task task) {
-  final now = DateTime.now();
-  final String primary;
+  final parts = <String>[];
   var isLate = false;
   if (task.dueAt != null) {
-    final due = _dueLabel(task.dueAt!, now);
-    primary = due.text;
+    final due = _dueLabel(task.dueAt!, DateTime.now());
+    parts.add(due.text);
     isLate = due.isLate;
-  } else {
-    primary = _ageLabel(task.createdAt, now);
   }
-  final envie =
-      task.envie == null ? '' : ' · envie ${(task.envie! * 9 + 1).round()}/10';
-  return (text: '$primary$envie', isLate: isLate);
+  if (task.envie != null) {
+    parts.add('envie ${(task.envie! * 9 + 1).round()}/10');
+  }
+  return (text: parts.join(' · '), isLate: isLate);
 }
 
 /// Pastille ronde avec le numéro de priorité. Bleu/vert (marque) pour le bas,
@@ -149,16 +149,6 @@ class _ScorePill extends StatelessWidget {
       ),
     );
   }
-}
-
-String _ageLabel(DateTime createdAt, DateTime now) {
-  final d = now.difference(createdAt);
-  if (d.isNegative || d.inMinutes < 1) return 'à l\'instant';
-  if (d.inMinutes < 60) return 'il y a ${d.inMinutes} min';
-  if (d.inHours < 24) return 'il y a ${d.inHours} h';
-  if (d.inDays < 30) return 'il y a ${d.inDays} j';
-  final months = d.inDays ~/ 30;
-  return 'il y a $months mois';
 }
 
 /// Libellé d'échéance relatif à [now]. `isLate` si l'échéance est passée.
