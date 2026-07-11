@@ -47,6 +47,27 @@ void main() {
     expect(r.occurrencesOn(DateTime(2026, 8, 9)), isEmpty);
   });
 
+  test('nextOccurrenceFrom : même jour si l\'heure est à venir', () {
+    final r = rec(freq: RecurrenceFreq.daily, hours: const [22]);
+    expect(
+      r.nextOccurrenceFrom(DateTime(2026, 7, 11, 12)),
+      DateTime(2026, 7, 11, 22),
+    );
+  });
+
+  test('nextOccurrenceFrom : prochain jour de semaine correspondant', () {
+    // samedi 11/07/2026 -> prochain jeudi = 16/07/2026 21:00
+    final r = rec(
+      freq: RecurrenceFreq.weekly,
+      weekdays: const [DateTime.thursday],
+      hours: const [21],
+    );
+    expect(
+      r.nextOccurrenceFrom(DateTime(2026, 7, 11, 12)),
+      DateTime(2026, 7, 16, 21),
+    );
+  });
+
   test('combine plusieurs jours ET plusieurs heures', () {
     final r = rec(
       freq: RecurrenceFreq.weekly,

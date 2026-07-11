@@ -32,6 +32,12 @@ class NextActionsView extends ConsumerWidget {
         title: const Text('Prochaines actions'),
         centerTitle: false,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const TaskEditView()),
+        ),
+        child: const Icon(Icons.add),
+      ),
       body: Column(
         children: [
           const _FilterBar(),

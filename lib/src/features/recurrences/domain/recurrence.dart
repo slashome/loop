@@ -75,4 +75,17 @@ class Recurrence {
         DateTime(day.year, day.month, day.day, h, byMinute),
     ];
   }
+
+  /// Prochaine occurrence à partir de [from] (incluse), ou `null` si aucune
+  /// dans l'année à venir. Utile pour informer « prochaine : … » après création.
+  DateTime? nextOccurrenceFrom(DateTime from) {
+    final start = DateTime(from.year, from.month, from.day);
+    for (var i = 0; i < 400; i++) {
+      final day = start.add(Duration(days: i));
+      for (final o in occurrencesOn(day)) {
+        if (!o.isBefore(from)) return o;
+      }
+    }
+    return null;
+  }
 }

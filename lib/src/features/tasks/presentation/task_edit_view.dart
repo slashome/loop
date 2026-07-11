@@ -21,10 +21,10 @@ const Map<int, Color> kPriorityColors = {
 double? _fromUi(double? ui) => ui == null ? null : (ui - 1) / 9;
 double _toUi(double v01) => v01 * 9 + 1;
 
-/// Écran d'édition d'une tâche : priorité (avec caps) + envie + impacts.
+/// Édition (ou création si [task] est nul) d'une tâche.
 class TaskEditView extends ConsumerStatefulWidget {
-  const TaskEditView({super.key, required this.task});
-  final Task task;
+  const TaskEditView({super.key, this.task});
+  final Task? task;
 
   @override
   ConsumerState<TaskEditView> createState() => _TaskEditViewState();
@@ -39,17 +39,19 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   double? _impactOthers;
   DateTime? _dueAt;
 
+  bool get _isNew => widget.task == null;
+
   @override
   void initState() {
     super.initState();
     final task = widget.task;
-    _title = TextEditingController(text: task.title);
-    _description = TextEditingController(text: task.description ?? '');
-    _priority = task.priority;
-    _envie = task.envie;
-    _impactSelf = task.impactSelf;
-    _impactOthers = task.impactOthers;
-    _dueAt = task.dueAt;
+    _title = TextEditingController(text: task?.title ?? '');
+    _description = TextEditingController(text: task?.description ?? '');
+    _priority = task?.priority ?? 3;
+    _envie = task?.envie;
+    _impactSelf = task?.impactSelf;
+    _impactOthers = task?.impactOthers;
+    _dueAt = task?.dueAt;
   }
 
   Future<void> _pickDueAt() async {
@@ -94,16 +96,30 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
       return;
     }
     final desc = _description.text.trim();
-    ref.read(taskRepositoryProvider).applyEdit(
-          widget.task.id,
-          title: title,
-          description: desc.isEmpty ? null : desc,
-          priority: _priority,
-          envie: _envie,
-          impactSelf: _impactSelf,
-          impactOthers: _impactOthers,
-          dueAt: _dueAt,
-        );
+    final repo = ref.read(taskRepositoryProvider);
+    final task = widget.task;
+    if (task == null) {
+      repo.create(
+        title: title,
+        description: desc.isEmpty ? null : desc,
+        priority: _priority,
+        envie: _envie,
+        impactSelf: _impactSelf,
+        impactOthers: _impactOthers,
+        dueAt: _dueAt,
+      );
+    } else {
+      repo.applyEdit(
+        task.id,
+        title: title,
+        description: desc.isEmpty ? null : desc,
+        priority: _priority,
+        envie: _envie,
+        impactSelf: _impactSelf,
+        impactOthers: _impactOthers,
+        dueAt: _dueAt,
+      );
+    }
     Navigator.of(context).pop();
   }
 
@@ -135,11 +151,11 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
 
     // Récurrence source, si cette tâche est une occurrence (final -> promotion
     // OK même capturée dans la closure onTap).
-    final recurrence = _recurrenceFor(widget.task.recurrenceId);
+    final recurrence = _recurrenceFor(widget.task?.recurrenceId);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modifier la tâche'),
+        title: Text(_isNew ? 'Nouvelle tâche' : 'Modifier la tâche'),
         actions: [
           TextButton(
             onPressed: _save,
@@ -201,7 +217,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             selected: _priority,
             caps: caps,
             tasks: tasks,
-            taskId: widget.task.id,
+            taskId: widget.task?.id ?? '',
             onChanged: (p) => setState(() => _priority = p),
           ),
           const SizedBox(height: 24),
@@ -222,7 +238,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             value01: _impactOthers,
             onChanged: (v) => setState(() => _impactOthers = v),
           ),
-          if (widget.task.recurrenceId == null) ...[
+          if (!_isNew && widget.task!.recurrenceId == null) ...[
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),

@@ -116,7 +116,33 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
     }
     // Réaligne les occurrences du jour sur la nouvelle définition.
     await ref.read(taskRepositoryProvider).generateOccurrences(on: now);
-    if (mounted) Navigator.of(context).pop(convertId != null);
+    if (!mounted) return;
+    if (convertId != null) {
+      // Explique où la tâche est passée (elle n'apparaît dans Actions que les
+      // jours où la récurrence tombe).
+      final next = rec.nextOccurrenceFrom(now);
+      final suffix =
+          next == null ? '' : ' · prochaine : ${_fmtNext(next, now)}';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('« ${rec.title} » est maintenant récurrente$suffix'),
+        ),
+      );
+    }
+    Navigator.of(context).pop(convertId != null);
+  }
+
+  String _fmtNext(DateTime d, DateTime now) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    final hhmm = '${two(d.hour)}:${two(d.minute)}';
+    final today = DateTime(now.year, now.month, now.day);
+    final dueDay = DateTime(d.year, d.month, d.day);
+    final diff = dueDay.difference(today).inDays;
+    return switch (diff) {
+      0 => 'aujourd\'hui $hhmm',
+      1 => 'demain $hhmm',
+      _ => '${two(d.day)}/${two(d.month)} $hhmm',
+    };
   }
 
   Future<void> _delete() async {

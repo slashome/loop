@@ -47,6 +47,15 @@ void main() {
     expect(t!.envie, isNull);
   });
 
+  test('create insère une nouvelle tâche vivante', () async {
+    final id = await repo.create(title: 'Nouvelle', priority: 4, envie: 0.5);
+    final live = await repo.watchTasks().first;
+    final t = live.firstWhere((t) => t.id == id);
+    expect(t.title, 'Nouvelle');
+    expect(t.priority, 4);
+    expect(t.envie, 0.5);
+  });
+
   test('softDelete retire la tâche du flux', () async {
     await repo.bootstrap(clock: monday);
     final id = (await db.allTasks()).first.id;

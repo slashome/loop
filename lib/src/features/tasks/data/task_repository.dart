@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../recurrences/data/recurrence_repository.dart';
@@ -24,6 +25,36 @@ class TaskRepository {
       if (r.id == id) return _toTask(r);
     }
     return null;
+  }
+
+  /// Crée une nouvelle tâche ponctuelle. Renvoie son id.
+  Future<String> create({
+    required String title,
+    String? description,
+    int priority = 3,
+    double? envie,
+    double? impactSelf,
+    double? impactOthers,
+    DateTime? dueAt,
+  }) async {
+    final now = DateTime.now();
+    final id = const Uuid().v4();
+    await _db.upsertTask(
+      TaskRowsCompanion.insert(
+        id: id,
+        title: title,
+        description: Value(description),
+        priority: Value(priority),
+        envie: Value(envie),
+        impactSelf: Value(impactSelf),
+        impactOthers: Value(impactOthers),
+        dueAt: Value(dueAt),
+        source: const Value('manual'),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    return id;
   }
 
   /// Soft-delete (sync-ready) : retire la tâche de l'onglet 1.
