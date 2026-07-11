@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'src/app/app_shell.dart';
 import 'src/core/db/app_database.dart';
 import 'src/features/tasks/application/tasks_providers.dart';
 import 'src/features/tasks/data/task_repository.dart';
-import 'src/features/tasks/presentation/next_actions_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +45,7 @@ class LoopApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const NextActionsView(),
+      home: const AppShell(),
     );
   }
 }

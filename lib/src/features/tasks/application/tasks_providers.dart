@@ -7,10 +7,12 @@ library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/db/app_database.dart';
+import '../../../core/db/database_provider.dart';
 import '../data/task_repository.dart';
 import '../domain/scoring.dart';
 import '../domain/task.dart';
+
+export '../../../core/db/database_provider.dart' show appDatabaseProvider;
 
 /// Une tâche accompagnée de son score calculé — objet de présentation.
 class ScoredTask {
@@ -27,12 +29,6 @@ final scoringConfigProvider = Provider<ScoringConfig>(
 /// Caps par palier de priorité. Défaut = {5:3, 4:5}.
 final priorityCapsProvider = Provider<PriorityCaps>(
   (ref) => PriorityCaps.defaults,
-);
-
-/// Base de données. Surchargé dans `main()` (et les tests) par une instance
-/// déjà ouverte/amorcée.
-final appDatabaseProvider = Provider<AppDatabase>(
-  (ref) => throw UnimplementedError('appDatabaseProvider must be overridden'),
 );
 
 final taskRepositoryProvider = Provider<TaskRepository>(

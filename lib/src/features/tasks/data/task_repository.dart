@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/db/app_database.dart';
-import '../../recurrences/domain/recurrence.dart';
+import '../../recurrences/data/recurrence_repository.dart';
 import '../domain/task.dart';
 import 'fixtures.dart';
 
@@ -76,7 +76,7 @@ class TaskRepository {
     }
     if (await _db.countRecurrences() == 0) {
       for (final r in seedRecurrences(now)) {
-        await _db.insertRecurrence(_toRecCompanion(r));
+        await _db.insertRecurrence(recurrenceToCompanion(r));
       }
     }
     await generateOccurrences(on: now);
@@ -87,7 +87,7 @@ class TaskRepository {
   Future<void> generateOccurrences({required DateTime on}) async {
     final recs = await _db.activeRecurrences();
     for (final row in recs) {
-      final rec = _toRecurrence(row);
+      final rec = recurrenceFromRow(row);
       for (final occ in rec.occurrencesOn(on)) {
         final id = 'occ_${rec.id}_${occ.toIso8601String()}';
         await _db.insertOccurrenceIfAbsent(
@@ -152,51 +152,4 @@ class TaskRepository {
         completedAt: Value(t.completedAt),
         deletedAt: Value(t.deletedAt),
       );
-
-  Recurrence _toRecurrence(RecurrenceRow r) => Recurrence(
-        id: r.id,
-        ownerId: r.ownerId,
-        title: r.title,
-        description: r.description,
-        freq: RecurrenceFreq.values.byName(r.freq),
-        byWeekdays: _parseInts(r.byWeekdays),
-        byMonthDays: _parseInts(r.byMonthDays),
-        byHours: _parseInts(r.byHours),
-        byMinute: r.byMinute,
-        rrule: r.rrule,
-        dtstart: r.dtstart,
-        timezone: r.timezone,
-        nextOccurrence: r.nextOccurrence,
-        defPriority: r.defPriority,
-        active: r.active,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        deletedAt: r.deletedAt,
-      );
-
-  RecurrenceRowsCompanion _toRecCompanion(Recurrence r) =>
-      RecurrenceRowsCompanion.insert(
-        id: r.id,
-        ownerId: Value(r.ownerId),
-        title: r.title,
-        description: Value(r.description),
-        freq: r.freq.name,
-        byWeekdays: Value(r.byWeekdays.join(',')),
-        byMonthDays: Value(r.byMonthDays.join(',')),
-        byHours: Value(r.byHours.join(',')),
-        byMinute: Value(r.byMinute),
-        rrule: Value(r.rrule),
-        dtstart: r.dtstart,
-        timezone: Value(r.timezone),
-        nextOccurrence: Value(r.nextOccurrence),
-        defPriority: Value(r.defPriority),
-        active: Value(r.active),
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        deletedAt: Value(r.deletedAt),
-      );
 }
-
-/// Parse une liste d'entiers stockée en CSV ("1,3,5" -> [1,3,5]). Vide -> [].
-List<int> _parseInts(String csv) =>
-    csv.split(',').where((s) => s.isNotEmpty).map(int.parse).toList();

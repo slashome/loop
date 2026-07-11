@@ -109,6 +109,25 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
+  Stream<List<RecurrenceRow>> watchRecurrences() {
+    return (select(recurrenceRows)
+          ..where((r) => r.deletedAt.isNull())
+          ..orderBy([(r) => OrderingTerm(expression: r.title)]))
+        .watch();
+  }
+
+  Future<void> upsertRecurrence(RecurrenceRowsCompanion row) =>
+      into(recurrenceRows).insertOnConflictUpdate(row);
+
+  /// Supprime une récurrence et ses occurrences encore ouvertes (les tâches
+  /// terminées issues de cette récurrence sont conservées comme historique).
+  Future<void> deleteRecurrenceCascade(String id) async {
+    await (delete(taskRows)
+          ..where((t) => t.recurrenceId.equals(id) & t.status.equals('open')))
+        .go();
+    await (delete(recurrenceRows)..where((r) => r.id.equals(id))).go();
+  }
+
   Future<int> countTasks() async {
     final c = countAll();
     final q = selectOnly(taskRows)..addColumns([c]);
