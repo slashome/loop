@@ -62,7 +62,17 @@ class RecurrenceRows extends Table {
 
 @DriftDatabase(tables: [TaskRows, RecurrenceRows])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(driftDatabase(name: 'loop'));
+  AppDatabase()
+      : super(
+          driftDatabase(
+            name: 'loop',
+            // Requis sur le web : assets servis à la racine (web/).
+            web: DriftWebOptions(
+              sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+              driftWorker: Uri.parse('drift_worker.js'),
+            ),
+          ),
+        );
 
   /// Base en mémoire pour les tests.
   AppDatabase.forTesting(super.executor);

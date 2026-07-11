@@ -10,7 +10,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final db = AppDatabase();
   // Seed au premier lancement + génération des occurrences du jour.
-  await TaskRepository(db).bootstrap();
+  // Résilient : une erreur d'amorçage ne doit jamais empêcher l'app de
+  // s'afficher (l'onglet 1 montrera alors l'état d'erreur du flux).
+  try {
+    await TaskRepository(db).bootstrap();
+  } catch (e, st) {
+    debugPrint('bootstrap failed: $e\n$st');
+  }
   runApp(
     ProviderScope(
       overrides: [appDatabaseProvider.overrideWithValue(db)],
