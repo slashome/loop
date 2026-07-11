@@ -47,6 +47,14 @@ void main() {
     expect(t!.envie, isNull);
   });
 
+  test('softDelete retire la tâche du flux', () async {
+    await repo.bootstrap(clock: monday);
+    final id = (await db.allTasks()).first.id;
+    await repo.softDelete(id);
+    final live = await repo.watchTasks().first;
+    expect(live.any((t) => t.id == id), isFalse);
+  });
+
   test('complete passe le statut à done', () async {
     await repo.bootstrap(clock: monday);
     final id =

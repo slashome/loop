@@ -107,6 +107,17 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     Navigator.of(context).pop();
   }
 
+  /// Transforme la tâche ponctuelle en récurrence (ouvre l'éditeur pré-rempli).
+  /// Si la conversion aboutit, la tâche d'origine a été supprimée : on ferme.
+  Future<void> _convertToRecurrence() async {
+    final converted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => RecurrenceEditView(convertFromTask: widget.task),
+      ),
+    );
+    if (converted == true && mounted) Navigator.of(context).pop();
+  }
+
   Recurrence? _recurrenceFor(String? id) {
     if (id == null) return null;
     final recs = ref.watch(recurrencesProvider).valueOrNull ?? const [];
@@ -211,6 +222,16 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             value01: _impactOthers,
             onChanged: (v) => setState(() => _impactOthers = v),
           ),
+          if (widget.task.recurrenceId == null) ...[
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _convertToRecurrence,
+              icon: const Icon(Icons.repeat),
+              label: const Text('Répéter cette tâche…'),
+            ),
+          ],
         ],
       ),
     );

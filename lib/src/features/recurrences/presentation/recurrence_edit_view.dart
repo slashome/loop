@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../tasks/application/tasks_providers.dart';
+import '../../tasks/domain/task.dart';
 import '../application/recurrences_providers.dart';
 import '../domain/recurrence.dart';
 
@@ -17,10 +18,19 @@ const List<String> kWeekdayLabels = [
   'Dim'
 ];
 
-/// Éditeur de récurrence. [recurrence] nul = création.
+/// Éditeur de récurrence.
+/// - [recurrence] non nul → édition d'une récurrence existante ;
+/// - [convertFromTask] non nul → création pré-remplie depuis une tâche, qui
+///   sera supprimée à l'enregistrement (conversion tâche → récurrence) ;
+/// - les deux nuls → création vierge.
 class RecurrenceEditView extends ConsumerStatefulWidget {
-  const RecurrenceEditView({super.key, this.recurrence});
+  const RecurrenceEditView({
+    super.key,
+    this.recurrence,
+    this.convertFromTask,
+  });
   final Recurrence? recurrence;
+  final Task? convertFromTask;
 
   @override
   ConsumerState<RecurrenceEditView> createState() => _RecurrenceEditViewState();
@@ -42,13 +52,15 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
   void initState() {
     super.initState();
     final r = widget.recurrence;
-    _title = TextEditingController(text: r?.title ?? '');
-    _description = TextEditingController(text: r?.description ?? '');
+    final t = widget.convertFromTask;
+    _title = TextEditingController(text: r?.title ?? t?.title ?? '');
+    _description =
+        TextEditingController(text: r?.description ?? t?.description ?? '');
     _freq = r?.freq ?? RecurrenceFreq.daily;
     _weekdays = {...?r?.byWeekdays};
     _monthDays = {...?r?.byMonthDays};
     _hours = {...?r?.byHours}.isEmpty ? {9} : {...?r?.byHours};
-    _priority = r?.defPriority ?? 3;
+    _priority = r?.defPriority ?? t?.priority ?? 3;
     _active = r?.active ?? true;
   }
 
@@ -97,9 +109,14 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
       updatedAt: now,
     );
     await ref.read(recurrenceRepositoryProvider).save(rec);
+    // Conversion : la tâche ponctuelle d'origine est retirée.
+    final convertId = widget.convertFromTask?.id;
+    if (convertId != null) {
+      await ref.read(taskRepositoryProvider).softDelete(convertId);
+    }
     // Réaligne les occurrences du jour sur la nouvelle définition.
     await ref.read(taskRepositoryProvider).generateOccurrences(on: now);
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop(convertId != null);
   }
 
   Future<void> _delete() async {

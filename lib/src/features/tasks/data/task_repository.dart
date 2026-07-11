@@ -26,6 +26,17 @@ class TaskRepository {
     return null;
   }
 
+  /// Soft-delete (sync-ready) : retire la tâche de l'onglet 1.
+  Future<void> softDelete(String id) async {
+    final now = DateTime.now();
+    await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
+      TaskRowsCompanion(
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
   Future<void> complete(String id) async {
     final now = DateTime.now();
     await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
