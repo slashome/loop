@@ -11,6 +11,7 @@ import '../../../core/db/database_provider.dart';
 import '../data/task_repository.dart';
 import '../domain/scoring.dart';
 import '../domain/task.dart';
+import '../domain/task_filters.dart';
 
 export '../../../core/db/database_provider.dart' show appDatabaseProvider;
 
@@ -40,13 +41,33 @@ final tasksProvider = StreamProvider<List<Task>>(
   (ref) => ref.watch(taskRepositoryProvider).watchTasks(),
 );
 
-/// L'onglet 1 : tâches vivantes triées par score, score exposé pour l'UI.
+/// Filtres actifs de l'onglet 1 (facettes Nature/État).
+class FilterNotifier extends Notifier<TaskFilter> {
+  @override
+  TaskFilter build() => const TaskFilter();
+
+  void toggleNature(TaskNature n) => state = state.toggleNature(n);
+  void toggleState(TaskState s) => state = state.toggleState(s);
+  void clear() => state = const TaskFilter();
+}
+
+final filterProvider = NotifierProvider<FilterNotifier, TaskFilter>(
+  FilterNotifier.new,
+);
+
+/// L'onglet 1 : tâches vivantes filtrées puis triées par score.
 final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {
   final async = ref.watch(tasksProvider);
   final config = ref.watch(scoringConfigProvider);
+  final filter = ref.watch(filterProvider);
   return async.whenData((tasks) {
     final now = DateTime.now();
-    final sorted = nextActions(tasks, config: config, now: now);
+    final sorted = nextActions(
+      tasks,
+      config: config,
+      now: now,
+      filter: (t) => matchesFilter(t, filter, now),
+    );
     return [
       for (final t in sorted) ScoredTask(t, taskScore(t, config, now: now)),
     ];
