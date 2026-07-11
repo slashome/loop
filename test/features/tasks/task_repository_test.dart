@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loop/src/core/db/app_database.dart';
@@ -55,13 +56,37 @@ void main() {
   });
 
   test('génère les occurrences du jour, sans doublon', () async {
-    await repo.bootstrap(clock: monday);
-    final occ = (await db.allTasks()).where((r) => r.recurrenceId != null);
-    // lundi : hebdo (1×) + quotidienne 2× = 3 occurrences.
-    expect(occ.length, 3);
+    // Récurrences de contrôle (indépendantes des fixtures locales).
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-daily',
+        title: 'Quotidien',
+        freq: 'daily',
+        byHours: const Value('8,20'),
+        dtstart: monday,
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-weekly-mon',
+        title: 'Hebdo lundi',
+        freq: 'weekly',
+        byWeekday: const Value(DateTime.monday),
+        dtstart: monday,
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+
+    await repo.generateOccurrences(on: monday);
+    // lundi : quotidienne 2× + hebdo-lundi 1× = 3 occurrences.
+    expect(
+        (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
 
     await repo.generateOccurrences(on: DateTime(2026, 7, 6, 18));
-    final occ2 = (await db.allTasks()).where((r) => r.recurrenceId != null);
-    expect(occ2.length, 3); // idempotent
+    expect(
+        (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
   });
 }

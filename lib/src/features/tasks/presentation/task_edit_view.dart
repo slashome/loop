@@ -34,6 +34,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   double? _envie; // 0..1
   double? _impactSelf;
   double? _impactOthers;
+  DateTime? _dueAt;
 
   @override
   void initState() {
@@ -45,6 +46,33 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     _envie = task.envie;
     _impactSelf = task.impactSelf;
     _impactOthers = task.impactOthers;
+    _dueAt = task.dueAt;
+  }
+
+  Future<void> _pickDueAt() async {
+    final now = DateTime.now();
+    final base = _dueAt ?? now;
+    final date = await showDatePicker(
+      context: context,
+      initialDate: base,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 5),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(base),
+    );
+    if (!mounted) return;
+    setState(() {
+      _dueAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time?.hour ?? 0,
+        time?.minute ?? 0,
+      );
+    });
   }
 
   @override
@@ -71,6 +99,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
           envie: _envie,
           impactSelf: _impactSelf,
           impactOthers: _impactOthers,
+          dueAt: _dueAt,
         );
     Navigator.of(context).pop();
   }
@@ -94,6 +123,28 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (widget.task.recurrenceId != null) ...[
+            Card(
+              color: theme.colorScheme.secondaryContainer,
+              elevation: 0,
+              child: const Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(Icons.repeat, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Occurrence d\'une récurrence. La répétition se gérera '
+                        'dans l\'onglet Repeats (à venir).',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           TextField(
             controller: _title,
             decoration: const InputDecoration(
@@ -112,6 +163,12 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
               border: OutlineInputBorder(),
               alignLabelWithHint: true,
             ),
+          ),
+          const SizedBox(height: 16),
+          _DueAtTile(
+            dueAt: _dueAt,
+            onPick: _pickDueAt,
+            onClear: () => setState(() => _dueAt = null),
           ),
           const SizedBox(height: 24),
           Text('Priorité', style: theme.textTheme.titleSmall),
@@ -195,6 +252,55 @@ class _PrioritySelector extends StatelessWidget {
             isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
       ),
     );
+  }
+}
+
+/// Ligne « Échéance » : affiche la date/heure ou « aucune », permet de la
+/// choisir ou de l'effacer.
+class _DueAtTile extends StatelessWidget {
+  const _DueAtTile({
+    required this.dueAt,
+    required this.onPick,
+    required this.onClear,
+  });
+
+  final DateTime? dueAt;
+  final VoidCallback onPick;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return OutlinedButton.icon(
+      onPressed: onPick,
+      icon: const Icon(Icons.event_outlined),
+      style: OutlinedButton.styleFrom(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      label: Row(
+        children: [
+          Expanded(
+            child: Text(
+              dueAt == null
+                  ? 'Échéance : aucune'
+                  : 'Échéance : ${_fmt(dueAt!)}',
+            ),
+          ),
+          if (dueAt != null)
+            GestureDetector(
+              onTap: onClear,
+              child: const Icon(Icons.close, size: 18),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static String _fmt(DateTime d) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(d.day)}/${two(d.month)}/${d.year} ${two(d.hour)}:${two(d.minute)}';
   }
 }
 

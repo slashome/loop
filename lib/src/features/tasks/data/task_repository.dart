@@ -47,6 +47,7 @@ class TaskRepository {
     double? envie,
     double? impactSelf,
     double? impactOthers,
+    DateTime? dueAt,
   }) async {
     await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
       TaskRowsCompanion(
@@ -56,6 +57,7 @@ class TaskRepository {
         envie: Value(envie),
         impactSelf: Value(impactSelf),
         impactOthers: Value(impactOthers),
+        dueAt: Value(dueAt),
         updatedAt: Value(DateTime.now()),
       ),
     );
