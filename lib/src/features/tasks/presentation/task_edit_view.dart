@@ -123,28 +123,6 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (widget.task.recurrenceId != null) ...[
-            Card(
-              color: theme.colorScheme.secondaryContainer,
-              elevation: 0,
-              child: const Padding(
-                padding: EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Icon(Icons.repeat, size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Occurrence d\'une récurrence. La répétition se gérera '
-                        'dans l\'onglet Repeats (à venir).',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
           TextField(
             controller: _title,
             decoration: const InputDecoration(
