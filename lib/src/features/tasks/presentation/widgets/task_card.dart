@@ -21,6 +21,7 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final subtitle = _subtitle(task);
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -45,9 +46,11 @@ class TaskCard extends StatelessWidget {
                     Text(task.title, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 2),
                     Text(
-                      _subtitle(task),
+                      subtitle.text,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: subtitle.isLate
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -68,13 +71,22 @@ class TaskCard extends StatelessWidget {
   }
 }
 
-/// Sous-titre : âge, et l'envie si elle est réglée (envie stockée 0..1,
-/// affichée sur 10).
-String _subtitle(Task task) {
-  final age = _ageLabel(task.createdAt);
-  if (task.envie == null) return age;
-  final envie10 = (task.envie! * 9 + 1).round();
-  return '$age · envie $envie10/10';
+/// Sous-titre : échéance si définie (sinon âge), + envie si réglée.
+/// `isLate` = échéance dépassée (affiché en rouge).
+({String text, bool isLate}) _subtitle(Task task) {
+  final now = DateTime.now();
+  final String primary;
+  var isLate = false;
+  if (task.dueAt != null) {
+    final due = _dueLabel(task.dueAt!, now);
+    primary = due.text;
+    isLate = due.isLate;
+  } else {
+    primary = _ageLabel(task.createdAt, now);
+  }
+  final envie =
+      task.envie == null ? '' : ' · envie ${(task.envie! * 9 + 1).round()}/10';
+  return (text: '$primary$envie', isLate: isLate);
 }
 
 /// Pastille ronde avec le numéro de priorité. Bleu/vert (marque) pour le bas,
@@ -139,11 +151,32 @@ class _ScorePill extends StatelessWidget {
   }
 }
 
-String _ageLabel(DateTime createdAt) {
-  final d = DateTime.now().difference(createdAt);
+String _ageLabel(DateTime createdAt, DateTime now) {
+  final d = now.difference(createdAt);
+  if (d.isNegative || d.inMinutes < 1) return 'à l\'instant';
   if (d.inMinutes < 60) return 'il y a ${d.inMinutes} min';
   if (d.inHours < 24) return 'il y a ${d.inHours} h';
   if (d.inDays < 30) return 'il y a ${d.inDays} j';
   final months = d.inDays ~/ 30;
   return 'il y a $months mois';
+}
+
+/// Libellé d'échéance relatif à [now]. `isLate` si l'échéance est passée.
+({String text, bool isLate}) _dueLabel(DateTime due, DateTime now) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  final hhmm = '${two(due.hour)}:${two(due.minute)}';
+  final ddmm = '${two(due.day)}/${two(due.month)}';
+  final today = DateTime(now.year, now.month, now.day);
+  final dueDay = DateTime(due.year, due.month, due.day);
+  final dayDiff = dueDay.difference(today).inDays;
+
+  if (due.isBefore(now)) {
+    return (text: 'En retard · ${dayDiff == 0 ? hhmm : ddmm}', isLate: true);
+  }
+  final when = switch (dayDiff) {
+    0 => 'Aujourd\'hui $hhmm',
+    1 => 'Demain $hhmm',
+    _ => '$ddmm $hhmm',
+  };
+  return (text: when, isLate: false);
 }

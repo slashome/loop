@@ -99,8 +99,9 @@ class TaskRepository {
             recurrenceId: Value(rec.id),
             occurrenceDate: Value(occ),
             dueAt: Value(occ),
-            createdAt: occ,
-            updatedAt: occ,
+            // Créée MAINTENANT (fraîche), due à l'heure de l'occurrence.
+            createdAt: on,
+            updatedAt: on,
           ),
         );
       }
