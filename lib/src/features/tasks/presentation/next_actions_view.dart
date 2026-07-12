@@ -41,6 +41,10 @@ class NextActionsView extends ConsumerWidget {
         data: (items) => items.isEmpty
             ? const Center(child: Text('Rien à afficher.'))
             : ListView.builder(
+                // Ancrée en bas : le meilleur score (index 0) s'affiche tout en
+                // bas, près du pouce et des contrôles. On remonte pour voir le
+                // moins prioritaire (métaphore « tapis roulant »).
+                reverse: true,
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
                 itemCount: items.length,
                 itemBuilder: (context, i) {

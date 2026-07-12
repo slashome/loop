@@ -40,10 +40,10 @@ void main() {
 
     expect(find.text('Prochaines actions'), findsOneWidget);
     expect(find.byType(TaskCard), findsNWidgets(2));
-    // La P5 est classée avant la P2.
+    // Liste ancrée en bas (reverse) : la P5 (meilleur score) est SOUS la P2.
     expect(
       tester.getTopLeft(find.text('Tâche P5')).dy,
-      lessThan(tester.getTopLeft(find.text('Tâche P2')).dy),
+      greaterThan(tester.getTopLeft(find.text('Tâche P2')).dy),
     );
   });
 }
