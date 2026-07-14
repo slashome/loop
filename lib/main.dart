@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/app/app_shell.dart';
 import 'src/core/db/app_database.dart';
+import 'src/features/settings/application/settings_providers.dart';
 import 'src/features/tasks/application/tasks_providers.dart';
 import 'src/features/tasks/data/task_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
   final db = AppDatabase();
   // Seed au premier lancement + génération des occurrences du jour.
   // Résilient : une erreur d'amorçage ne doit jamais empêcher l'app de
@@ -19,7 +22,10 @@ Future<void> main() async {
   }
   runApp(
     ProviderScope(
-      overrides: [appDatabaseProvider.overrideWithValue(db)],
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
       child: const LoopApp(),
     ),
   );

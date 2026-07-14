@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../settings/application/settings_providers.dart';
+import '../../settings/presentation/settings_view.dart';
 import '../application/tasks_providers.dart';
 import '../domain/task.dart';
 import '../domain/task_filters.dart';
@@ -21,11 +23,23 @@ class NextActionsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(nextActionsProvider);
+    final newestAtBottom = ref.watch(
+      settingsProvider.select((s) => s.newestAtBottom),
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prochaines actions'),
         centerTitle: false,
+        actions: [
+          IconButton(
+            tooltip: 'Réglages',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SettingsView()),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context).push(
@@ -41,10 +55,9 @@ class NextActionsView extends ConsumerWidget {
         data: (items) => items.isEmpty
             ? const Center(child: Text('Rien à afficher.'))
             : ListView.builder(
-                // Ancrée en bas : le meilleur score (index 0) s'affiche tout en
-                // bas, près du pouce et des contrôles. On remonte pour voir le
-                // moins prioritaire (métaphore « tapis roulant »).
-                reverse: true,
+                // Ancrage bas (meilleur score près du pouce) ou haut (classique),
+                // selon la préférence utilisateur.
+                reverse: newestAtBottom,
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
                 itemCount: items.length,
                 itemBuilder: (context, i) {
