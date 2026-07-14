@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/time/relative_time.dart';
 import '../../domain/task.dart';
 
 /// Carte d'une tâche dans l'onglet 1. Couche cosmétique : reflète le score
@@ -78,10 +79,10 @@ class TaskCard extends StatelessWidget {
 ({String text, bool isLate}) _subtitle(Task task) {
   final parts = <String>[];
   var isLate = false;
-  if (task.dueAt != null) {
-    final due = _dueLabel(task.dueAt!, DateTime.now());
-    parts.add(due.text);
-    isLate = due.isLate;
+  final due = task.dueAt;
+  if (due != null) {
+    parts.add(humanRelative(due, DateTime.now()));
+    isLate = due.isBefore(DateTime.now());
   }
   if (task.envie != null) {
     parts.add('envie ${(task.envie! * 9 + 1).round()}/10');
@@ -149,24 +150,4 @@ class _ScorePill extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Libellé d'échéance relatif à [now]. `isLate` si l'échéance est passée.
-({String text, bool isLate}) _dueLabel(DateTime due, DateTime now) {
-  String two(int n) => n.toString().padLeft(2, '0');
-  final hhmm = '${two(due.hour)}:${two(due.minute)}';
-  final ddmm = '${two(due.day)}/${two(due.month)}';
-  final today = DateTime(now.year, now.month, now.day);
-  final dueDay = DateTime(due.year, due.month, due.day);
-  final dayDiff = dueDay.difference(today).inDays;
-
-  if (due.isBefore(now)) {
-    return (text: 'En retard · ${dayDiff == 0 ? hhmm : ddmm}', isLate: true);
-  }
-  final when = switch (dayDiff) {
-    0 => 'Aujourd\'hui $hhmm',
-    1 => 'Demain $hhmm',
-    _ => '$ddmm $hhmm',
-  };
-  return (text: when, isLate: false);
 }

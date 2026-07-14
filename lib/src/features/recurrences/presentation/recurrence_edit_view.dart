@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/time/relative_time.dart';
 import '../../tasks/application/tasks_providers.dart';
 import '../../tasks/domain/task.dart';
 import '../application/recurrences_providers.dart';
@@ -122,7 +123,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
       // jours où la récurrence tombe).
       final next = rec.nextOccurrenceFrom(now);
       final suffix =
-          next == null ? '' : ' · prochaine : ${_fmtNext(next, now)}';
+          next == null ? '' : ' · prochaine : ${humanRelative(next, now)}';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('« ${rec.title} » est maintenant récurrente$suffix'),
@@ -130,19 +131,6 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
       );
     }
     Navigator.of(context).pop(convertId != null);
-  }
-
-  String _fmtNext(DateTime d, DateTime now) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    final hhmm = '${two(d.hour)}:${two(d.minute)}';
-    final today = DateTime(now.year, now.month, now.day);
-    final dueDay = DateTime(d.year, d.month, d.day);
-    final diff = dueDay.difference(today).inDays;
-    return switch (diff) {
-      0 => 'aujourd\'hui $hhmm',
-      1 => 'demain $hhmm',
-      _ => '${two(d.day)}/${two(d.month)} $hhmm',
-    };
   }
 
   Future<void> _delete() async {
