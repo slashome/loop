@@ -13,8 +13,8 @@ import 'widgets/task_card.dart';
 const Map<TaskView, String> _viewLabels = {
   TaskView.aFaire: 'À faire',
   TaskView.enRetard: 'En retard',
-  TaskView.datees: 'Datées',
   TaskView.aVenir: 'À venir',
+  TaskView.nonDatees: 'Non datées',
 };
 
 /// Onglet 1 — Prochaines actions. Cœur de l'app : la liste triée par score.
@@ -134,7 +134,7 @@ class _ViewBar extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
             child: Text(
-              'urgences + backlog',
+              'en retard + aujourd\'hui',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

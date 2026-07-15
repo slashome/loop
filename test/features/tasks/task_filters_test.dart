@@ -27,10 +27,10 @@ void main() {
   final upcoming = task(id: 'upcoming', due: kNow.add(const Duration(days: 3)));
 
   group('matchesView', () {
-    test('À faire = sans date + en retard + aujourd\'hui, PAS à venir', () {
-      expect(matchesView(noDate, TaskView.aFaire, kNow), isTrue);
+    test('À faire = en retard + aujourd\'hui (PAS sans-date, PAS futur)', () {
       expect(matchesView(overdue, TaskView.aFaire, kNow), isTrue);
       expect(matchesView(todayFuture, TaskView.aFaire, kNow), isTrue);
+      expect(matchesView(noDate, TaskView.aFaire, kNow), isFalse);
       expect(matchesView(upcoming, TaskView.aFaire, kNow), isFalse);
     });
 
@@ -40,46 +40,31 @@ void main() {
       expect(matchesView(todayFuture, TaskView.enRetard, kNow), isFalse);
     });
 
-    test('Datées = tout ce qui a une date, sans-date exclues', () {
-      expect(matchesView(noDate, TaskView.datees, kNow), isFalse);
-      expect(matchesView(overdue, TaskView.datees, kNow), isTrue);
-      expect(matchesView(upcoming, TaskView.datees, kNow), isTrue);
-    });
-
     test('À venir = uniquement le futur', () {
       expect(matchesView(upcoming, TaskView.aVenir, kNow), isTrue);
       expect(matchesView(todayFuture, TaskView.aVenir, kNow), isFalse);
       expect(matchesView(noDate, TaskView.aVenir, kNow), isFalse);
     });
+
+    test('Non datées = uniquement le backlog sans échéance', () {
+      expect(matchesView(noDate, TaskView.nonDatees, kNow), isTrue);
+      expect(matchesView(overdue, TaskView.nonDatees, kNow), isFalse);
+      expect(matchesView(upcoming, TaskView.nonDatees, kNow), isFalse);
+    });
   });
 
-  group('anti-noyade : repli des récurrences futures dans Datées', () {
-    // 3 occurrences futures d'une même récurrence + 1 datée ponctuelle future.
-    final occ1 = task(
-        id: 'o1', due: kNow.add(const Duration(days: 1)), recurrenceId: 'r');
-    final occ2 = task(
-        id: 'o2', due: kNow.add(const Duration(days: 2)), recurrenceId: 'r');
-    final occ3 = task(
-        id: 'o3', due: kNow.add(const Duration(days: 3)), recurrenceId: 'r');
-    final tasks = [occ3, occ1, occ2, upcoming, overdue];
-
-    test('Datées : la récurrence future est réduite à sa prochaine occurrence',
-        () {
-      final ids =
-          tasksForView(tasks, TaskView.datees, kNow).map((t) => t.id).toSet();
-      // occ1 (la plus proche) gardée ; occ2/occ3 repliées.
-      expect(ids.contains('o1'), isTrue);
-      expect(ids.contains('o2'), isFalse);
-      expect(ids.contains('o3'), isFalse);
-      // les autres datées restent
-      expect(ids.contains('upcoming'), isTrue);
-      expect(ids.contains('overdue'), isTrue);
-    });
-
-    test('À venir : le déroulé complet des occurrences est conservé', () {
-      final ids =
-          tasksForView(tasks, TaskView.aVenir, kNow).map((t) => t.id).toSet();
-      expect(ids.containsAll({'o1', 'o2', 'o3'}), isTrue);
-    });
+  test('tasksForView ne garde que les tâches vivantes de la vue', () {
+    final done = Task(
+      id: 'done',
+      title: 'done',
+      status: TaskStatus.done,
+      dueAt: kNow.subtract(const Duration(hours: 1)),
+      createdAt: kNow,
+      updatedAt: kNow,
+    );
+    final ids = tasksForView([overdue, done, noDate], TaskView.aFaire, kNow)
+        .map((t) => t.id)
+        .toSet();
+    expect(ids, {'overdue'}); // done exclu (non vivant), noDate exclu (vue)
   });
 }

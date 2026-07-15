@@ -14,7 +14,7 @@ enum TaskNature { noDate, dated, recurring }
 enum TaskState { overdue, today, upcoming }
 
 /// Les 4 vues nommées de l'onglet Actions.
-enum TaskView { aFaire, enRetard, datees, aVenir }
+enum TaskView { aFaire, enRetard, aVenir, nonDatees }
 
 TaskNature natureOf(Task t) {
   if (t.recurrenceId != null) return TaskNature.recurring;
@@ -34,48 +34,22 @@ TaskState? stateOf(Task t, DateTime now) {
 
 /// Prédicat d'appartenance d'une tâche à une vue.
 ///
-/// - [TaskView.aFaire] : le « maintenant » = sans date OU en retard OU
-///   aujourd'hui (et PAS à venir). « Sans date » n'est pas un état : c'est
-///   juste un terme de ce prédicat, jamais immunisé ailleurs.
+/// - [TaskView.aFaire] (défaut) : ce qui est dû MAINTENANT = en retard OU
+///   aujourd'hui. PAS de sans-date (backlog), PAS de futur.
 /// - [TaskView.enRetard] : datée & échéance passée.
-/// - [TaskView.datees] : a une date (tous états) — sans-date exclues.
 /// - [TaskView.aVenir] : datée & future.
+/// - [TaskView.nonDatees] : le backlog (aucune échéance).
 bool matchesView(Task t, TaskView v, DateTime now) {
   final s = stateOf(t, now);
   return switch (v) {
-    TaskView.aFaire =>
-      s == null || s == TaskState.overdue || s == TaskState.today,
+    TaskView.aFaire => s == TaskState.overdue || s == TaskState.today,
     TaskView.enRetard => s == TaskState.overdue,
-    TaskView.datees => t.dueAt != null,
     TaskView.aVenir => s == TaskState.upcoming,
+    TaskView.nonDatees => t.dueAt == null,
   };
 }
 
-/// Tâches vivantes d'une vue. Applique le repli anti-noyade dans [datees] :
-/// les occurrences récurrentes FUTURES sont réduites à la prochaine par
-/// récurrence (le déroulé complet des 14 jours n'existe que dans [aVenir]).
-List<Task> tasksForView(Iterable<Task> tasks, TaskView v, DateTime now) {
-  final selected =
-      tasks.where((t) => t.isLive && matchesView(t, v, now)).toList();
-  if (v == TaskView.datees) return _collapseFutureRecurring(selected, now);
-  return selected;
-}
-
-List<Task> _collapseFutureRecurring(List<Task> tasks, DateTime now) {
-  final out = <Task>[];
-  final nextByRec = <String, Task>{};
-  for (final t in tasks) {
-    final isFutureRecurring =
-        t.recurrenceId != null && stateOf(t, now) == TaskState.upcoming;
-    if (!isFutureRecurring) {
-      out.add(t);
-      continue;
-    }
-    final cur = nextByRec[t.recurrenceId];
-    if (cur == null || t.dueAt!.isBefore(cur.dueAt!)) {
-      nextByRec[t.recurrenceId!] = t;
-    }
-  }
-  out.addAll(nextByRec.values);
-  return out;
-}
+/// Tâches vivantes d'une vue, non triées (le tri par score est appliqué en
+/// aval par la couche application).
+List<Task> tasksForView(Iterable<Task> tasks, TaskView v, DateTime now) =>
+    tasks.where((t) => t.isLive && matchesView(t, v, now)).toList();

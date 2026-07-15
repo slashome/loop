@@ -15,11 +15,14 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
+    // Échéance aujourd'hui → présentes dans la vue « À faire » par défaut.
+    final due = now.add(const Duration(hours: 1));
     final tasks = [
       Task(
         id: 'a',
         title: 'Tâche P2',
         priority: 2,
+        dueAt: due,
         createdAt: now,
         updatedAt: now,
       ),
@@ -27,6 +30,7 @@ void main() {
         id: 'b',
         title: 'Tâche P5',
         priority: 5,
+        dueAt: due,
         createdAt: now,
         updatedAt: now,
       ),
