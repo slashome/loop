@@ -134,6 +134,24 @@ void main() {
       expect(result.map((t) => t.id), ['top', 'a', 'b']);
     });
 
+    test(
+        'à score égal, départage par urgence : échéance proche > lointaine > sans date',
+        () {
+      Task dated(String id, Duration inFuture) => Task(
+            id: id,
+            title: id,
+            priority: 3,
+            createdAt: kNow,
+            updatedAt: kNow,
+            dueAt: kNow.add(inFuture),
+          );
+      final soon = dated('soon', const Duration(hours: 1));
+      final later = dated('later', const Duration(days: 3));
+      final noDate = makeTask(id: 'noDate', priority: 3);
+      final ordered = nextActions([noDate, later, soon], now: kNow);
+      expect(ordered.map((t) => t.id), ['soon', 'later', 'noDate']);
+    });
+
     test('ne mute pas la liste source', () {
       final tasks = [
         makeTask(id: 'p2', priority: 2),

@@ -53,14 +53,29 @@ double taskScore(Task task, ScoringConfig config, {required DateTime now}) {
 
 /// Comparateur d'ordre par défaut : score décroissant.
 ///
-/// Départage déterministe (évite tout scintillement d'ordre entre rendus) :
-/// à score quasi égal, la plus ancienne d'abord, puis la priorité la plus
-/// haute, puis l'id.
+/// Départage déterministe (évite tout scintillement d'ordre entre rendus).
+/// À score quasi égal :
+///  1. par URGENCE d'échéance : la plus proche d'abord (les échéances passées
+///     avant, celles sans date après) — la priorité domine toujours entre
+///     paliers, l'échéance ne tranche qu'à score égal ;
+///  2. puis la plus ancienne (anti-famine) ; puis priorité ; puis id.
 int compareByScore(Task a, Task b, ScoringConfig config, DateTime now) {
   final sa = taskScore(a, config, now: now);
   final sb = taskScore(b, config, now: now);
   if ((sa - sb).abs() > 1e-9) return sb.compareTo(sa); // score desc
-  final byAge = a.createdAt.compareTo(b.createdAt); // plus ancien d'abord
+
+  final da = a.dueAt;
+  final db = b.dueAt;
+  if (da != null && db != null) {
+    final byDue = da.compareTo(db); // échéance la plus proche d'abord
+    if (byDue != 0) return byDue;
+  } else if (da != null) {
+    return -1; // a a une échéance, b non → a est plus urgente
+  } else if (db != null) {
+    return 1;
+  }
+
+  final byAge = a.createdAt.compareTo(b.createdAt); // plus ancienne d'abord
   if (byAge != 0) return byAge;
   final byPriority = b.priority.compareTo(a.priority); // priorité desc
   if (byPriority != 0) return byPriority;
