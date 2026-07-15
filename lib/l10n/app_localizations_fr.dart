@@ -74,4 +74,111 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
+
+  @override
+  String desireShort(int count) {
+    return 'envie $count/10';
+  }
+
+  @override
+  String get relativeJustNow => 'À l\'instant';
+
+  @override
+  String get relativeNow => 'Maintenant';
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return 'Il y a $count min';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return 'Il y a $count h';
+  }
+
+  @override
+  String relativeInMinutes(int count) {
+    return 'Dans $count min';
+  }
+
+  @override
+  String relativeYesterdayAt(String time) {
+    return 'Hier à $time';
+  }
+
+  @override
+  String relativeTodayAt(String time) {
+    return 'Aujourd\'hui à $time';
+  }
+
+  @override
+  String relativeTomorrowAt(String time) {
+    return 'Demain à $time';
+  }
+
+  @override
+  String relativeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Il y a $count jours',
+      one: 'Il y a $count jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dans $count jours',
+      one: 'Dans $count jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeMonthsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Il y a $count mois',
+      one: 'Il y a $count mois',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeInMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dans $count mois',
+      one: 'Dans $count mois',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Il y a $count ans',
+      one: 'Il y a $count an',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String relativeInYears(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Dans $count ans',
+      one: 'Dans $count an',
+    );
+    return '$_temp0';
+  }
 }

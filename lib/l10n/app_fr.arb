@@ -21,5 +21,20 @@
   "newestAtBottomSubtitle": "Le plus haut score s'affiche en bas de la liste, près du pouce. Désactive pour un ordre classique (le plus haut en haut).",
   "languageSystem": "Système",
   "languageFrench": "Français",
-  "languageEnglish": "English"
+  "languageEnglish": "English",
+  "desireShort": "envie {count}/10",
+  "relativeJustNow": "À l'instant",
+  "relativeNow": "Maintenant",
+  "relativeMinutesAgo": "Il y a {count} min",
+  "relativeHoursAgo": "Il y a {count} h",
+  "relativeInMinutes": "Dans {count} min",
+  "relativeYesterdayAt": "Hier à {time}",
+  "relativeTodayAt": "Aujourd'hui à {time}",
+  "relativeTomorrowAt": "Demain à {time}",
+  "relativeDaysAgo": "{count, plural, one{Il y a {count} jour} other{Il y a {count} jours}}",
+  "relativeInDays": "{count, plural, one{Dans {count} jour} other{Dans {count} jours}}",
+  "relativeMonthsAgo": "{count, plural, one{Il y a {count} mois} other{Il y a {count} mois}}",
+  "relativeInMonths": "{count, plural, one{Dans {count} mois} other{Dans {count} mois}}",
+  "relativeYearsAgo": "{count, plural, one{Il y a {count} an} other{Il y a {count} ans}}",
+  "relativeInYears": "{count, plural, one{Dans {count} an} other{Dans {count} ans}}"
 }

@@ -1,15 +1,17 @@
-/// Formatage de dates en relatif « human-readable » (français).
-///
-/// Exemples : « Il y a 5 min », « Dans 2 jours », « Dans 1 mois »,
-/// « Demain à 10h00 », « Aujourd'hui à 10h00 », « Hier à 18h30 ».
+/// Formatage de dates en relatif « human-readable », localisé (fr/en).
 library;
 
-String _hhmm(DateTime d) =>
-    '${d.hour.toString().padLeft(2, '0')}h${d.minute.toString().padLeft(2, '0')}';
+import '../../../l10n/app_localizations.dart';
 
-/// Décrit [target] relativement à [now]. Le passé donne « Il y a … » / « Hier »,
-/// le futur « Dans … » / « Demain » / « Aujourd'hui à … ».
-String humanRelative(DateTime target, DateTime now) {
+/// Heure au format local : « 10h00 » en français, « 10:00 » sinon.
+String _time(AppLocalizations l, DateTime d) {
+  final h = d.hour.toString().padLeft(2, '0');
+  final m = d.minute.toString().padLeft(2, '0');
+  return l.localeName.startsWith('fr') ? '${h}h$m' : '$h:$m';
+}
+
+/// Décrit [target] relativement à [now], dans la langue de [l].
+String humanRelative(AppLocalizations l, DateTime target, DateTime now) {
   final past = target.isBefore(now);
   final diff = past ? now.difference(target) : target.difference(now);
   final mins = diff.inMinutes;
@@ -17,29 +19,24 @@ String humanRelative(DateTime target, DateTime now) {
 
   final targetDay = DateTime(target.year, target.month, target.day);
   final nowDay = DateTime(now.year, now.month, now.day);
-  final dayDelta = targetDay.difference(nowDay).inDays; // 0 = aujourd'hui
-
-  String years(int days) {
-    final y = (days / 365).round();
-    return '$y an${y > 1 ? 's' : ''}';
-  }
+  final dayDelta = targetDay.difference(nowDay).inDays;
 
   if (past) {
-    if (mins < 1) return 'À l\'instant';
-    if (mins < 60) return 'Il y a $mins min';
-    if (dayDelta == 0) return 'Il y a $hours h';
-    if (dayDelta == -1) return 'Hier à ${_hhmm(target)}';
+    if (mins < 1) return l.relativeJustNow;
+    if (mins < 60) return l.relativeMinutesAgo(mins);
+    if (dayDelta == 0) return l.relativeHoursAgo(hours);
+    if (dayDelta == -1) return l.relativeYesterdayAt(_time(l, target));
     final days = -dayDelta;
-    if (days < 30) return 'Il y a $days jours';
-    if (days < 365) return 'Il y a ${(days / 30).round()} mois';
-    return 'Il y a ${years(days)}';
+    if (days < 30) return l.relativeDaysAgo(days);
+    if (days < 365) return l.relativeMonthsAgo((days / 30).round());
+    return l.relativeYearsAgo((days / 365).round());
   } else {
-    if (mins < 1) return 'Maintenant';
-    if (mins < 60) return 'Dans $mins min';
-    if (dayDelta == 0) return 'Aujourd\'hui à ${_hhmm(target)}';
-    if (dayDelta == 1) return 'Demain à ${_hhmm(target)}';
-    if (dayDelta < 30) return 'Dans $dayDelta jours';
-    if (dayDelta < 365) return 'Dans ${(dayDelta / 30).round()} mois';
-    return 'Dans ${years(dayDelta)}';
+    if (mins < 1) return l.relativeNow;
+    if (mins < 60) return l.relativeInMinutes(mins);
+    if (dayDelta == 0) return l.relativeTodayAt(_time(l, target));
+    if (dayDelta == 1) return l.relativeTomorrowAt(_time(l, target));
+    if (dayDelta < 30) return l.relativeInDays(dayDelta);
+    if (dayDelta < 365) return l.relativeInMonths((dayDelta / 30).round());
+    return l.relativeInYears((dayDelta / 365).round());
   }
 }

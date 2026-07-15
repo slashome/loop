@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../core/time/relative_time.dart';
 import '../../tasks/application/tasks_providers.dart';
 import '../../tasks/domain/task.dart';
@@ -125,8 +126,9 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
       // Explique où la tâche est passée (elle n'apparaît dans Actions que les
       // jours où la récurrence tombe).
       final next = rec.nextOccurrenceFrom(now);
+      final l = AppLocalizations.of(context);
       final suffix =
-          next == null ? '' : ' · prochaine : ${humanRelative(next, now)}';
+          next == null ? '' : ' · prochaine : ${humanRelative(l, next, now)}';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('« ${rec.title} » est maintenant récurrente$suffix'),

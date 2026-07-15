@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/time/relative_time.dart';
 import '../../domain/task.dart';
@@ -23,7 +24,7 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final subtitle = _subtitle(task);
+    final subtitle = _subtitle(AppLocalizations.of(context), task);
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -79,16 +80,16 @@ class TaskCard extends StatelessWidget {
 
 /// Sous-titre : échéance si définie, + envie si réglée. Rien pour une tâche
 /// sans date (l'âge de création reste interne au score). `isLate` = en retard.
-({String text, bool isLate}) _subtitle(Task task) {
+({String text, bool isLate}) _subtitle(AppLocalizations l, Task task) {
   final parts = <String>[];
   var isLate = false;
   final due = task.dueAt;
   if (due != null) {
-    parts.add(humanRelative(due, DateTime.now()));
+    parts.add(humanRelative(l, due, DateTime.now()));
     isLate = due.isBefore(DateTime.now());
   }
   if (task.envie != null) {
-    parts.add('envie ${(task.envie! * 9 + 1).round()}/10');
+    parts.add(l.desireShort((task.envie! * 9 + 1).round()));
   }
   return (text: parts.join(' · '), isLate: isLate);
 }

@@ -229,6 +229,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get languageEnglish;
+
+  /// No description provided for @desireShort.
+  ///
+  /// In en, this message translates to:
+  /// **'desire {count}/10'**
+  String desireShort(int count);
+
+  /// No description provided for @relativeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get relativeJustNow;
+
+  /// No description provided for @relativeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get relativeNow;
+
+  /// No description provided for @relativeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String relativeMinutesAgo(int count);
+
+  /// No description provided for @relativeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h ago'**
+  String relativeHoursAgo(int count);
+
+  /// No description provided for @relativeInMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'In {count} min'**
+  String relativeInMinutes(int count);
+
+  /// No description provided for @relativeYesterdayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday at {time}'**
+  String relativeYesterdayAt(String time);
+
+  /// No description provided for @relativeTodayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Today at {time}'**
+  String relativeTodayAt(String time);
+
+  /// No description provided for @relativeTomorrowAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow at {time}'**
+  String relativeTomorrowAt(String time);
+
+  /// No description provided for @relativeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} day ago} other{{count} days ago}}'**
+  String relativeDaysAgo(int count);
+
+  /// No description provided for @relativeInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{In {count} day} other{In {count} days}}'**
+  String relativeInDays(int count);
+
+  /// No description provided for @relativeMonthsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} month ago} other{{count} months ago}}'**
+  String relativeMonthsAgo(int count);
+
+  /// No description provided for @relativeInMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{In {count} month} other{In {count} months}}'**
+  String relativeInMonths(int count);
+
+  /// No description provided for @relativeYearsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} year ago} other{{count} years ago}}'**
+  String relativeYearsAgo(int count);
+
+  /// No description provided for @relativeInYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{In {count} year} other{In {count} years}}'**
+  String relativeInYears(int count);
 }
 
 class _AppLocalizationsDelegate
