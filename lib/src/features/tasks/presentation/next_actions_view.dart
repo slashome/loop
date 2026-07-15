@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/brand_fab.dart';
 import '../../settings/application/settings_providers.dart';
 import '../../settings/presentation/settings_view.dart';
@@ -10,12 +11,12 @@ import '../domain/task_filters.dart';
 import 'task_edit_view.dart';
 import 'widgets/task_card.dart';
 
-const Map<TaskView, String> _viewLabels = {
-  TaskView.aFaire: 'À faire',
-  TaskView.enRetard: 'En retard',
-  TaskView.aVenir: 'À venir',
-  TaskView.nonDatees: 'Non datées',
-};
+String _viewLabel(AppLocalizations l, TaskView v) => switch (v) {
+      TaskView.aFaire => l.viewTodo,
+      TaskView.enRetard => l.viewOverdue,
+      TaskView.aVenir => l.viewUpcoming,
+      TaskView.nonDatees => l.viewUndated,
+    };
 
 /// Onglet 1 — Prochaines actions. Cœur de l'app : la liste triée par score.
 class NextActionsView extends ConsumerWidget {
@@ -23,6 +24,7 @@ class NextActionsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
     final async = ref.watch(nextActionsProvider);
     final newestAtBottom = ref.watch(
       settingsProvider.select((s) => s.newestAtBottom),
@@ -34,7 +36,7 @@ class NextActionsView extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            tooltip: 'Réglages',
+            tooltip: l.settingsTooltip,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const SettingsView()),
@@ -43,7 +45,7 @@ class NextActionsView extends ConsumerWidget {
         ],
       ),
       floatingActionButton: BrandFab(
-        tooltip: 'Nouvelle tâche',
+        tooltip: l.newTaskTooltip,
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const TaskEditView()),
         ),
@@ -67,7 +69,7 @@ class NextActionsView extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Rien à afficher.',
+                      l.emptyList,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -121,6 +123,7 @@ class _ViewBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final view = ref.watch(viewProvider);
     final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
     final now = DateTime.now();
@@ -134,7 +137,7 @@ class _ViewBar extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
             child: Text(
-              'en retard + aujourd\'hui',
+              l.todoHint,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -152,7 +155,7 @@ class _ViewBar extends ConsumerWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
                     label: Text(
-                      '${_viewLabels[v]} (${tasksForView(tasks, v, now).length})',
+                      '${_viewLabel(l, v)} (${tasksForView(tasks, v, now).length})',
                     ),
                     selected: view == v,
                     showCheckmark: false,

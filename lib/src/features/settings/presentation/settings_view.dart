@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../application/settings_providers.dart';
 
 /// Écran des réglages utilisateur. Accueillera aussi k/τ/caps du score.
@@ -9,22 +10,33 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Réglages')),
+      appBar: AppBar(title: Text(l.settingsTitle)),
       body: ListView(
         children: [
-          const _SectionTitle('Affichage'),
+          _SectionTitle(l.settingsDisplay),
           SwitchListTile(
-            title: const Text('Prioritaire en bas'),
-            subtitle: const Text(
-              'Le plus haut score s\'affiche en bas de la liste, près du pouce. '
-              'Désactive pour un ordre classique (le plus haut en haut).',
-            ),
+            title: Text(l.newestAtBottomTitle),
+            subtitle: Text(l.newestAtBottomSubtitle),
             value: settings.newestAtBottom,
             onChanged: notifier.setNewestAtBottom,
+          ),
+          _SectionTitle(l.settingsLanguage),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(value: 'system', label: Text(l.languageSystem)),
+                ButtonSegment(value: 'fr', label: Text(l.languageFrench)),
+                ButtonSegment(value: 'en', label: Text(l.languageEnglish)),
+              ],
+              selected: {settings.languageTag},
+              onSelectionChanged: (s) => notifier.setLanguageTag(s.first),
+            ),
           ),
         ],
       ),

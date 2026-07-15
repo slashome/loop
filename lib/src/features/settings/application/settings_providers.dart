@@ -10,6 +10,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 );
 
 const _kNewestAtBottom = 'newestAtBottom';
+const _kLanguageTag = 'languageTag';
 
 /// Préférences utilisateur, persistées via SharedPreferences.
 class SettingsNotifier extends Notifier<Settings> {
@@ -19,11 +20,18 @@ class SettingsNotifier extends Notifier<Settings> {
   Settings build() => Settings(
         newestAtBottom: _prefs.getBool(_kNewestAtBottom) ??
             Settings.defaults.newestAtBottom,
+        languageTag:
+            _prefs.getString(_kLanguageTag) ?? Settings.defaults.languageTag,
       );
 
   void setNewestAtBottom(bool value) {
     _prefs.setBool(_kNewestAtBottom, value);
     state = state.copyWith(newestAtBottom: value);
+  }
+
+  void setLanguageTag(String tag) {
+    _prefs.setString(_kLanguageTag, tag);
+    state = state.copyWith(languageTag: tag);
   }
 }
 

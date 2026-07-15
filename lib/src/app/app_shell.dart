@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/recurrences/presentation/repeats_view.dart';
 import '../features/tasks/presentation/next_actions_view.dart';
 
@@ -22,26 +23,27 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.checklist_outlined),
-            selectedIcon: Icon(Icons.checklist),
-            label: 'Actions',
+            icon: const Icon(Icons.checklist_outlined),
+            selectedIcon: const Icon(Icons.checklist),
+            label: l.navActions,
           ),
           NavigationDestination(
-            icon: Icon(Icons.repeat_outlined),
-            selectedIcon: Icon(Icons.repeat),
-            label: 'Repeats',
+            icon: const Icon(Icons.repeat_outlined),
+            selectedIcon: const Icon(Icons.repeat),
+            label: l.navRepeats,
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'Calendrier',
+            icon: const Icon(Icons.calendar_month_outlined),
+            selectedIcon: const Icon(Icons.calendar_month),
+            label: l.navCalendar,
           ),
         ],
       ),
@@ -54,9 +56,10 @@ class _CalendarPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendrier')),
-      body: const Center(child: Text('Vue calendrier — à venir.')),
+      appBar: AppBar(title: Text(l.navCalendar)),
+      body: Center(child: Text(l.calendarComingSoon)),
     );
   }
 }
