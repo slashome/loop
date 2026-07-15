@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/time/relative_time.dart';
 import '../../domain/task.dart';
 
@@ -24,35 +25,35 @@ class TaskCard extends StatelessWidget {
     final theme = Theme.of(context);
     final subtitle = _subtitle(task);
     return Card(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
-      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _PriorityBadge(priority: task.priority),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(task.title, style: theme.textTheme.titleMedium),
+                    Text(
+                      task.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.15,
+                      ),
+                    ),
                     if (subtitle.text.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         subtitle.text,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: subtitle.isLate
                               ? theme.colorScheme.error
                               : theme.colorScheme.onSurfaceVariant,
+                          fontWeight: subtitle.isLate ? FontWeight.w600 : null,
                         ),
                       ),
                     ],
@@ -63,7 +64,9 @@ class TaskCard extends StatelessWidget {
               _ScorePill(score: score),
               IconButton(
                 tooltip: 'Terminer',
+                visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.check_circle_outline),
+                color: theme.colorScheme.onSurfaceVariant,
                 onPressed: onComplete,
               ),
             ],
@@ -90,44 +93,35 @@ class TaskCard extends StatelessWidget {
   return (text: parts.join(' · '), isLate: isLate);
 }
 
-/// Pastille ronde avec le numéro de priorité. Bleu/vert (marque) pour le bas,
-/// tons chauds pour l'urgence haute.
+/// Pastille de priorité : carré arrondi teinté + numéro dans la couleur.
 class _PriorityBadge extends StatelessWidget {
   const _PriorityBadge({required this.priority});
   final int priority;
 
-  static const Map<int, Color> _colors = {
-    5: Color(0xFFE5484D), // rouge — urgent
-    4: Color(0xFFF76B15), // orange
-    3: Color(0xFF3B82C4), // bleu (marque)
-    2: Color(0xFF46A758), // vert (marque)
-    1: Color(0xFF8B8D98), // ardoise clair
-  };
-
   @override
   Widget build(BuildContext context) {
-    final color = _colors[priority] ?? _colors[3]!;
+    final color = AppColors.priority[priority] ?? AppColors.priority[3]!;
     return Container(
-      width: 34,
-      height: 34,
+      width: 38,
+      height: 38,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         'P$priority',
         style: TextStyle(
           color: color,
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          fontSize: 13,
         ),
       ),
     );
   }
 }
 
-/// Petit affichage du score — utile pour régler k/τ pendant qu'on itère.
+/// Petit affichage discret du score — aide au réglage de k/τ.
 class _ScorePill extends StatelessWidget {
   const _ScorePill({required this.score});
   final double score;
@@ -135,18 +129,11 @@ class _ScorePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        score.toStringAsFixed(2),
-        style: theme.textTheme.labelMedium?.copyWith(
-          fontFeatures: const [FontFeature.tabularFigures()],
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+    return Text(
+      score.toStringAsFixed(2),
+      style: theme.textTheme.labelSmall?.copyWith(
+        fontFeatures: const [FontFeature.tabularFigures()],
+        color: theme.colorScheme.onSurfaceVariant,
       ),
     );
   }

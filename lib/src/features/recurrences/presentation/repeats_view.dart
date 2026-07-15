@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/brand_fab.dart';
 import '../../tasks/application/tasks_providers.dart';
 import '../application/recurrences_providers.dart';
 import '../domain/recurrence.dart';
@@ -16,9 +17,9 @@ class RepeatsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Repeats'), centerTitle: false),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: BrandFab(
+        tooltip: 'Nouvelle récurrence',
         onPressed: () => _openEditor(context),
-        child: const Icon(Icons.add),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),

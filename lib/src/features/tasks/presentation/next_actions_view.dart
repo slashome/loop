@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/brand_fab.dart';
 import '../../settings/application/settings_providers.dart';
 import '../../settings/presentation/settings_view.dart';
 import '../application/tasks_providers.dart';
@@ -41,11 +42,11 @@ class NextActionsView extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: BrandFab(
+        tooltip: 'Nouvelle tâche',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const TaskEditView()),
         ),
-        child: const Icon(Icons.add),
       ),
       // Sélecteur de vues placé EN BAS : atteignable au pouce à une main.
       bottomNavigationBar: const _ViewBar(),

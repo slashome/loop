@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/app/app_shell.dart';
 import 'src/core/db/app_database.dart';
+import 'src/core/theme/app_theme.dart';
 import 'src/features/settings/application/settings_providers.dart';
 import 'src/features/tasks/application/tasks_providers.dart';
 import 'src/features/tasks/data/task_repository.dart';
@@ -37,20 +38,10 @@ class LoopApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Bleu de la marque (logo ∞ bleu→vert) comme graine du thème Material 3.
-    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF3B82C4));
     return MaterialApp(
       title: 'Loop',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: scheme,
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF7F8FA),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
-      ),
+      theme: buildAppTheme(),
       home: const AppShell(),
     );
   }
