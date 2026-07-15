@@ -1004,6 +1004,16 @@ class $RecurrenceRowsTable extends RecurrenceRows
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("active" IN (0, 1))'),
       defaultValue: const Constant(true));
+  static const VerificationMeta _autoCleanMissedMeta =
+      const VerificationMeta('autoCleanMissed');
+  @override
+  late final GeneratedColumn<bool> autoCleanMissed = GeneratedColumn<bool>(
+      'auto_clean_missed', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_clean_missed" IN (0, 1))'),
+      defaultValue: const Constant(true));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -1039,6 +1049,7 @@ class $RecurrenceRowsTable extends RecurrenceRows
         nextOccurrence,
         defPriority,
         active,
+        autoCleanMissed,
         createdAt,
         updatedAt,
         deletedAt
@@ -1130,6 +1141,12 @@ class $RecurrenceRowsTable extends RecurrenceRows
       context.handle(_activeMeta,
           active.isAcceptableOrUnknown(data['active']!, _activeMeta));
     }
+    if (data.containsKey('auto_clean_missed')) {
+      context.handle(
+          _autoCleanMissedMeta,
+          autoCleanMissed.isAcceptableOrUnknown(
+              data['auto_clean_missed']!, _autoCleanMissedMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -1185,6 +1202,8 @@ class $RecurrenceRowsTable extends RecurrenceRows
           .read(DriftSqlType.int, data['${effectivePrefix}def_priority'])!,
       active: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}active'])!,
+      autoCleanMissed: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}auto_clean_missed'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -1216,6 +1235,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
   final DateTime? nextOccurrence;
   final int defPriority;
   final bool active;
+  final bool autoCleanMissed;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -1235,6 +1255,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       this.nextOccurrence,
       required this.defPriority,
       required this.active,
+      required this.autoCleanMissed,
       required this.createdAt,
       required this.updatedAt,
       this.deletedAt});
@@ -1262,6 +1283,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
     }
     map['def_priority'] = Variable<int>(defPriority);
     map['active'] = Variable<bool>(active);
+    map['auto_clean_missed'] = Variable<bool>(autoCleanMissed);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -1292,6 +1314,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           : Value(nextOccurrence),
       defPriority: Value(defPriority),
       active: Value(active),
+      autoCleanMissed: Value(autoCleanMissed),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -1319,6 +1342,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       nextOccurrence: serializer.fromJson<DateTime?>(json['nextOccurrence']),
       defPriority: serializer.fromJson<int>(json['defPriority']),
       active: serializer.fromJson<bool>(json['active']),
+      autoCleanMissed: serializer.fromJson<bool>(json['autoCleanMissed']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -1343,6 +1367,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       'nextOccurrence': serializer.toJson<DateTime?>(nextOccurrence),
       'defPriority': serializer.toJson<int>(defPriority),
       'active': serializer.toJson<bool>(active),
+      'autoCleanMissed': serializer.toJson<bool>(autoCleanMissed),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -1365,6 +1390,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           Value<DateTime?> nextOccurrence = const Value.absent(),
           int? defPriority,
           bool? active,
+          bool? autoCleanMissed,
           DateTime? createdAt,
           DateTime? updatedAt,
           Value<DateTime?> deletedAt = const Value.absent()}) =>
@@ -1385,6 +1411,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
             nextOccurrence.present ? nextOccurrence.value : this.nextOccurrence,
         defPriority: defPriority ?? this.defPriority,
         active: active ?? this.active,
+        autoCleanMissed: autoCleanMissed ?? this.autoCleanMissed,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -1412,6 +1439,9 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       defPriority:
           data.defPriority.present ? data.defPriority.value : this.defPriority,
       active: data.active.present ? data.active.value : this.active,
+      autoCleanMissed: data.autoCleanMissed.present
+          ? data.autoCleanMissed.value
+          : this.autoCleanMissed,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -1436,6 +1466,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           ..write('nextOccurrence: $nextOccurrence, ')
           ..write('defPriority: $defPriority, ')
           ..write('active: $active, ')
+          ..write('autoCleanMissed: $autoCleanMissed, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
@@ -1460,6 +1491,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       nextOccurrence,
       defPriority,
       active,
+      autoCleanMissed,
       createdAt,
       updatedAt,
       deletedAt);
@@ -1482,6 +1514,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           other.nextOccurrence == this.nextOccurrence &&
           other.defPriority == this.defPriority &&
           other.active == this.active &&
+          other.autoCleanMissed == this.autoCleanMissed &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
@@ -1503,6 +1536,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
   final Value<DateTime?> nextOccurrence;
   final Value<int> defPriority;
   final Value<bool> active;
+  final Value<bool> autoCleanMissed;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
@@ -1523,6 +1557,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     this.nextOccurrence = const Value.absent(),
     this.defPriority = const Value.absent(),
     this.active = const Value.absent(),
+    this.autoCleanMissed = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -1544,6 +1579,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     this.nextOccurrence = const Value.absent(),
     this.defPriority = const Value.absent(),
     this.active = const Value.absent(),
+    this.autoCleanMissed = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
@@ -1570,6 +1606,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     Expression<DateTime>? nextOccurrence,
     Expression<int>? defPriority,
     Expression<bool>? active,
+    Expression<bool>? autoCleanMissed,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
@@ -1591,6 +1628,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       if (nextOccurrence != null) 'next_occurrence': nextOccurrence,
       if (defPriority != null) 'def_priority': defPriority,
       if (active != null) 'active': active,
+      if (autoCleanMissed != null) 'auto_clean_missed': autoCleanMissed,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -1614,6 +1652,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       Value<DateTime?>? nextOccurrence,
       Value<int>? defPriority,
       Value<bool>? active,
+      Value<bool>? autoCleanMissed,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<DateTime?>? deletedAt,
@@ -1634,6 +1673,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       nextOccurrence: nextOccurrence ?? this.nextOccurrence,
       defPriority: defPriority ?? this.defPriority,
       active: active ?? this.active,
+      autoCleanMissed: autoCleanMissed ?? this.autoCleanMissed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -1689,6 +1729,9 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     if (active.present) {
       map['active'] = Variable<bool>(active.value);
     }
+    if (autoCleanMissed.present) {
+      map['auto_clean_missed'] = Variable<bool>(autoCleanMissed.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1722,6 +1765,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
           ..write('nextOccurrence: $nextOccurrence, ')
           ..write('defPriority: $defPriority, ')
           ..write('active: $active, ')
+          ..write('autoCleanMissed: $autoCleanMissed, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -2140,6 +2184,7 @@ typedef $$RecurrenceRowsTableCreateCompanionBuilder = RecurrenceRowsCompanion
   Value<DateTime?> nextOccurrence,
   Value<int> defPriority,
   Value<bool> active,
+  Value<bool> autoCleanMissed,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<DateTime?> deletedAt,
@@ -2162,6 +2207,7 @@ typedef $$RecurrenceRowsTableUpdateCompanionBuilder = RecurrenceRowsCompanion
   Value<DateTime?> nextOccurrence,
   Value<int> defPriority,
   Value<bool> active,
+  Value<bool> autoCleanMissed,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<DateTime?> deletedAt,
@@ -2222,6 +2268,10 @@ class $$RecurrenceRowsTableFilterComposer
 
   ColumnFilters<bool> get active => $composableBuilder(
       column: $table.active, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get autoCleanMissed => $composableBuilder(
+      column: $table.autoCleanMissed,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -2288,6 +2338,10 @@ class $$RecurrenceRowsTableOrderingComposer
   ColumnOrderings<bool> get active => $composableBuilder(
       column: $table.active, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get autoCleanMissed => $composableBuilder(
+      column: $table.autoCleanMissed,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -2352,6 +2406,9 @@ class $$RecurrenceRowsTableAnnotationComposer
   GeneratedColumn<bool> get active =>
       $composableBuilder(column: $table.active, builder: (column) => column);
 
+  GeneratedColumn<bool> get autoCleanMissed => $composableBuilder(
+      column: $table.autoCleanMissed, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -2404,6 +2461,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             Value<DateTime?> nextOccurrence = const Value.absent(),
             Value<int> defPriority = const Value.absent(),
             Value<bool> active = const Value.absent(),
+            Value<bool> autoCleanMissed = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
@@ -2425,6 +2483,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             nextOccurrence: nextOccurrence,
             defPriority: defPriority,
             active: active,
+            autoCleanMissed: autoCleanMissed,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
@@ -2446,6 +2505,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             Value<DateTime?> nextOccurrence = const Value.absent(),
             Value<int> defPriority = const Value.absent(),
             Value<bool> active = const Value.absent(),
+            Value<bool> autoCleanMissed = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<DateTime?> deletedAt = const Value.absent(),
@@ -2467,6 +2527,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             nextOccurrence: nextOccurrence,
             defPriority: defPriority,
             active: active,
+            autoCleanMissed: autoCleanMissed,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,

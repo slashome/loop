@@ -30,6 +30,7 @@ class Recurrence {
     this.nextOccurrence,
     this.defPriority = 3,
     this.active = true,
+    this.autoCleanMissed = true,
     this.deletedAt,
   });
 
@@ -55,6 +56,11 @@ class Recurrence {
   final DateTime? nextOccurrence;
   final int defPriority;
   final bool active;
+
+  /// Si vrai, les occurrences manquées (échéance avant aujourd'hui, non faites)
+  /// sont auto-supprimées au démarrage. Sinon elles restent « en retard ».
+  final bool autoCleanMissed;
+
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;

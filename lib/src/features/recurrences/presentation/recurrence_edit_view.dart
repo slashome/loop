@@ -46,6 +46,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
   late Set<int> _hours; // 0..23
   late int _priority;
   late bool _active;
+  late bool _autoCleanMissed;
 
   bool get _isNew => widget.recurrence == null;
 
@@ -63,6 +64,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
     _hours = {...?r?.byHours}.isEmpty ? {9} : {...?r?.byHours};
     _priority = r?.defPriority ?? t?.priority ?? 3;
     _active = r?.active ?? true;
+    _autoCleanMissed = r?.autoCleanMissed ?? true;
   }
 
   @override
@@ -105,6 +107,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
       byHours: _sorted(_hours),
       defPriority: _priority,
       active: _active,
+      autoCleanMissed: _autoCleanMissed,
       dtstart: existing?.dtstart ?? now,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
@@ -237,6 +240,16 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
             subtitle: const Text('Génère des occurrences dans Actions'),
             value: _active,
             onChanged: (v) => setState(() => _active = v),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Nettoyer les occurrences manquées'),
+            subtitle: const Text(
+              'Les occurrences non faites d\'avant aujourd\'hui sont retirées. '
+              'Désactive pour les garder « en retard ».',
+            ),
+            value: _autoCleanMissed,
+            onChanged: (v) => setState(() => _autoCleanMissed = v),
           ),
         ],
       ),

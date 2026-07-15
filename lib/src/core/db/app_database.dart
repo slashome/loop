@@ -55,6 +55,8 @@ class RecurrenceRows extends Table {
   DateTimeColumn get nextOccurrence => dateTime().nullable()();
   IntColumn get defPriority => integer().withDefault(const Constant(3))();
   BoolColumn get active => boolean().withDefault(const Constant(true))();
+  BoolColumn get autoCleanMissed =>
+      boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
@@ -81,7 +83,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -93,6 +95,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.deleteTable(recurrenceRows.actualTableName);
             await m.createTable(recurrenceRows);
+          }
+          // v3 : nettoyage des occurrences manquées, paramétrable par récurrence.
+          if (from < 3) {
+            await m.addColumn(recurrenceRows, recurrenceRows.autoCleanMissed);
           }
         },
       );
@@ -152,5 +158,28 @@ class AppDatabase extends _$AppDatabase {
   /// recurrenceId + occurrenceDate).
   Future<void> insertOccurrenceIfAbsent(TaskRowsCompanion row) {
     return into(taskRows).insert(row, mode: InsertMode.insertOrIgnore);
+  }
+
+  /// Soft-delete les occurrences ouvertes MANQUÉES (échéance avant [dayStart])
+  /// des récurrences dont `autoCleanMissed` est vrai. Renvoie le nombre nettoyé.
+  Future<int> cleanMissedOccurrences(DateTime dayStart) async {
+    final autoIds = (await (select(recurrenceRows)
+              ..where((r) => r.autoCleanMissed.equals(true)))
+            .get())
+        .map((r) => r.id)
+        .toList();
+    if (autoIds.isEmpty) return 0;
+    return (update(taskRows)
+          ..where((t) =>
+              t.recurrenceId.isIn(autoIds) &
+              t.status.equals('open') &
+              t.deletedAt.isNull() &
+              t.dueAt.isSmallerThanValue(dayStart)))
+        .write(
+      TaskRowsCompanion(
+        deletedAt: Value(dayStart),
+        updatedAt: Value(dayStart),
+      ),
+    );
   }
 }

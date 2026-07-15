@@ -122,6 +122,13 @@ class TaskRepository {
       }
     }
     await generateOccurrences(on: now);
+    await cleanMissedOccurrences(on: now);
+  }
+
+  /// Retire (soft-delete) les occurrences manquées des récurrences réglées sur
+  /// auto-nettoyage. Renvoie le nombre nettoyé.
+  Future<int> cleanMissedOccurrences({required DateTime on}) {
+    return _db.cleanMissedOccurrences(DateTime(on.year, on.month, on.day));
   }
 
   /// Matérialise les occurrences de chaque récurrence active de [on] jusqu'à

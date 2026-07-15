@@ -108,6 +108,60 @@ void main() {
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
   });
 
+  test('cleanMissedOccurrences retire les manquées seulement si auto-clean',
+      () async {
+    final yesterday = DateTime(2026, 7, 5, 9);
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-clean',
+        title: 'Clean',
+        freq: 'daily',
+        autoCleanMissed: const Value(true),
+        dtstart: monday,
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-keep',
+        title: 'Keep',
+        freq: 'daily',
+        autoCleanMissed: const Value(false),
+        dtstart: monday,
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+    await db.upsertTask(
+      TaskRowsCompanion.insert(
+        id: 'occ-clean',
+        title: 'Clean',
+        recurrenceId: const Value('r-clean'),
+        dueAt: Value(yesterday),
+        occurrenceDate: Value(yesterday),
+        createdAt: yesterday,
+        updatedAt: yesterday,
+      ),
+    );
+    await db.upsertTask(
+      TaskRowsCompanion.insert(
+        id: 'occ-keep',
+        title: 'Keep',
+        recurrenceId: const Value('r-keep'),
+        dueAt: Value(yesterday),
+        occurrenceDate: Value(yesterday),
+        createdAt: yesterday,
+        updatedAt: yesterday,
+      ),
+    );
+
+    await repo.cleanMissedOccurrences(on: monday);
+    final ids = (await repo.watchTasks().first).map((t) => t.id).toSet();
+    expect(ids.contains('occ-clean'), isFalse); // nettoyée
+    expect(ids.contains('occ-keep'), isTrue); // conservée (auto-clean off)
+  });
+
   test('génère les occurrences sur un horizon (jours à venir)', () async {
     await db.insertRecurrence(
       RecurrenceRowsCompanion.insert(
