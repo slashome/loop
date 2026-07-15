@@ -29,7 +29,7 @@ class NextActionsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Prochaines actions'),
+        title: const _BrandTitle(),
         centerTitle: false,
         actions: [
           IconButton(
@@ -76,6 +76,33 @@ class NextActionsView extends ConsumerWidget {
                   );
                 },
               ),
+      ),
+    );
+  }
+}
+
+/// Titre de marque : ∞ + « Loop » teintés du dégradé bleu→vert du logo.
+class _BrandTitle extends StatelessWidget {
+  const _BrandTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    const gradient = LinearGradient(
+      colors: [Color(0xFF3B82C4), Color(0xFF46A758)],
+    );
+    return ShaderMask(
+      shaderCallback: (rect) => gradient.createShader(rect),
+      blendMode: BlendMode.srcIn,
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.all_inclusive, size: 22),
+          SizedBox(width: 8),
+          Text(
+            'Loop',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+          ),
+        ],
       ),
     );
   }

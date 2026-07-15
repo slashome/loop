@@ -43,7 +43,7 @@ void main() {
     );
     await tester.pump(); // laisse le Stream.value émettre
 
-    expect(find.text('Prochaines actions'), findsOneWidget);
+    expect(find.text('Loop'), findsOneWidget);
     expect(find.byType(TaskCard), findsNWidgets(2));
     // Liste ancrée en bas (reverse) : la P5 (meilleur score) est SOUS la P2.
     expect(
