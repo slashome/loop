@@ -163,6 +163,52 @@ void main() {
     });
   });
 
+  group('préférence envie/impact (bandes, Étage 1)', () {
+    Task pref(
+      String id, {
+      int priority = 3,
+      double? envie,
+      double? impactSelf,
+      double? impactOthers,
+    }) =>
+        Task(
+          id: id,
+          title: id,
+          priority: priority,
+          envie: envie,
+          impactSelf: impactSelf,
+          impactOthers: impactOthers,
+          createdAt: kNow,
+          updatedAt: kNow,
+        );
+
+    test('à bande égale, envie plus forte passe devant', () {
+      final ordered = nextActions([
+        pref('low', envie: 0),
+        pref('neutral'),
+        pref('high', envie: 1),
+      ], now: kNow);
+      expect(ordered.map((t) => t.id), ['high', 'neutral', 'low']);
+    });
+
+    test('l\'impact (moi + autres) départage aussi', () {
+      final ordered = nextActions([
+        pref('faible', impactSelf: 0, impactOthers: 0),
+        pref('fort', impactSelf: 1, impactOthers: 1),
+      ], now: kNow);
+      expect(ordered.first.id, 'fort');
+    });
+
+    test('la préférence ne franchit JAMAIS un palier de priorité', () {
+      // P2 à préférence maximale vs P3 neutre : le P3 reste devant (bande sup.).
+      final ordered = nextActions([
+        pref('p2max', priority: 2, envie: 1, impactSelf: 1, impactOthers: 1),
+        pref('p3neutre', priority: 3),
+      ], now: kNow);
+      expect(ordered.first.id, 'p3neutre');
+    });
+  });
+
   group('PriorityCaps — arbitrage à l\'écriture', () {
     const caps = PriorityCaps({5: 3, 4: 5});
 

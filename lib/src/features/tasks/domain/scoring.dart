@@ -18,8 +18,10 @@ class ScoringConfig {
   const ScoringConfig({
     this.k = 2.0,
     this.tauDays = 14.0,
+    this.bandWidth = 1.0,
   })  : assert(k >= 0, 'k doit être >= 0'),
-        assert(tauDays > 0, 'tauDays doit être > 0');
+        assert(tauDays > 0, 'tauDays doit être > 0'),
+        assert(bandWidth > 0, 'bandWidth doit être > 0');
 
   /// Gain maximal de l'ancienneté (anti-famine borné).
   ///
@@ -34,7 +36,19 @@ class ScoringConfig {
   /// tâche a capté ~63 % de son gain maximal `k`.
   final double tauDays;
 
+  /// Largeur d'une BANDE de score. Les tâches d'une même bande (≈ un palier de
+  /// priorité) sont départagées par envie/impact, jamais entre bandes → la
+  /// priorité domine par construction. Voir [compareByScore].
+  final double bandWidth;
+
   static const ScoringConfig defaults = ScoringConfig();
+}
+
+/// Clé de préférence (0..1) : mélange envie/impact, `null` = neutre (0.5).
+/// Sert à départager les tâches d'une même bande de score. Envie compte double.
+double preferenceBlend(Task t) {
+  double v(double? x) => x ?? 0.5;
+  return 0.5 * v(t.envie) + 0.25 * v(t.impactSelf) + 0.25 * v(t.impactOthers);
 }
 
 /// Score d'une tâche : `priorité + k · (1 − e^(−âge/τ))`.
@@ -51,18 +65,24 @@ double taskScore(Task task, ScoringConfig config, {required DateTime now}) {
   return task.priority + aging;
 }
 
-/// Comparateur d'ordre par défaut : score décroissant.
+/// Comparateur d'ordre par défaut, par BANDES de score.
 ///
-/// Départage déterministe (évite tout scintillement d'ordre entre rendus).
-/// À score quasi égal :
-///  1. par URGENCE d'échéance : la plus proche d'abord (les échéances passées
-///     avant, celles sans date après) — la priorité domine toujours entre
-///     paliers, l'échéance ne tranche qu'à score égal ;
-///  2. puis la plus ancienne (anti-famine) ; puis priorité ; puis id.
+/// Le score (priorité + ancienneté) est quantifié en bandes de largeur
+/// [ScoringConfig.bandWidth] : la priorité (et l'anti-famine) décide de la
+/// BANDE, jamais franchie par les préférences → « la priorité domine » est
+/// garanti par construction. À l'intérieur d'une bande, départage déterministe :
+///  1. par PRÉFÉRENCE (envie/impact) décroissante — c'est là qu'envie/impact
+///     agissent, sans jamais faire franchir un palier ;
+///  2. par URGENCE d'échéance (la plus proche d'abord, sans date en dernier) ;
+///  3. par ancienneté ; puis priorité ; puis id.
 int compareByScore(Task a, Task b, ScoringConfig config, DateTime now) {
-  final sa = taskScore(a, config, now: now);
-  final sb = taskScore(b, config, now: now);
-  if ((sa - sb).abs() > 1e-9) return sb.compareTo(sa); // score desc
+  final ba = (taskScore(a, config, now: now) / config.bandWidth).floor();
+  final bb = (taskScore(b, config, now: now) / config.bandWidth).floor();
+  if (ba != bb) return bb.compareTo(ba); // bande décroissante
+
+  final pa = preferenceBlend(a);
+  final pb = preferenceBlend(b);
+  if ((pa - pb).abs() > 1e-9) return pb.compareTo(pa); // préférence desc
 
   final da = a.dueAt;
   final db = b.dueAt;
