@@ -53,7 +53,28 @@ class NextActionsView extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (items) => items.isEmpty
-            ? const Center(child: Text('Rien à afficher.'))
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Opacity(
+                      opacity: 0.9,
+                      child: Image.asset(
+                        'assets/branding/logo_tight.png',
+                        width: 140,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Rien à afficher.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              )
             : ListView.builder(
                 // Ancrage bas (meilleur score près du pouce) ou haut (classique),
                 // selon la préférence utilisateur.
@@ -81,29 +102,27 @@ class NextActionsView extends ConsumerWidget {
   }
 }
 
-/// Titre de marque : ∞ + « Loop » teintés du dégradé bleu→vert du logo.
+/// Titre de marque : le vrai symbole ∞ du logo + le mot « Loop » (ardoise,
+/// comme le wordmark d'origine).
 class _BrandTitle extends StatelessWidget {
   const _BrandTitle();
 
   @override
   Widget build(BuildContext context) {
-    const gradient = LinearGradient(
-      colors: [Color(0xFF3B82C4), Color(0xFF46A758)],
-    );
-    return ShaderMask(
-      shaderCallback: (rect) => gradient.createShader(rect),
-      blendMode: BlendMode.srcIn,
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.all_inclusive, size: 22),
-          SizedBox(width: 8),
-          Text(
-            'Loop',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset('assets/branding/logo_mark.png', height: 24),
+        const SizedBox(width: 8),
+        const Text(
+          'Loop',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            color: Color(0xFF3A4256),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
