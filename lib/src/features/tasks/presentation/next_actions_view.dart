@@ -31,7 +31,7 @@ class NextActionsView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const _BrandTitle(),
-        centerTitle: false,
+        centerTitle: true,
         actions: [
           IconButton(
             tooltip: 'Réglages',
@@ -103,28 +103,13 @@ class NextActionsView extends ConsumerWidget {
   }
 }
 
-/// Titre de marque : le vrai symbole ∞ du logo + le mot « Loop » (ardoise,
-/// comme le wordmark d'origine).
+/// Titre de marque : le symbole ∞ du logo, centré (sans texte).
 class _BrandTitle extends StatelessWidget {
   const _BrandTitle();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset('assets/branding/logo_mark.png', height: 24),
-        const SizedBox(width: 8),
-        const Text(
-          'Loop',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 22,
-            color: Color(0xFF3A4256),
-          ),
-        ),
-      ],
-    );
+    return Image.asset('assets/branding/logo_mark.png', height: 30);
   }
 }
 
