@@ -1,12 +1,12 @@
-/// Modèle métier d'une définition de récurrence — PUR (aucune dépendance
-/// Flutter/Drift), comme [Task].
+/// Business model of a recurrence definition — PURE (no Flutter/Drift
+/// dependency), like [Task].
 ///
-/// Cadence structurée façon RRULE (« rrule ou équivalent », décision de
-/// design), toutes les dimensions multiples :
-///   - [byWeekdays] : jours de semaine (BYDAY) pour [RecurrenceFreq.weekly] ;
-///   - [byMonthDays] : jours du mois (BYMONTHDAY) pour [RecurrenceFreq.monthly] ;
-///   - [byHours] : heures dans la journée (BYHOUR), toutes fréquences.
-/// [rrule] garde la chaîne équivalente pour le futur parseur complet.
+/// RRULE-style structured cadence ("rrule or equivalent", a design
+/// decision), all dimensions being multiple:
+///   - [byWeekdays]: weekdays (BYDAY) for [RecurrenceFreq.weekly];
+///   - [byMonthDays]: days of the month (BYMONTHDAY) for [RecurrenceFreq.monthly];
+///   - [byHours]: hours within the day (BYHOUR), all frequencies.
+/// [rrule] keeps the equivalent string for the future full parser.
 library;
 
 enum RecurrenceFreq { daily, weekly, monthly }
@@ -40,13 +40,13 @@ class Recurrence {
   final String? description;
   final RecurrenceFreq freq;
 
-  /// Jours de semaine 1..7 (lun..dim), pour [RecurrenceFreq.weekly].
+  /// Weekdays 1..7 (Mon..Sun), for [RecurrenceFreq.weekly].
   final List<int> byWeekdays;
 
-  /// Jours du mois 1..31, pour [RecurrenceFreq.monthly].
+  /// Days of the month 1..31, for [RecurrenceFreq.monthly].
   final List<int> byMonthDays;
 
-  /// Heures d'occurrence dans la journée (ex: [10, 22] = deux fois par jour).
+  /// Occurrence hours within the day (e.g. [10, 22] = twice a day).
   final List<int> byHours;
   final int byMinute;
 
@@ -57,18 +57,18 @@ class Recurrence {
   final int defPriority;
   final bool active;
 
-  /// Si vrai, les occurrences manquées (échéance avant aujourd'hui, non faites)
-  /// sont auto-supprimées au démarrage. Sinon elles restent « en retard ».
+  /// If true, missed occurrences (due before today, not done) are
+  /// auto-deleted at startup. Otherwise they remain "overdue".
   final bool autoCleanMissed;
 
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
 
-  /// Occurrences de ce modèle pour le jour de [day] (heure ignorée en entrée).
+  /// Occurrences of this model for the day of [day] (time ignored in input).
   ///
-  /// Générateur minimal (daily/weekly/monthly) — sera remplacé par un vrai
-  /// moteur RRULE quand on construira l'onglet Repeats.
+  /// Minimal generator (daily/weekly/monthly) — will be replaced by a real
+  /// RRULE engine when we build the Repeats tab.
   List<DateTime> occurrencesOn(DateTime day) {
     final matches = switch (freq) {
       RecurrenceFreq.daily => true,
@@ -82,8 +82,8 @@ class Recurrence {
     ];
   }
 
-  /// Prochaine occurrence à partir de [from] (incluse), ou `null` si aucune
-  /// dans l'année à venir. Utile pour informer « prochaine : … » après création.
+  /// Next occurrence from [from] (inclusive), or `null` if none in the
+  /// coming year. Useful to show "next: …" after creation.
   DateTime? nextOccurrenceFrom(DateTime from) {
     final start = DateTime(from.year, from.month, from.day);
     for (var i = 0; i < 400; i++) {

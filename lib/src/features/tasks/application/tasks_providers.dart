@@ -1,8 +1,8 @@
-/// Couche application de la feature `tasks` — providers Riverpod (ViewModels).
+/// Application layer of the `tasks` feature — Riverpod providers (ViewModels).
 ///
-/// Les tâches viennent désormais de la base (Drift) via [TaskRepository]. Le
-/// flux est réactif : toute écriture (édition, complétion, occurrence générée)
-/// se répercute dans l'onglet 1 sans intervention.
+/// Tasks now come from the database (Drift) via [TaskRepository]. The stream
+/// is reactive: any write (edit, completion, generated occurrence) propagates
+/// to tab 1 without intervention.
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,19 +15,19 @@ import '../domain/task_filters.dart';
 
 export '../../../core/db/database_provider.dart' show appDatabaseProvider;
 
-/// Une tâche accompagnée de son score calculé — objet de présentation.
+/// A task together with its computed score — presentation object.
 class ScoredTask {
   const ScoredTask(this.task, this.score);
   final Task task;
   final double score;
 }
 
-/// Constantes de scoring globales. Défaut = anti-famine borné (k=2, τ=14j).
+/// Global scoring constants. Default = bounded anti-starvation (k=2, τ=14d).
 final scoringConfigProvider = Provider<ScoringConfig>(
   (ref) => ScoringConfig.defaults,
 );
 
-/// Caps par palier de priorité. Défaut = {5:3, 4:5}.
+/// Caps per priority tier. Default = {5:3, 4:5}.
 final priorityCapsProvider = Provider<PriorityCaps>(
   (ref) => PriorityCaps.defaults,
 );
@@ -36,16 +36,16 @@ final taskRepositoryProvider = Provider<TaskRepository>(
   (ref) => TaskRepository(ref.watch(appDatabaseProvider)),
 );
 
-/// Flux des tâches non supprimées (source de vérité de l'onglet 1).
+/// Stream of non-deleted tasks (source of truth for tab 1).
 final tasksProvider = StreamProvider<List<Task>>(
   (ref) => ref.watch(taskRepositoryProvider).watchTasks(),
 );
 
-/// Vue active de l'onglet 1 (Smart Lists). NON persistée entre sessions :
-/// on rouvre toujours sur « À faire ».
+/// Active view of tab 1 (Smart Lists). NOT persisted across sessions:
+/// we always reopen on "To do".
 final viewProvider = StateProvider<TaskView>((ref) => TaskView.todo);
 
-/// L'onglet 1 : tâches de la vue active, triées par score.
+/// Tab 1: tasks of the active view, sorted by score.
 final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {
   final async = ref.watch(tasksProvider);
   final config = ref.watch(scoringConfigProvider);

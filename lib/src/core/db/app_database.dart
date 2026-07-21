@@ -3,7 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 part 'app_database.g.dart';
 
-/// Tâches. Miroir du modèle domaine `Task` (mapping dans la couche data).
+/// Tasks. Mirror of the `Task` domain model (mapping in the data layer).
 class TaskRows extends Table {
   TextColumn get id => text()();
   TextColumn get ownerId => text().withDefault(const Constant('local'))();
@@ -29,12 +29,12 @@ class TaskRows extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-/// Définitions de récurrence (modèles). L'onglet 2 « Repeats » les gère ;
-/// leurs occurrences du jour sont matérialisées en lignes `TaskRows`.
+/// Recurrence definitions (templates). Tab 2 "Repeats" manages them;
+/// their occurrences for the day are materialized as `TaskRows` rows.
 ///
-/// Cadence stockée en champs structurés (« rrule ou équivalent », cf. design) :
-/// [freq] + [byWeekday] + [byHours]. Le champ [rrule] garde la chaîne
-/// équivalente pour usage futur (parseur RRULE complet à l'onglet Repeats).
+/// Cadence stored in structured fields ("rrule or equivalent", see design):
+/// [freq] + [byWeekday] + [byHours]. The [rrule] field keeps the equivalent
+/// string for future use (full RRULE parser in the Repeats tab).
 class RecurrenceRows extends Table {
   TextColumn get id => text()();
   TextColumn get ownerId => text().withDefault(const Constant('local'))();
@@ -42,7 +42,7 @@ class RecurrenceRows extends Table {
   TextColumn get description => text().nullable()();
   TextColumn get freq => text()(); // daily | weekly | monthly
   TextColumn get byWeekdays =>
-      text().withDefault(const Constant(''))(); // "1,3,5" (lun..dim)
+      text().withDefault(const Constant(''))(); // "1,3,5" (Mon..Sun)
   TextColumn get byMonthDays =>
       text().withDefault(const Constant(''))(); // "1,15"
   TextColumn get byHours =>
@@ -71,7 +71,7 @@ class AppDatabase extends _$AppDatabase {
       : super(
           driftDatabase(
             name: 'loop',
-            // Requis sur le web : assets servis à la racine (web/).
+            // Required on the web: assets served from the root (web/).
             web: DriftWebOptions(
               sqlite3Wasm: Uri.parse('sqlite3.wasm'),
               driftWorker: Uri.parse('drift_worker.js'),
@@ -79,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
           ),
         );
 
-  /// Base en mémoire pour les tests.
+  /// In-memory database for tests.
   AppDatabase.forTesting(super.executor);
 
   @override
@@ -129,8 +129,8 @@ class AppDatabase extends _$AppDatabase {
   Future<void> upsertRecurrence(RecurrenceRowsCompanion row) =>
       into(recurrenceRows).insertOnConflictUpdate(row);
 
-  /// Supprime une récurrence et ses occurrences encore ouvertes (les tâches
-  /// terminées issues de cette récurrence sont conservées comme historique).
+  /// Deletes a recurrence and its still-open occurrences (completed tasks
+  /// arising from this recurrence are kept as history).
   Future<void> deleteRecurrenceCascade(String id) async {
     await (delete(taskRows)
           ..where((t) => t.recurrenceId.equals(id) & t.status.equals('open')))
@@ -158,14 +158,14 @@ class AppDatabase extends _$AppDatabase {
   Future<void> insertRecurrence(RecurrenceRowsCompanion row) =>
       into(recurrenceRows).insert(row);
 
-  /// Insère une occurrence si elle n'existe pas déjà (dédup par
+  /// Inserts an occurrence if it does not already exist (dedup by
   /// recurrenceId + occurrenceDate).
   Future<void> insertOccurrenceIfAbsent(TaskRowsCompanion row) {
     return into(taskRows).insert(row, mode: InsertMode.insertOrIgnore);
   }
 
-  /// Soft-delete les occurrences ouvertes MANQUÉES (échéance avant [dayStart])
-  /// des récurrences dont `autoCleanMissed` est vrai. Renvoie le nombre nettoyé.
+  /// Soft-deletes MISSED open occurrences (due before [dayStart]) of
+  /// recurrences whose `autoCleanMissed` is true. Returns the count cleaned.
   Future<int> cleanMissedOccurrences(DateTime dayStart) async {
     final autoIds = (await (select(recurrenceRows)
               ..where((r) => r.autoCleanMissed.equals(true)))

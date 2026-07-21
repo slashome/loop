@@ -319,6 +319,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, one{In {count} year} other{In {count} years}}'**
   String relativeInYears(int count);
+
+  /// No description provided for @commonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commonSave;
+
+  /// No description provided for @commonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get commonTitle;
+
+  /// No description provided for @commonDescriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get commonDescriptionOptional;
+
+  /// No description provided for @commonNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get commonNotSet;
+
+  /// No description provided for @commonClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get commonClear;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
+
+  /// No description provided for @commonPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get commonPriority;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required.'**
+  String get titleRequired;
+
+  /// No description provided for @taskEditNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New task'**
+  String get taskEditNewTitle;
+
+  /// No description provided for @taskEditEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit task'**
+  String get taskEditEditTitle;
+
+  /// No description provided for @taskOccurrenceOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Occurrence of “{title}”'**
+  String taskOccurrenceOf(String title);
+
+  /// No description provided for @taskEditRecurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recurrence'**
+  String get taskEditRecurrence;
+
+  /// No description provided for @taskDesire.
+  ///
+  /// In en, this message translates to:
+  /// **'Desire'**
+  String get taskDesire;
+
+  /// No description provided for @taskImpactSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Impact on me'**
+  String get taskImpactSelf;
+
+  /// No description provided for @taskImpactOthers.
+  ///
+  /// In en, this message translates to:
+  /// **'Impact on others'**
+  String get taskImpactOthers;
+
+  /// No description provided for @taskRepeatThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat this task…'**
+  String get taskRepeatThis;
+
+  /// No description provided for @taskDueNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: none'**
+  String get taskDueNone;
+
+  /// No description provided for @taskDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: {date}'**
+  String taskDueOn(String date);
+
+  /// No description provided for @priorityFull.
+  ///
+  /// In en, this message translates to:
+  /// **'P{level} (full)'**
+  String priorityFull(int level);
+
+  /// No description provided for @priorityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'P{level}'**
+  String priorityLabel(int level);
+
+  /// No description provided for @recurrenceNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New recurrence'**
+  String get recurrenceNewTitle;
+
+  /// No description provided for @recurrenceEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recurrence'**
+  String get recurrenceEditTitle;
+
+  /// No description provided for @recurrenceFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get recurrenceFrequency;
+
+  /// No description provided for @recurrenceFreqDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get recurrenceFreqDaily;
+
+  /// No description provided for @recurrenceFreqWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get recurrenceFreqWeekly;
+
+  /// No description provided for @recurrenceFreqMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get recurrenceFreqMonthly;
+
+  /// No description provided for @recurrenceWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days of the week'**
+  String get recurrenceWeekdays;
+
+  /// No description provided for @recurrenceMonthDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days of the month'**
+  String get recurrenceMonthDays;
+
+  /// No description provided for @recurrenceHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get recurrenceHours;
+
+  /// No description provided for @recurrenceDefaultPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Default priority'**
+  String get recurrenceDefaultPriority;
+
+  /// No description provided for @recurrenceActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get recurrenceActive;
+
+  /// No description provided for @recurrenceActiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generates occurrences in Actions'**
+  String get recurrenceActiveSubtitle;
+
+  /// No description provided for @recurrenceAutoClean.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean up missed occurrences'**
+  String get recurrenceAutoClean;
+
+  /// No description provided for @recurrenceAutoCleanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Undone occurrences from before today are removed. Turn off to keep them “overdue”.'**
+  String get recurrenceAutoCleanSubtitle;
+
+  /// No description provided for @recurrencePickHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one hour.'**
+  String get recurrencePickHour;
+
+  /// No description provided for @recurrencePickWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one day of the week.'**
+  String get recurrencePickWeekday;
+
+  /// No description provided for @recurrencePickMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one day of the month.'**
+  String get recurrencePickMonthDay;
+
+  /// No description provided for @recurrenceNowRecurring.
+  ///
+  /// In en, this message translates to:
+  /// **'“{title}” is now recurring{suffix}'**
+  String recurrenceNowRecurring(String title, String suffix);
+
+  /// No description provided for @recurrenceNextSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' · next: {when}'**
+  String recurrenceNextSuffix(String when);
+
+  /// No description provided for @repeatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeats'**
+  String get repeatsTitle;
+
+  /// No description provided for @repeatsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recurrence.'**
+  String get repeatsEmpty;
+
+  /// No description provided for @repeatsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String repeatsError(String message);
+
+  /// No description provided for @cadenceDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get cadenceDaily;
+
+  /// No description provided for @cadenceWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {days}'**
+  String cadenceWeekly(String days);
+
+  /// No description provided for @cadenceMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'On the {days} of the month'**
+  String cadenceMonthly(String days);
+
+  /// No description provided for @cadenceSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{cadence} · {hours}'**
+  String cadenceSummary(String cadence, String hours);
+
+  /// No description provided for @hourShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{hour}h'**
+  String hourShort(int hour);
+
+  /// No description provided for @weekdayMon.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get weekdayMon;
+
+  /// No description provided for @weekdayTue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get weekdayTue;
+
+  /// No description provided for @weekdayWed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get weekdayWed;
+
+  /// No description provided for @weekdayThu.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get weekdayThu;
+
+  /// No description provided for @weekdayFri.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get weekdayFri;
+
+  /// No description provided for @weekdaySat.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get weekdaySat;
+
+  /// No description provided for @weekdaySun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get weekdaySun;
 }
 
 class _AppLocalizationsDelegate

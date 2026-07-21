@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Couleurs de marque, dérivées du logo (∞ dégradé bleu→vert, wordmark ardoise).
+/// Brand colors, derived from the logo (∞ blue→green gradient, slate wordmark).
 abstract final class AppColors {
   static const blue = Color(0xFF3B82C4);
   static const green = Color(0xFF46A758);
-  static const ink = Color(0xFF2C3242); // texte principal (ardoise)
-  static const muted = Color(0xFF6B7280); // texte secondaire
-  static const bg = Color(0xFFF6F8FB); // fond de l'app
+  static const ink = Color(0xFF2C3242); // primary text (slate)
+  static const muted = Color(0xFF6B7280); // secondary text
+  static const bg = Color(0xFFF6F8FB); // app background
   static const line = Color(0xFFE6E9EF); // hairlines
 
-  /// Le dégradé signature du logo.
+  /// The logo's signature gradient.
   static const brand = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
     colors: [blue, green],
   );
 
-  /// Palette de priorité (chaud = urgent, bleu/vert de marque = bas).
+  /// Priority palette (warm = urgent, brand blue/green = low).
   static const priority = {
     5: Color(0xFFE5484D),
     4: Color(0xFFF76B15),

@@ -15,9 +15,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final db = AppDatabase();
-  // Seed au premier lancement + génération des occurrences du jour.
-  // Résilient : une erreur d'amorçage ne doit jamais empêcher l'app de
-  // s'afficher (l'onglet 1 montrera alors l'état d'erreur du flux).
+  // Seed on first launch + generate today's occurrences.
+  // Resilient: a bootstrap error must never prevent the app from
+  // displaying (tab 1 will then show the stream's error state).
   try {
     await TaskRepository(db).bootstrap();
   } catch (e, st) {
@@ -34,7 +34,7 @@ Future<void> main() async {
   );
 }
 
-/// Racine de l'application Loop.
+/// Root of the Loop application.
 class LoopApp extends ConsumerWidget {
   const LoopApp({super.key});
 

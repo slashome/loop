@@ -27,7 +27,7 @@ void main() {
         updatedAt: now,
       );
 
-  test('save puis relecture conserve la cadence multi-valuée', () async {
+  test('save then reload preserves the multi-valued cadence', () async {
     await repo.save(make('r1'));
     final all = await repo.watchAll().first;
     expect(all, hasLength(1));
@@ -35,16 +35,16 @@ void main() {
     expect(all.first.byHours, [18]);
   });
 
-  test('setActive bascule le drapeau', () async {
+  test('setActive toggles the flag', () async {
     await repo.save(make('r1'));
     await repo.setActive('r1', false);
     final r = (await repo.watchAll().first).first;
     expect(r.active, isFalse);
   });
 
-  test('delete retire la récurrence et ses occurrences ouvertes', () async {
+  test('delete removes the recurrence and its open occurrences', () async {
     await repo.save(make('r1'));
-    // génère les occurrences d'un lundi
+    // generate the occurrences for a Monday
     await TaskRepository(db).generateOccurrences(on: now);
     expect(
       (await db.allTasks()).where((t) => t.recurrenceId == 'r1').isNotEmpty,

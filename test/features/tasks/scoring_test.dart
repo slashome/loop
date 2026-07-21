@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loop/src/features/tasks/domain/scoring.dart';
 import 'package:loop/src/features/tasks/domain/task.dart';
 
-/// `now` fixe pour des tests déterministes.
+/// Fixed `now` for deterministic tests.
 final DateTime kNow = DateTime.utc(2026, 1, 1, 12);
 
 Task makeTask({
@@ -11,7 +11,7 @@ Task makeTask({
   Duration age = Duration.zero,
   TaskStatus status = TaskStatus.open,
   DateTime? deletedAt,
-  String title = 'tâche',
+  String title = 'task',
 }) {
   final created = kNow.subtract(age);
   return Task(
@@ -27,19 +27,19 @@ Task makeTask({
 
 void main() {
   group('taskScore', () {
-    test('à âge nul, le score vaut exactement la priorité', () {
+    test('at zero age, the score equals exactly the priority', () {
       final t = makeTask(id: 'a', priority: 4);
       expect(
           taskScore(t, ScoringConfig.defaults, now: kNow), closeTo(4.0, 1e-9));
     });
 
-    test('un âge négatif ne donne aucun bonus', () {
+    test('a negative age gives no bonus', () {
       final t = makeTask(id: 'a', priority: 2, age: const Duration(days: -5));
       expect(
           taskScore(t, ScoringConfig.defaults, now: kNow), closeTo(2.0, 1e-9));
     });
 
-    test('le score croît avec l\'ancienneté mais reste borné par k', () {
+    test('the score grows with age but stays bounded by k', () {
       const cfg = ScoringConfig(k: 2, tauDays: 14);
       final young =
           makeTask(id: 'y', priority: 2, age: const Duration(days: 1));
@@ -49,12 +49,12 @@ void main() {
 
       expect(taskScore(old, cfg, now: kNow),
           greaterThan(taskScore(young, cfg, now: kNow)));
-      // gain plafonné : jamais au-dessus de priorité + k.
+      // capped gain: never above priority + k.
       expect(taskScore(ancient, cfg, now: kNow), lessThanOrEqualTo(2 + cfg.k));
       expect(taskScore(ancient, cfg, now: kNow), closeTo(4.0, 1e-3));
     });
 
-    test('à ~tau, ~63 % du gain k est capté', () {
+    test('at ~tau, ~63% of the gain k is captured', () {
       const cfg = ScoringConfig(k: 2, tauDays: 14);
       final t = makeTask(id: 'a', priority: 1, age: const Duration(days: 14));
       // 1 - e^-1 ≈ 0.632 → 1 + 2*0.632 ≈ 2.264
@@ -62,10 +62,10 @@ void main() {
     });
   });
 
-  group('anti-famine borné (décision de design)', () {
-    const cfg = ScoringConfig(k: 2, tauDays: 14); // borné
+  group('bounded anti-starvation (design decision)', () {
+    const cfg = ScoringConfig(k: 2, tauDays: 14); // bounded
 
-    test('une vieille P2 négligée finit par dépasser une P3 fraîche', () {
+    test('a neglected old P2 eventually overtakes a fresh P3', () {
       final oldLow =
           makeTask(id: 'old', priority: 2, age: const Duration(days: 90));
       final freshMid = makeTask(id: 'fresh', priority: 3);
@@ -73,9 +73,7 @@ void main() {
       expect(ordered.first.id, 'old'); // score ~4 > 3
     });
 
-    test(
-        'mais une vieille P1 ne dépasse JAMAIS une P4 fraîche (priorité domine)',
-        () {
+    test('but an old P1 NEVER overtakes a fresh P4 (priority dominates)', () {
       final ancientLow =
           makeTask(id: 'anc', priority: 1, age: const Duration(days: 3650));
       final freshHigh = makeTask(id: 'p4', priority: 4);
@@ -84,7 +82,7 @@ void main() {
       expect(ordered.first.id, 'p4'); // ~3 < 4
     });
 
-    test('anti-famine total (k>=4) laisse une vieille P1 remonter au sommet',
+    test('total anti-starvation (k>=4) lets an old P1 rise back to the top',
         () {
       const total = ScoringConfig(k: 4, tauDays: 14);
       final ancientLow =
@@ -97,7 +95,7 @@ void main() {
   });
 
   group('nextActions — composition sorted(filtered(items))', () {
-    test('exclut les tâches supprimées et non ouvertes', () {
+    test('excludes deleted and non-open tasks', () {
       final tasks = [
         makeTask(id: 'open', priority: 5),
         makeTask(id: 'done', priority: 5, status: TaskStatus.done),
@@ -108,35 +106,34 @@ void main() {
       expect(result.map((t) => t.id), ['open']);
     });
 
-    test('applique le filtre orthogonal AVANT le tri', () {
+    test('applies the orthogonal filter BEFORE sorting', () {
       final tasks = [
         makeTask(id: 'p5', priority: 5),
         makeTask(id: 'p4', priority: 4),
         makeTask(id: 'p2', priority: 2),
       ];
-      // filtre : priorité >= 4
+      // filter: priority >= 4
       final result = nextActions(
         tasks,
         now: kNow,
         filter: (t) => t.priority >= 4,
       );
-      expect(result.map((t) => t.id), ['p5', 'p4']); // filtré puis trié desc
+      expect(
+          result.map((t) => t.id), ['p5', 'p4']); // filtered then sorted desc
     });
 
-    test('tri par score décroissant, départage par ancienneté', () {
+    test('sort by descending score, tie-broken by age', () {
       final tasks = [
         makeTask(id: 'b', priority: 3),
         makeTask(id: 'a', priority: 3, age: const Duration(minutes: 1)),
         makeTask(id: 'top', priority: 5),
       ];
       final result = nextActions(tasks, now: kNow);
-      // top d'abord ; puis les deux P3 départagées par ancienneté (a plus vieille)
+      // top first; then the two P3s tie-broken by age (a is older)
       expect(result.map((t) => t.id), ['top', 'a', 'b']);
     });
 
-    test(
-        'à score égal, départage par urgence : échéance proche > lointaine > sans date',
-        () {
+    test('at equal score, tie-broken by urgency: near due > far > no date', () {
       Task dated(String id, Duration inFuture) => Task(
             id: id,
             title: id,
@@ -152,7 +149,7 @@ void main() {
       expect(ordered.map((t) => t.id), ['soon', 'later', 'noDate']);
     });
 
-    test('ne mute pas la liste source', () {
+    test('does not mutate the source list', () {
       final tasks = [
         makeTask(id: 'p2', priority: 2),
         makeTask(id: 'p5', priority: 5),
@@ -163,7 +160,7 @@ void main() {
     });
   });
 
-  group('préférence desire/impact (bandes, Étage 1)', () {
+  group('desire/impact preference (bands, Tier 1)', () {
     Task pref(
       String id, {
       int priority = 3,
@@ -182,7 +179,7 @@ void main() {
           updatedAt: kNow,
         );
 
-    test('à bande égale, desire plus forte passe devant', () {
+    test('at equal band, higher desire comes first', () {
       final ordered = nextActions([
         pref('low', desire: 0),
         pref('neutral'),
@@ -191,7 +188,7 @@ void main() {
       expect(ordered.map((t) => t.id), ['high', 'neutral', 'low']);
     });
 
-    test('l\'impact (moi + autres) départage aussi', () {
+    test('impact (self + others) also breaks ties', () {
       final ordered = nextActions([
         pref('faible', impactSelf: 0, impactOthers: 0),
         pref('fort', impactSelf: 1, impactOthers: 1),
@@ -199,8 +196,8 @@ void main() {
       expect(ordered.first.id, 'fort');
     });
 
-    test('la préférence ne franchit JAMAIS un palier de priorité', () {
-      // P2 à préférence maximale vs P3 neutre : le P3 reste devant (bande sup.).
+    test('preference NEVER crosses a priority tier', () {
+      // Max-preference P2 vs neutral P3: the P3 stays ahead (higher band).
       final ordered = nextActions([
         pref('p2max', priority: 2, desire: 1, impactSelf: 1, impactOthers: 1),
         pref('p3neutre', priority: 3),
@@ -209,43 +206,43 @@ void main() {
     });
   });
 
-  group('PriorityCaps — arbitrage à l\'écriture', () {
+  group('PriorityCaps — arbitration at write time', () {
     const caps = PriorityCaps({5: 3, 4: 5});
 
-    test('un palier non listé est illimité', () {
+    test('an unlisted tier is unlimited', () {
       final many =
           List.generate(100, (i) => makeTask(id: 'p1-$i', priority: 1));
       expect(caps.canAssign(1, many), isTrue);
     });
 
-    test('refuse quand le palier est plein', () {
+    test('refuses when the tier is full', () {
       final full = List.generate(3, (i) => makeTask(id: 'p5-$i', priority: 5));
       expect(caps.canAssign(5, full), isFalse);
       expect(caps.remainingSlots(5, full), 0);
     });
 
-    test('autorise tant qu\'il reste une place', () {
+    test('allows as long as a slot remains', () {
       final two = List.generate(2, (i) => makeTask(id: 'p5-$i', priority: 5));
       expect(caps.canAssign(5, two), isTrue);
       expect(caps.remainingSlots(5, two), 1);
     });
 
-    test('les tâches non vivantes ne comptent pas dans le palier', () {
+    test('non-live tasks do not count toward the tier', () {
       final tasks = [
         makeTask(id: 'a', priority: 5),
         makeTask(id: 'b', priority: 5, status: TaskStatus.done),
         makeTask(id: 'c', priority: 5, deletedAt: kNow),
       ];
-      expect(caps.remainingSlots(5, tasks), 2); // seule 'a' compte
+      expect(caps.remainingSlots(5, tasks), 2); // only 'a' counts
     });
 
-    test('exclut la tâche en cours d\'édition du décompte', () {
+    test('excludes the task being edited from the count', () {
       final full = [
         makeTask(id: 'x', priority: 5),
         makeTask(id: 'y', priority: 5),
         makeTask(id: 'z', priority: 5),
       ];
-      // sans exclusion : plein ; en éditant 'z' (déjà P5) : une place virtuelle.
+      // without exclusion: full; when editing 'z' (already P5): one virtual slot.
       expect(caps.canAssign(5, full), isFalse);
       expect(caps.canAssign(5, full, excludeId: 'z'), isTrue);
     });

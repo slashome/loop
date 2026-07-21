@@ -8,7 +8,7 @@ final recurrenceRepositoryProvider = Provider<RecurrenceRepository>(
   (ref) => RecurrenceRepository(ref.watch(appDatabaseProvider)),
 );
 
-/// Flux de toutes les récurrences (non supprimées), pour l'onglet Repeats.
+/// Stream of all recurrences (not deleted), for the Repeats tab.
 final recurrencesProvider = StreamProvider<List<Recurrence>>(
   (ref) => ref.watch(recurrenceRepositoryProvider).watchAll(),
 );

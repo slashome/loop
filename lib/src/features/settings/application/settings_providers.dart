@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/settings.dart';
 
-/// Instance SharedPreferences, surchargée dans `main()` (déjà chargée).
+/// SharedPreferences instance, overridden in `main()` (already loaded).
 final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) =>
       throw UnimplementedError('sharedPreferencesProvider must be overridden'),
@@ -12,7 +12,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 const _kNewestAtBottom = 'newestAtBottom';
 const _kLanguageTag = 'languageTag';
 
-/// Préférences utilisateur, persistées via SharedPreferences.
+/// User preferences, persisted via SharedPreferences.
 class SettingsNotifier extends Notifier<Settings> {
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 

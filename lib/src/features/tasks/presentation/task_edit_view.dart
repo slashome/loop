@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../recurrences/application/recurrences_providers.dart';
 import '../../recurrences/domain/recurrence.dart';
 import '../../recurrences/presentation/recurrence_edit_view.dart';
@@ -8,7 +9,7 @@ import '../application/tasks_providers.dart';
 import '../domain/scoring.dart';
 import '../domain/task.dart';
 
-/// Palette priorité — cohérente avec la pastille de la carte.
+/// Priority palette — consistent with the card's dot.
 const Map<int, Color> kPriorityColors = {
   5: Color(0xFFE5484D),
   4: Color(0xFFF76B15),
@@ -17,11 +18,11 @@ const Map<int, Color> kPriorityColors = {
   1: Color(0xFF8B8D98),
 };
 
-/// Conversion slider 1..10 (UI) <-> stockage 0..1. 1 → 0.0, 10 → 1.0.
+/// Slider conversion 1..10 (UI) <-> 0..1 storage. 1 → 0.0, 10 → 1.0.
 double? _fromUi(double? ui) => ui == null ? null : (ui - 1) / 9;
 double _toUi(double v01) => v01 * 9 + 1;
 
-/// Édition (ou création si [task] est nul) d'une tâche.
+/// Editing (or creating, if [task] is null) a task.
 class TaskEditView extends ConsumerStatefulWidget {
   const TaskEditView({super.key, this.task});
   final Task? task;
@@ -91,7 +92,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     final title = _title.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Le titre est obligatoire.')),
+        SnackBar(content: Text(AppLocalizations.of(context).titleRequired)),
       );
       return;
     }
@@ -123,8 +124,8 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     Navigator.of(context).pop();
   }
 
-  /// Transforme la tâche ponctuelle en récurrence (ouvre l'éditeur pré-rempli).
-  /// Si la conversion aboutit, la tâche d'origine a été supprimée : on ferme.
+  /// Turns the one-off task into a recurrence (opens the pre-filled editor).
+  /// If the conversion succeeds, the original task was deleted: we close.
   Future<void> _convertToRecurrence() async {
     final converted = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -146,20 +147,21 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
     final caps = ref.watch(priorityCapsProvider);
 
-    // Récurrence source, si cette tâche est une occurrence (final -> promotion
-    // OK même capturée dans la closure onTap).
+    // Source recurrence, if this task is an occurrence (final -> promotion
+    // OK even when captured in the onTap closure).
     final recurrence = _recurrenceFor(widget.task?.recurrenceId);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isNew ? 'Nouvelle tâche' : 'Modifier la tâche'),
+        title: Text(_isNew ? l.taskEditNewTitle : l.taskEditEditTitle),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('Enregistrer'),
+            child: Text(l.commonSave),
           ),
         ],
       ),
@@ -173,8 +175,8 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
               clipBehavior: Clip.antiAlias,
               child: ListTile(
                 leading: const Icon(Icons.repeat),
-                title: Text('Occurrence de « ${recurrence.title} »'),
-                subtitle: const Text('Modifier la récurrence'),
+                title: Text(l.taskOccurrenceOf(recurrence.title)),
+                subtitle: Text(l.taskEditRecurrence),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -187,9 +189,9 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
           ],
           TextField(
             controller: _title,
-            decoration: const InputDecoration(
-              labelText: 'Titre',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l.commonTitle,
+              border: const OutlineInputBorder(),
             ),
             textCapitalization: TextCapitalization.sentences,
           ),
@@ -198,9 +200,9 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             controller: _description,
             minLines: 2,
             maxLines: 6,
-            decoration: const InputDecoration(
-              labelText: 'Description (optionnel)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l.commonDescriptionOptional,
+              border: const OutlineInputBorder(),
               alignLabelWithHint: true,
             ),
           ),
@@ -211,7 +213,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             onClear: () => setState(() => _dueAt = null),
           ),
           const SizedBox(height: 24),
-          Text('Priorité', style: theme.textTheme.titleSmall),
+          Text(l.commonPriority, style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
           _PrioritySelector(
             selected: _priority,
@@ -222,19 +224,19 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
           ),
           const SizedBox(height: 24),
           _TenPointSlider(
-            label: 'Envie',
+            label: l.taskDesire,
             value01: _desire,
             onChanged: (v) => setState(() => _desire = v),
           ),
           const SizedBox(height: 8),
           _TenPointSlider(
-            label: 'Impact sur moi',
+            label: l.taskImpactSelf,
             value01: _impactSelf,
             onChanged: (v) => setState(() => _impactSelf = v),
           ),
           const SizedBox(height: 8),
           _TenPointSlider(
-            label: 'Impact sur les autres',
+            label: l.taskImpactOthers,
             value01: _impactOthers,
             onChanged: (v) => setState(() => _impactOthers = v),
           ),
@@ -245,7 +247,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             OutlinedButton.icon(
               onPressed: _convertToRecurrence,
               icon: const Icon(Icons.repeat),
-              label: const Text('Répéter cette tâche…'),
+              label: Text(l.taskRepeatThis),
             ),
           ],
         ],
@@ -254,8 +256,8 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   }
 }
 
-/// Sélecteur de priorité P1..P5. Un palier plein (cap atteint) est désactivé,
-/// sauf s'il s'agit du palier courant de la tâche.
+/// Priority selector P1..P5. A full tier (cap reached) is disabled, unless it
+/// is the task's current tier.
 class _PrioritySelector extends StatelessWidget {
   const _PrioritySelector({
     required this.selected,
@@ -282,14 +284,15 @@ class _PrioritySelector extends StatelessWidget {
   }
 
   Widget _priorityChip(BuildContext context, int p) {
+    final l = AppLocalizations.of(context);
     final color = kPriorityColors[p]!;
     final isSelected = p == selected;
-    // Place dispo pour CETTE tâche (elle-même exclue du décompte).
+    // Room available for THIS task (itself excluded from the count).
     final canSelect = caps.canAssign(p, tasks, excludeId: taskId);
     final enabled = isSelected || canSelect;
 
     return ChoiceChip(
-      label: Text(enabled ? 'P$p' : 'P$p (complet)'),
+      label: Text(enabled ? l.priorityLabel(p) : l.priorityFull(p)),
       selected: isSelected,
       onSelected: enabled ? (_) => onChanged(p) : null,
       selectedColor: color.withValues(alpha: 0.18),
@@ -305,8 +308,7 @@ class _PrioritySelector extends StatelessWidget {
   }
 }
 
-/// Ligne « Échéance » : affiche la date/heure ou « aucune », permet de la
-/// choisir ou de l'effacer.
+/// "Due" row: shows the date/time or "none", lets the user pick or clear it.
 class _DueAtTile extends StatelessWidget {
   const _DueAtTile({
     required this.dueAt,
@@ -321,6 +323,7 @@ class _DueAtTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     return OutlinedButton.icon(
       onPressed: onPick,
       icon: const Icon(Icons.event_outlined),
@@ -333,9 +336,7 @@ class _DueAtTile extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              dueAt == null
-                  ? 'Échéance : aucune'
-                  : 'Échéance : ${_fmt(dueAt!)}',
+              dueAt == null ? l.taskDueNone : l.taskDueOn(_fmt(dueAt!)),
             ),
           ),
           if (dueAt != null)
@@ -354,7 +355,7 @@ class _DueAtTile extends StatelessWidget {
   }
 }
 
-/// Slider 1..10 nullable. Bouton pour effacer (repasser à « non défini »).
+/// Nullable 1..10 slider. Button to clear (back to "not set").
 class _TenPointSlider extends StatelessWidget {
   const _TenPointSlider({
     required this.label,
@@ -363,12 +364,13 @@ class _TenPointSlider extends StatelessWidget {
   });
 
   final String label;
-  final double? value01; // 0..1 ou null
+  final double? value01; // 0..1 or null
   final ValueChanged<double?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final isSet = value01 != null;
     final uiValue = isSet ? _toUi(value01!) : 1.0;
 
@@ -380,14 +382,14 @@ class _TenPointSlider extends StatelessWidget {
             Text(label, style: theme.textTheme.titleSmall),
             const Spacer(),
             Text(
-              isSet ? '${uiValue.round()}/10' : 'non défini',
+              isSet ? '${uiValue.round()}/10' : l.commonNotSet,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             if (isSet)
               IconButton(
-                tooltip: 'Effacer',
+                tooltip: l.commonClear,
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.close, size: 18),
                 onPressed: () => onChanged(null),

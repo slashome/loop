@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/brand_fab.dart';
 import '../../tasks/application/tasks_providers.dart';
 import '../application/recurrences_providers.dart';
 import '../domain/recurrence.dart';
 import 'recurrence_edit_view.dart';
 
-/// Onglet 2 — Repeats. Gère les définitions de récurrence (pas les occurrences).
+/// Tab 2 — Repeats. Manages recurrence definitions (not occurrences).
 class RepeatsView extends ConsumerWidget {
   const RepeatsView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(recurrencesProvider);
+    final l = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Repeats'), centerTitle: false),
+      appBar: AppBar(title: Text(l.repeatsTitle), centerTitle: false),
       floatingActionButton: BrandFab(
-        tooltip: 'Nouvelle récurrence',
+        tooltip: l.newRecurrenceTooltip,
         onPressed: () => _openEditor(context),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(l.repeatsError(e.toString()))),
         data: (recs) => recs.isEmpty
-            ? const Center(child: Text('Aucune récurrence.'))
+            ? Center(child: Text(l.repeatsEmpty))
             : ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: recs.length,
@@ -44,7 +46,7 @@ class RepeatsView extends ConsumerWidget {
                     child: ListTile(
                       leading: const Icon(Icons.repeat),
                       title: Text(r.title),
-                      subtitle: Text(cadenceSummary(r)),
+                      subtitle: Text(cadenceSummary(l, r)),
                       trailing: Switch(
                         value: r.active,
                         onChanged: (v) async {
@@ -76,14 +78,16 @@ class RepeatsView extends ConsumerWidget {
   }
 }
 
-/// Résumé lisible de la cadence, ex. « Chaque lun, mer · 8h, 20h ».
-String cadenceSummary(Recurrence r) {
-  final hours = r.byHours.map((h) => '${h}h').join(', ');
+/// Human-readable cadence summary, e.g. "Every mon, wed · 8h, 20h".
+String cadenceSummary(AppLocalizations l, Recurrence r) {
+  final labels = weekdayLabels(l);
+  final hours = r.byHours.map((h) => l.hourShort(h)).join(', ');
   final when = switch (r.freq) {
-    RecurrenceFreq.daily => 'Chaque jour',
-    RecurrenceFreq.weekly =>
-      'Chaque ${r.byWeekdays.map((d) => kWeekdayLabels[d - 1].toLowerCase()).join(', ')}',
-    RecurrenceFreq.monthly => 'Le ${r.byMonthDays.join(', ')} du mois',
+    RecurrenceFreq.daily => l.cadenceDaily,
+    RecurrenceFreq.weekly => l.cadenceWeekly(
+        r.byWeekdays.map((d) => labels[d - 1].toLowerCase()).join(', '),
+      ),
+    RecurrenceFreq.monthly => l.cadenceMonthly(r.byMonthDays.join(', ')),
   };
-  return '$when · $hours';
+  return l.cadenceSummary(when, hours);
 }

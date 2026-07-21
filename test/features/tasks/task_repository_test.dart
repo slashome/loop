@@ -8,7 +8,7 @@ import 'package:loop/src/features/tasks/domain/task.dart';
 void main() {
   late AppDatabase db;
   late TaskRepository repo;
-  // Lundi 6 juillet 2026 (la récurrence hebdo de démo est un lundi).
+  // Monday 6 July 2026 (the demo weekly recurrence is a Monday).
   final monday = DateTime(2026, 7, 6, 12);
 
   setUp(() {
@@ -17,14 +17,14 @@ void main() {
   });
   tearDown(() => db.close());
 
-  test('bootstrap amorce tâches et récurrences quand la base est vide',
+  test('bootstrap seeds tasks and recurrences when the database is empty',
       () async {
     await repo.bootstrap(clock: monday);
     expect(await db.countTasks(), greaterThan(0));
     expect(await db.countRecurrences(), greaterThan(0));
   });
 
-  test('bootstrap est idempotent (ne re-seed pas)', () async {
+  test('bootstrap is idempotent (does not re-seed)', () async {
     await repo.bootstrap(clock: monday);
     final n1 = await db.countTasks();
     await repo.bootstrap(clock: monday);
@@ -32,22 +32,22 @@ void main() {
     expect(n2, n1);
   });
 
-  test('applyEdit met à jour priorité/desire et peut effacer desire', () async {
+  test('applyEdit updates priority/desire and can clear desire', () async {
     await repo.bootstrap(clock: monday);
     final id = (await db.allTasks()).first.id;
 
-    await repo.applyEdit(id, title: 'Modifié', priority: 5, desire: 1.0);
+    await repo.applyEdit(id, title: 'Edited', priority: 5, desire: 1.0);
     var t = await repo.getById(id);
     expect(t!.priority, 5);
     expect(t.desire, 1.0);
-    expect(t.title, 'Modifié');
+    expect(t.title, 'Edited');
 
-    await repo.applyEdit(id, title: 'Modifié', priority: 3);
+    await repo.applyEdit(id, title: 'Edited', priority: 3);
     t = await repo.getById(id);
     expect(t!.desire, isNull);
   });
 
-  test('create insère une nouvelle tâche vivante', () async {
+  test('create inserts a new live task', () async {
     final id = await repo.create(title: 'Nouvelle', priority: 4, desire: 0.5);
     final live = await repo.watchTasks().first;
     final t = live.firstWhere((t) => t.id == id);
@@ -56,7 +56,7 @@ void main() {
     expect(t.desire, 0.5);
   });
 
-  test('softDelete retire la tâche du flux', () async {
+  test('softDelete removes the task from the stream', () async {
     await repo.bootstrap(clock: monday);
     final id = (await db.allTasks()).first.id;
     await repo.softDelete(id);
@@ -64,7 +64,7 @@ void main() {
     expect(live.any((t) => t.id == id), isFalse);
   });
 
-  test('complete passe le statut à done', () async {
+  test('complete sets the status to done', () async {
     await repo.bootstrap(clock: monday);
     final id =
         (await db.allTasks()).firstWhere((r) => r.recurrenceId == null).id;
@@ -72,8 +72,8 @@ void main() {
     expect((await repo.getById(id))!.status, TaskStatus.done);
   });
 
-  test('génère les occurrences du jour, sans doublon', () async {
-    // Récurrences de contrôle (indépendantes des fixtures locales).
+  test('generates the occurrences for the day, without duplicates', () async {
+    // Control recurrences (independent of the local fixtures).
     await db.insertRecurrence(
       RecurrenceRowsCompanion.insert(
         id: 'r-daily',
@@ -90,7 +90,7 @@ void main() {
         id: 'r-weekly-mon',
         title: 'Hebdo lundi',
         freq: 'weekly',
-        byWeekdays: const Value('1'), // lundi
+        byWeekdays: const Value('1'), // Monday
         dtstart: monday,
         createdAt: monday,
         updatedAt: monday,
@@ -98,7 +98,7 @@ void main() {
     );
 
     await repo.generateOccurrences(on: monday, horizonDays: 0);
-    // lundi seul : quotidienne 2× + hebdo-lundi 1× = 3 occurrences.
+    // Monday alone: daily 2× + weekly-Monday 1× = 3 occurrences.
     expect(
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
 
@@ -108,7 +108,7 @@ void main() {
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 3);
   });
 
-  test('cleanMissedOccurrences retire les manquées seulement si auto-clean',
+  test('cleanMissedOccurrences removes missed ones only if auto-clean',
       () async {
     final yesterday = DateTime(2026, 7, 5, 9);
     await db.insertRecurrence(
@@ -158,11 +158,11 @@ void main() {
 
     await repo.cleanMissedOccurrences(on: monday);
     final ids = (await repo.watchTasks().first).map((t) => t.id).toSet();
-    expect(ids.contains('occ-clean'), isFalse); // nettoyée
-    expect(ids.contains('occ-keep'), isTrue); // conservée (auto-clean off)
+    expect(ids.contains('occ-clean'), isFalse); // cleaned up
+    expect(ids.contains('occ-keep'), isTrue); // kept (auto-clean off)
   });
 
-  test('génère les occurrences sur un horizon (jours à venir)', () async {
+  test('generates the occurrences over a horizon (upcoming days)', () async {
     await db.insertRecurrence(
       RecurrenceRowsCompanion.insert(
         id: 'r-daily',
@@ -174,7 +174,7 @@ void main() {
         updatedAt: monday,
       ),
     );
-    // 3 jours (lundi..mercredi) × 2 heures = 6 occurrences.
+    // 3 days (Monday..Wednesday) × 2 hours = 6 occurrences.
     await repo.generateOccurrences(on: monday, horizonDays: 2);
     expect(
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 6);

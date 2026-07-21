@@ -6,16 +6,16 @@ import '../../recurrences/data/recurrence_repository.dart';
 import '../domain/task.dart';
 import 'fixtures.dart';
 
-/// Source de vérité des tâches (couche data). Mappe Drift <-> domaine, expose
-/// un flux réactif pour l'onglet 1, et gère le seed + la génération des
-/// occurrences de récurrence.
+/// Source of truth for tasks (data layer). Maps Drift <-> domain, exposes a
+/// reactive stream for tab 1, and handles seeding + generation of recurrence
+/// occurrences.
 class TaskRepository {
   TaskRepository(this._db);
 
   final AppDatabase _db;
 
-  /// Flux des tâches non supprimées. Le tri par score et le filtre « vivant »
-  /// se font en aval (couche application).
+  /// Stream of non-deleted tasks. Sorting by score and the "live" filter are
+  /// done downstream (application layer).
   Stream<List<Task>> watchTasks() =>
       _db.watchTasks().map((rows) => rows.map(_toTask).toList());
 
@@ -27,7 +27,7 @@ class TaskRepository {
     return null;
   }
 
-  /// Crée une nouvelle tâche ponctuelle. Renvoie son id.
+  /// Creates a new one-off task. Returns its id.
   Future<String> create({
     required String title,
     String? description,
@@ -57,7 +57,7 @@ class TaskRepository {
     return id;
   }
 
-  /// Soft-delete (sync-ready) : retire la tâche de l'onglet 1.
+  /// Soft-delete (sync-ready): removes the task from tab 1.
   Future<void> softDelete(String id) async {
     final now = DateTime.now();
     await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
@@ -79,8 +79,8 @@ class TaskRepository {
     );
   }
 
-  /// Applique une édition. `Value(null)` efface un champ optionnel ;
-  /// `Value.absent()` le laisse inchangé.
+  /// Applies an edit. `Value(null)` clears an optional field;
+  /// `Value.absent()` leaves it unchanged.
   Future<void> applyEdit(
     String id, {
     required String title,
@@ -105,12 +105,12 @@ class TaskRepository {
     );
   }
 
-  /// Au démarrage : seed la base si vide, puis matérialise les occurrences
-  /// du jour. Idempotent (occurrences dédupliquées par id déterministe).
+  /// On startup: seeds the database if empty, then materializes today's
+  /// occurrences. Idempotent (occurrences deduplicated by deterministic id).
   Future<void> bootstrap({DateTime? clock}) async {
     final now = clock ?? DateTime.now();
-    // Seed indépendant par entité : après une migration qui recrée la table
-    // des récurrences, celles-ci se re-seedent sans toucher aux tâches.
+    // Per-entity independent seeding: after a migration that recreates the
+    // recurrences table, they re-seed without touching the tasks.
     if (await _db.countTasks() == 0) {
       for (final t in seedTasks(now)) {
         await _db.upsertTask(_toCompanion(t));
@@ -125,16 +125,16 @@ class TaskRepository {
     await cleanMissedOccurrences(on: now);
   }
 
-  /// Retire (soft-delete) les occurrences manquées des récurrences réglées sur
-  /// auto-nettoyage. Renvoie le nombre nettoyé.
+  /// Soft-deletes missed occurrences of recurrences set to auto-cleanup.
+  /// Returns the number cleaned up.
   Future<int> cleanMissedOccurrences({required DateTime on}) {
     return _db.cleanMissedOccurrences(DateTime(on.year, on.month, on.day));
   }
 
-  /// Matérialise les occurrences de chaque récurrence active de [on] jusqu'à
-  /// [on] + [horizonDays] (roulant). Réexécutable sans doublon (id déterministe
-  /// + insertOrIgnore). L'onglet Actions masque les occurrences « à venir » par
-  /// défaut ; elles restent accessibles via le filtre « À venir ».
+  /// Materializes the occurrences of each active recurrence from [on] up to
+  /// [on] + [horizonDays] (rolling). Re-runnable without duplicates
+  /// (deterministic id + insertOrIgnore). The Actions tab hides "upcoming"
+  /// occurrences by default; they remain accessible via the "Upcoming" filter.
   Future<void> generateOccurrences({
     required DateTime on,
     int horizonDays = 14,
@@ -156,7 +156,7 @@ class TaskRepository {
               recurrenceId: Value(rec.id),
               occurrenceDate: Value(occ),
               dueAt: Value(occ),
-              // Créée MAINTENANT (fraîche), due à l'heure de l'occurrence.
+              // Created NOW (fresh), due at the occurrence time.
               createdAt: on,
               updatedAt: on,
             ),

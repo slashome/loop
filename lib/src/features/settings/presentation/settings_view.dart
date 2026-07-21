@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../application/settings_providers.dart';
 
-/// Écran des réglages utilisateur. Accueillera aussi k/τ/caps du score.
+/// User settings screen. Will also host the score's k/τ/caps.
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
 

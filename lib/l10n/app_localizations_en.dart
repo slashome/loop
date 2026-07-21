@@ -181,4 +181,189 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get commonTitle => 'Title';
+
+  @override
+  String get commonDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get commonNotSet => 'Not set';
+
+  @override
+  String get commonClear => 'Clear';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get commonPriority => 'Priority';
+
+  @override
+  String get titleRequired => 'Title is required.';
+
+  @override
+  String get taskEditNewTitle => 'New task';
+
+  @override
+  String get taskEditEditTitle => 'Edit task';
+
+  @override
+  String taskOccurrenceOf(String title) {
+    return 'Occurrence of “$title”';
+  }
+
+  @override
+  String get taskEditRecurrence => 'Edit recurrence';
+
+  @override
+  String get taskDesire => 'Desire';
+
+  @override
+  String get taskImpactSelf => 'Impact on me';
+
+  @override
+  String get taskImpactOthers => 'Impact on others';
+
+  @override
+  String get taskRepeatThis => 'Repeat this task…';
+
+  @override
+  String get taskDueNone => 'Due: none';
+
+  @override
+  String taskDueOn(String date) {
+    return 'Due: $date';
+  }
+
+  @override
+  String priorityFull(int level) {
+    return 'P$level (full)';
+  }
+
+  @override
+  String priorityLabel(int level) {
+    return 'P$level';
+  }
+
+  @override
+  String get recurrenceNewTitle => 'New recurrence';
+
+  @override
+  String get recurrenceEditTitle => 'Edit recurrence';
+
+  @override
+  String get recurrenceFrequency => 'Frequency';
+
+  @override
+  String get recurrenceFreqDaily => 'Every day';
+
+  @override
+  String get recurrenceFreqWeekly => 'Week';
+
+  @override
+  String get recurrenceFreqMonthly => 'Month';
+
+  @override
+  String get recurrenceWeekdays => 'Days of the week';
+
+  @override
+  String get recurrenceMonthDays => 'Days of the month';
+
+  @override
+  String get recurrenceHours => 'Hours';
+
+  @override
+  String get recurrenceDefaultPriority => 'Default priority';
+
+  @override
+  String get recurrenceActive => 'Active';
+
+  @override
+  String get recurrenceActiveSubtitle => 'Generates occurrences in Actions';
+
+  @override
+  String get recurrenceAutoClean => 'Clean up missed occurrences';
+
+  @override
+  String get recurrenceAutoCleanSubtitle =>
+      'Undone occurrences from before today are removed. Turn off to keep them “overdue”.';
+
+  @override
+  String get recurrencePickHour => 'Pick at least one hour.';
+
+  @override
+  String get recurrencePickWeekday => 'Pick at least one day of the week.';
+
+  @override
+  String get recurrencePickMonthDay => 'Pick at least one day of the month.';
+
+  @override
+  String recurrenceNowRecurring(String title, String suffix) {
+    return '“$title” is now recurring$suffix';
+  }
+
+  @override
+  String recurrenceNextSuffix(String when) {
+    return ' · next: $when';
+  }
+
+  @override
+  String get repeatsTitle => 'Repeats';
+
+  @override
+  String get repeatsEmpty => 'No recurrence.';
+
+  @override
+  String repeatsError(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get cadenceDaily => 'Every day';
+
+  @override
+  String cadenceWeekly(String days) {
+    return 'Every $days';
+  }
+
+  @override
+  String cadenceMonthly(String days) {
+    return 'On the $days of the month';
+  }
+
+  @override
+  String cadenceSummary(String cadence, String hours) {
+    return '$cadence · $hours';
+  }
+
+  @override
+  String hourShort(int hour) {
+    return '${hour}h';
+  }
+
+  @override
+  String get weekdayMon => 'Mon';
+
+  @override
+  String get weekdayTue => 'Tue';
+
+  @override
+  String get weekdayWed => 'Wed';
+
+  @override
+  String get weekdayThu => 'Thu';
+
+  @override
+  String get weekdayFri => 'Fri';
+
+  @override
+  String get weekdaySat => 'Sat';
+
+  @override
+  String get weekdaySun => 'Sun';
 }

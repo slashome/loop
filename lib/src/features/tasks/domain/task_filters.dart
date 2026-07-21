@@ -1,19 +1,19 @@
-/// Vues de l'onglet 1 — Dart PUR, testable. Couche orthogonale au score.
+/// Views of tab 1 — PURE Dart, testable. Layer orthogonal to the score.
 ///
-/// Modèle « Smart Lists » : une seule vue active à la fois, chacune = un
-/// prédicat pré-écrit (peut mêler OU/ET/NON librement). L'utilisateur ne
-/// compose jamais de filtre → l'union « sans date + aujourd'hui » est native.
+/// "Smart Lists" model: only one active view at a time, each = a pre-written
+/// predicate (may freely mix OR/AND/NOT). The user never composes a filter →
+/// the "no date + today" union is native.
 library;
 
 import 'task.dart';
 
-/// Nature d'une tâche (usage interne au diagnostic / futurs besoins).
+/// Nature of a task (internal use for diagnostics / future needs).
 enum TaskNature { noDate, dated, recurring }
 
-/// État temporel — n'existe que pour les tâches avec une échéance.
+/// Temporal state — only exists for tasks with a due date.
 enum TaskState { overdue, today, upcoming }
 
-/// Les 4 vues nommées de l'onglet Actions.
+/// The 4 named views of the Actions tab.
 enum TaskView { todo, overdue, upcoming, undated }
 
 TaskNature natureOf(Task t) {
@@ -22,7 +22,7 @@ TaskNature natureOf(Task t) {
   return TaskNature.noDate;
 }
 
-/// État d'une tâche à l'instant [now]. `null` si pas d'échéance.
+/// State of a task at instant [now]. `null` if no due date.
 TaskState? stateOf(Task t, DateTime now) {
   final due = t.dueAt;
   if (due == null) return null;
@@ -32,13 +32,13 @@ TaskState? stateOf(Task t, DateTime now) {
   return dueDay.isAtSameMomentAs(today) ? TaskState.today : TaskState.upcoming;
 }
 
-/// Prédicat d'appartenance d'une tâche à une vue.
+/// Predicate for whether a task belongs to a view.
 ///
-/// - [TaskView.todo] (défaut) : ce qui est dû MAINTENANT = en retard OU
-///   aujourd'hui. PAS de sans-date (backlog), PAS de futur.
-/// - [TaskView.overdue] : datée & échéance passée.
-/// - [TaskView.upcoming] : datée & future.
-/// - [TaskView.undated] : le backlog (aucune échéance).
+/// - [TaskView.todo] (default): what is due NOW = overdue OR today. NO
+///   undated (backlog), NO future.
+/// - [TaskView.overdue]: dated & due date past.
+/// - [TaskView.upcoming]: dated & future.
+/// - [TaskView.undated]: the backlog (no due date).
 bool matchesView(Task t, TaskView v, DateTime now) {
   final s = stateOf(t, now);
   return switch (v) {
@@ -49,7 +49,7 @@ bool matchesView(Task t, TaskView v, DateTime now) {
   };
 }
 
-/// Tâches vivantes d'une vue, non triées (le tri par score est appliqué en
-/// aval par la couche application).
+/// Live tasks of a view, unsorted (sorting by score is applied downstream by
+/// the application layer).
 List<Task> tasksForView(Iterable<Task> tasks, TaskView v, DateTime now) =>
     tasks.where((t) => t.isLive && matchesView(t, v, now)).toList();

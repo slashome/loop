@@ -1,4 +1,4 @@
-/// Préférences utilisateur (locales à l'appareil). Modèle pur.
+/// User preferences (local to the device). Pure model.
 library;
 
 class Settings {
@@ -7,11 +7,11 @@ class Settings {
     this.languageTag = 'system',
   });
 
-  /// Si vrai, la liste Actions est ancrée en bas (meilleur score près du
-  /// pouce). Sinon, ancrée en haut (convention classique).
+  /// If true, the Actions list is anchored at the bottom (highest score near
+  /// the thumb). Otherwise, anchored at the top (classic convention).
   final bool newestAtBottom;
 
-  /// Langue de l'interface : 'system' (langue de l'appareil), 'fr' ou 'en'.
+  /// UI language: 'system' (device language), 'fr' or 'en'.
   final String languageTag;
 
   Settings copyWith({bool? newestAtBottom, String? languageTag}) => Settings(

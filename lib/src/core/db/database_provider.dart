@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app_database.dart';
 
-/// Base de données partagée. Surchargé dans `main()` (et les tests) par une
-/// instance déjà ouverte/amorcée.
+/// Shared database. Overridden in `main()` (and tests) with an
+/// already-opened/bootstrapped instance.
 final appDatabaseProvider = Provider<AppDatabase>(
   (ref) => throw UnimplementedError('appDatabaseProvider must be overridden'),
 );

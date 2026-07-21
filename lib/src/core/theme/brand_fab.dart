@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 
-/// Bouton d'action flottant aux couleurs de la marque (dégradé bleu→vert).
+/// Floating action button in the brand colors (blue→green gradient).
 class BrandFab extends StatelessWidget {
   const BrandFab({
     super.key,

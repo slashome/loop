@@ -8,14 +8,14 @@ void main() {
   final en = AppLocalizationsEn();
   final now = DateTime(2026, 7, 14, 12, 0);
 
-  group('français', () {
+  group('French', () {
     String rel(DateTime d) => humanRelative(fr, d, now);
-    test('passé / futur proche', () {
+    test('near past / near future', () {
       expect(rel(now.subtract(const Duration(minutes: 5))), 'Il y a 5 min');
       expect(rel(now.add(const Duration(minutes: 30))), 'Dans 30 min');
       expect(rel(now.subtract(const Duration(hours: 3))), 'Il y a 3 h');
     });
-    test('jours nommés + mois', () {
+    test('named days + months', () {
       expect(rel(DateTime(2026, 7, 14, 15)), 'Aujourd\'hui à 15h00');
       expect(rel(DateTime(2026, 7, 15, 10)), 'Demain à 10h00');
       expect(rel(DateTime(2026, 7, 13, 18, 30)), 'Hier à 18h30');
@@ -24,9 +24,9 @@ void main() {
     });
   });
 
-  group('anglais', () {
+  group('English', () {
     String rel(DateTime d) => humanRelative(en, d, now);
-    test('formes traduites + heure au format local', () {
+    test('translated forms + time in local format', () {
       expect(rel(now.subtract(const Duration(minutes: 5))), '5 min ago');
       expect(rel(DateTime(2026, 7, 15, 10)), 'Tomorrow at 10:00');
       expect(rel(DateTime(2026, 7, 16, 9)), 'In 2 days');

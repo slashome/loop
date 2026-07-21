@@ -18,7 +18,7 @@ String _viewLabel(AppLocalizations l, TaskView v) => switch (v) {
       TaskView.undated => l.viewUndated,
     };
 
-/// Onglet 1 — Prochaines actions. Cœur de l'app : la liste triée par score.
+/// Tab 1 — Next actions. Heart of the app: the list sorted by score.
 class NextActionsView extends ConsumerWidget {
   const NextActionsView({super.key});
 
@@ -50,7 +50,7 @@ class NextActionsView extends ConsumerWidget {
           MaterialPageRoute<void>(builder: (_) => const TaskEditView()),
         ),
       ),
-      // Sélecteur de vues placé EN BAS : atteignable au pouce à une main.
+      // View selector placed AT THE BOTTOM: reachable with the thumb one-handed.
       bottomNavigationBar: const _ViewBar(),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -79,8 +79,8 @@ class NextActionsView extends ConsumerWidget {
                 ),
               )
             : ListView.builder(
-                // Ancrage bas (meilleur score près du pouce) ou haut (classique),
-                // selon la préférence utilisateur.
+                // Bottom anchoring (best score near the thumb) or top (classic),
+                // depending on user preference.
                 reverse: newestAtBottom,
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
                 itemCount: items.length,
@@ -105,7 +105,7 @@ class NextActionsView extends ConsumerWidget {
   }
 }
 
-/// Titre de marque : le symbole ∞ du logo, centré (sans texte).
+/// Brand title: the ∞ symbol from the logo, centered (no text).
 class _BrandTitle extends StatelessWidget {
   const _BrandTitle();
 
@@ -115,8 +115,8 @@ class _BrandTitle extends StatelessWidget {
   }
 }
 
-/// Sélecteur de vue (Smart Lists) en bas d'écran : chips mono-sélection avec
-/// compteurs, atteignable au pouce.
+/// View selector (Smart Lists) at the bottom of the screen: single-select chips
+/// with counters, reachable with the thumb.
 class _ViewBar extends ConsumerWidget {
   const _ViewBar();
 
@@ -147,7 +147,7 @@ class _ViewBar extends ConsumerWidget {
           height: 52,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            // marge droite pour ne pas passer sous le FAB.
+            // right margin so it does not slip under the FAB.
             padding: const EdgeInsets.fromLTRB(16, 8, 88, 8),
             children: [
               for (final v in TaskView.values)

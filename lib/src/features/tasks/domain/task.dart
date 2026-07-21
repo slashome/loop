@@ -1,12 +1,12 @@
-/// Modèle métier d'une tâche.
+/// Business model of a task.
 ///
-/// Volontairement PUR : aucune dépendance à Flutter ni à Drift. C'est
-/// l'expression de la décision « schéma portable » — ce type doit survivre à
-/// un changement de stockage ou à l'ajout futur d'une couche de sync/fédération.
-/// Le mapping Drift <-> Task vit dans la couche `data/`, jamais ici.
+/// Deliberately PURE: no dependency on Flutter or Drift. This expresses the
+/// "portable schema" decision — this type must survive a storage change or the
+/// future addition of a sync/federation layer. The Drift <-> Task mapping
+/// lives in the `data/` layer, never here.
 library;
 
-/// Statut d'une tâche. `open` est le seul état « actif » visible dans l'onglet 1.
+/// Status of a task. `open` is the only "active" state visible in tab 1.
 enum TaskStatus { open, done, archived, dropped }
 
 class Task {
@@ -30,63 +30,63 @@ class Task {
     this.sourceRef,
     this.completedAt,
     this.deletedAt,
-  })  : assert(priority >= 1 && priority <= 5, 'priority doit être dans 1..5'),
+  })  : assert(priority >= 1 && priority <= 5, 'priority must be in 1..5'),
         assert(desire == null || (desire >= 0 && desire <= 1),
-            'desire doit être dans 0..1'),
+            'desire must be in 0..1'),
         assert(impactSelf == null || (impactSelf >= 0 && impactSelf <= 1),
-            'impactSelf doit être dans 0..1'),
+            'impactSelf must be in 0..1'),
         assert(impactOthers == null || (impactOthers >= 0 && impactOthers <= 1),
-            'impactOthers doit être dans 0..1');
+            'impactOthers must be in 0..1');
 
-  /// UUIDv7 — stable, triable, générable offline (prêt pour la fédération).
+  /// UUIDv7 — stable, sortable, generatable offline (ready for federation).
   final String id;
 
-  /// Propriétaire du compte. Défaut `'local'` en v1 ; ancre pour la fédération.
+  /// Account owner. Defaults to `'local'` in v1; anchor for federation.
   final String ownerId;
 
-  /// Seul champ obligatoire. Tout le reste a un défaut sensé.
+  /// The only required field. Everything else has a sensible default.
   final String title;
 
   final String? description;
 
-  /// Envie — stockée en 0..1. Le slider 1..10 vit uniquement côté UI.
+  /// Desire — stored as 0..1. The 1..10 slider lives only on the UI side.
   final double? desire;
 
-  /// Impact sur soi — 0..1.
+  /// Impact on self — 0..1.
   final double? impactSelf;
 
-  /// Impact sur les autres — 0..1.
+  /// Impact on others — 0..1.
   final double? impactOthers;
 
-  /// Priorité 1..5. Les caps par palier sont appliqués à l'écriture
-  /// (voir [PriorityCaps]), pas ici.
+  /// Priority 1..5. The per-tier caps are applied on write
+  /// (see [PriorityCaps]), not here.
   final int priority;
 
   final String? categoryId;
   final TaskStatus status;
 
-  /// Échéance (calendrier / filtre « aujourd'hui »).
+  /// Due date (calendar / "today" filter).
   final DateTime? dueAt;
 
-  /// Si non nul, cette tâche est une occurrence matérialisée d'un repeat.
+  /// If non-null, this task is a materialized occurrence of a repeat.
   final String? recurrenceId;
 
-  /// Date de l'occurrence (nul pour une tâche ponctuelle).
+  /// Occurrence date (null for a one-off task).
   final DateTime? occurrenceDate;
 
-  /// Provenance — prépare la passerelle idée -> tâche (ex: 'idea-app').
+  /// Provenance — prepares the idea -> task gateway (e.g.: 'idea-app').
   final String? source;
   final String? sourceRef;
 
-  /// Horodatage. [createdAt] pilote l'ancienneté du score.
+  /// Timestamps. [createdAt] drives the aging part of the score.
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? completedAt;
 
-  /// Soft-delete — prêt pour la sync (une suppression est un fait à propager).
+  /// Soft-delete — ready for sync (a deletion is a fact to propagate).
   final DateTime? deletedAt;
 
-  /// Une tâche est « vivante » si non supprimée et encore ouverte.
+  /// A task is "live" if not deleted and still open.
   bool get isLive => deletedAt == null && status == TaskStatus.open;
 
   Task copyWith({

@@ -8,19 +8,19 @@ import 'package:loop/src/features/tasks/presentation/widgets/task_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  // Teste le câblage UI (stream -> tri -> cartes) sans Drift : on override
-  // tasksProvider avec un flux fixe. Le vrai chemin base est couvert par
+  // Tests the UI wiring (stream -> sort -> cards) without Drift: we override
+  // tasksProvider with a fixed stream. The real database path is covered by
   // task_repository_test.dart.
-  testWidgets('affiche les tâches triées par score', (tester) async {
+  testWidgets('displays tasks sorted by score', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    // Échéance aujourd'hui → présentes dans la vue « À faire » par défaut.
+    // Due today → present in the "To do" view by default.
     final due = now.add(const Duration(hours: 1));
     final tasks = [
       Task(
         id: 'a',
-        title: 'Tâche P2',
+        title: 'Task P2',
         priority: 2,
         dueAt: due,
         createdAt: now,
@@ -28,7 +28,7 @@ void main() {
       ),
       Task(
         id: 'b',
-        title: 'Tâche P5',
+        title: 'Task P5',
         priority: 5,
         dueAt: due,
         createdAt: now,
@@ -45,13 +45,13 @@ void main() {
         child: const LoopApp(),
       ),
     );
-    await tester.pump(); // laisse le Stream.value émettre
+    await tester.pump(); // let the Stream.value emit
 
     expect(find.byType(TaskCard), findsNWidgets(2));
-    // Liste ancrée en bas (reverse) : la P5 (meilleur score) est SOUS la P2.
+    // List anchored at the bottom (reverse): P5 (best score) is BELOW P2.
     expect(
-      tester.getTopLeft(find.text('Tâche P5')).dy,
-      greaterThan(tester.getTopLeft(find.text('Tâche P2')).dy),
+      tester.getTopLeft(find.text('Task P5')).dy,
+      greaterThan(tester.getTopLeft(find.text('Task P2')).dy),
     );
   });
 }

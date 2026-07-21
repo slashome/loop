@@ -27,33 +27,33 @@ void main() {
   final upcoming = task(id: 'upcoming', due: kNow.add(const Duration(days: 3)));
 
   group('matchesView', () {
-    test('À faire = en retard + aujourd\'hui (PAS sans-date, PAS futur)', () {
+    test('Todo = overdue + today (NOT undated, NOT future)', () {
       expect(matchesView(overdue, TaskView.todo, kNow), isTrue);
       expect(matchesView(todayFuture, TaskView.todo, kNow), isTrue);
       expect(matchesView(noDate, TaskView.todo, kNow), isFalse);
       expect(matchesView(upcoming, TaskView.todo, kNow), isFalse);
     });
 
-    test('En retard = uniquement les échéances passées', () {
+    test('Overdue = only past due dates', () {
       expect(matchesView(overdue, TaskView.overdue, kNow), isTrue);
       expect(matchesView(noDate, TaskView.overdue, kNow), isFalse);
       expect(matchesView(todayFuture, TaskView.overdue, kNow), isFalse);
     });
 
-    test('À venir = uniquement le futur', () {
+    test('Upcoming = only the future', () {
       expect(matchesView(upcoming, TaskView.upcoming, kNow), isTrue);
       expect(matchesView(todayFuture, TaskView.upcoming, kNow), isFalse);
       expect(matchesView(noDate, TaskView.upcoming, kNow), isFalse);
     });
 
-    test('Non datées = uniquement le backlog sans échéance', () {
+    test('Undated = only the backlog without a due date', () {
       expect(matchesView(noDate, TaskView.undated, kNow), isTrue);
       expect(matchesView(overdue, TaskView.undated, kNow), isFalse);
       expect(matchesView(upcoming, TaskView.undated, kNow), isFalse);
     });
   });
 
-  test('tasksForView ne garde que les tâches vivantes de la vue', () {
+  test('tasksForView keeps only the live tasks of the view', () {
     final done = Task(
       id: 'done',
       title: 'done',
@@ -65,6 +65,7 @@ void main() {
     final ids = tasksForView([overdue, done, noDate], TaskView.todo, kNow)
         .map((t) => t.id)
         .toSet();
-    expect(ids, {'overdue'}); // done exclu (non vivant), noDate exclu (vue)
+    expect(
+        ids, {'overdue'}); // done excluded (non-live), noDate excluded (view)
   });
 }

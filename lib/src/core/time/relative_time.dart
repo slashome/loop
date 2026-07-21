@@ -1,16 +1,16 @@
-/// Formatage de dates en relatif « human-readable », localisé (fr/en).
+/// Human-readable relative date formatting, localized (fr/en).
 library;
 
 import '../../../l10n/app_localizations.dart';
 
-/// Heure au format local : « 10h00 » en français, « 10:00 » sinon.
+/// Time in local format: "10h00" in French, "10:00" otherwise.
 String _time(AppLocalizations l, DateTime d) {
   final h = d.hour.toString().padLeft(2, '0');
   final m = d.minute.toString().padLeft(2, '0');
   return l.localeName.startsWith('fr') ? '${h}h$m' : '$h:$m';
 }
 
-/// Décrit [target] relativement à [now], dans la langue de [l].
+/// Describes [target] relative to [now], in the language of [l].
 String humanRelative(AppLocalizations l, DateTime target, DateTime now) {
   final past = target.isBefore(now);
   final diff = past ? now.difference(target) : target.difference(now);

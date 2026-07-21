@@ -181,4 +181,189 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get commonSave => 'Enregistrer';
+
+  @override
+  String get commonTitle => 'Titre';
+
+  @override
+  String get commonDescriptionOptional => 'Description (optionnel)';
+
+  @override
+  String get commonNotSet => 'non défini';
+
+  @override
+  String get commonClear => 'Effacer';
+
+  @override
+  String get commonDelete => 'Supprimer';
+
+  @override
+  String get commonPriority => 'Priorité';
+
+  @override
+  String get titleRequired => 'Le titre est obligatoire.';
+
+  @override
+  String get taskEditNewTitle => 'Nouvelle tâche';
+
+  @override
+  String get taskEditEditTitle => 'Modifier la tâche';
+
+  @override
+  String taskOccurrenceOf(String title) {
+    return 'Occurrence de « $title »';
+  }
+
+  @override
+  String get taskEditRecurrence => 'Modifier la récurrence';
+
+  @override
+  String get taskDesire => 'Envie';
+
+  @override
+  String get taskImpactSelf => 'Impact sur moi';
+
+  @override
+  String get taskImpactOthers => 'Impact sur les autres';
+
+  @override
+  String get taskRepeatThis => 'Répéter cette tâche…';
+
+  @override
+  String get taskDueNone => 'Échéance : aucune';
+
+  @override
+  String taskDueOn(String date) {
+    return 'Échéance : $date';
+  }
+
+  @override
+  String priorityFull(int level) {
+    return 'P$level (complet)';
+  }
+
+  @override
+  String priorityLabel(int level) {
+    return 'P$level';
+  }
+
+  @override
+  String get recurrenceNewTitle => 'Nouvelle récurrence';
+
+  @override
+  String get recurrenceEditTitle => 'Modifier la récurrence';
+
+  @override
+  String get recurrenceFrequency => 'Fréquence';
+
+  @override
+  String get recurrenceFreqDaily => 'Chaque jour';
+
+  @override
+  String get recurrenceFreqWeekly => 'Semaine';
+
+  @override
+  String get recurrenceFreqMonthly => 'Mois';
+
+  @override
+  String get recurrenceWeekdays => 'Jours de la semaine';
+
+  @override
+  String get recurrenceMonthDays => 'Jours du mois';
+
+  @override
+  String get recurrenceHours => 'Heures';
+
+  @override
+  String get recurrenceDefaultPriority => 'Priorité par défaut';
+
+  @override
+  String get recurrenceActive => 'Active';
+
+  @override
+  String get recurrenceActiveSubtitle => 'Génère des occurrences dans Actions';
+
+  @override
+  String get recurrenceAutoClean => 'Nettoyer les occurrences manquées';
+
+  @override
+  String get recurrenceAutoCleanSubtitle =>
+      'Les occurrences non faites d\'avant aujourd\'hui sont retirées. Désactive pour les garder « en retard ».';
+
+  @override
+  String get recurrencePickHour => 'Choisis au moins une heure.';
+
+  @override
+  String get recurrencePickWeekday => 'Choisis au moins un jour de la semaine.';
+
+  @override
+  String get recurrencePickMonthDay => 'Choisis au moins un jour du mois.';
+
+  @override
+  String recurrenceNowRecurring(String title, String suffix) {
+    return '« $title » est maintenant récurrente$suffix';
+  }
+
+  @override
+  String recurrenceNextSuffix(String when) {
+    return ' · prochaine : $when';
+  }
+
+  @override
+  String get repeatsTitle => 'Repeats';
+
+  @override
+  String get repeatsEmpty => 'Aucune récurrence.';
+
+  @override
+  String repeatsError(String message) {
+    return 'Erreur : $message';
+  }
+
+  @override
+  String get cadenceDaily => 'Chaque jour';
+
+  @override
+  String cadenceWeekly(String days) {
+    return 'Chaque $days';
+  }
+
+  @override
+  String cadenceMonthly(String days) {
+    return 'Le $days du mois';
+  }
+
+  @override
+  String cadenceSummary(String cadence, String hours) {
+    return '$cadence · $hours';
+  }
+
+  @override
+  String hourShort(int hour) {
+    return '${hour}h';
+  }
+
+  @override
+  String get weekdayMon => 'Lun';
+
+  @override
+  String get weekdayTue => 'Mar';
+
+  @override
+  String get weekdayWed => 'Mer';
+
+  @override
+  String get weekdayThu => 'Jeu';
+
+  @override
+  String get weekdayFri => 'Ven';
+
+  @override
+  String get weekdaySat => 'Sam';
+
+  @override
+  String get weekdaySun => 'Dim';
 }

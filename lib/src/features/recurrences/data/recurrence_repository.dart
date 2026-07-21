@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
 import '../domain/recurrence.dart';
 
-/// Source de vérité des définitions de récurrence (onglet Repeats).
+/// Source of truth for recurrence definitions (Repeats tab).
 class RecurrenceRepository {
   RecurrenceRepository(this._db);
 
@@ -28,7 +28,7 @@ class RecurrenceRepository {
   Future<void> delete(String id) => _db.deleteRecurrenceCascade(id);
 }
 
-// ── Mapping Drift <-> domaine (partagé avec TaskRepository) ────────────────
+// ── Drift <-> domain mapping (shared with TaskRepository) ──────────────────
 
 List<int> _parseInts(String csv) =>
     csv.split(',').where((s) => s.isNotEmpty).map(int.parse).toList();

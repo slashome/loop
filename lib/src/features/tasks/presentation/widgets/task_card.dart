@@ -5,8 +5,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/time/relative_time.dart';
 import '../../domain/task.dart';
 
-/// Carte d'une tâche dans l'onglet 1. Couche cosmétique : reflète le score
-/// (via sa position dans la liste), ne le détermine pas.
+/// Card for a task in tab 1. Cosmetic layer: reflects the score
+/// (via its position in the list), does not determine it.
 class TaskCard extends StatelessWidget {
   const TaskCard({
     super.key,
@@ -78,8 +78,8 @@ class TaskCard extends StatelessWidget {
   }
 }
 
-/// Sous-titre : échéance si définie, + desire si réglée. Rien pour une tâche
-/// sans date (l'âge de création reste interne au score). `isLate` = en retard.
+/// Subtitle: due date if set, + desire if set. Nothing for a task
+/// without a date (creation age stays internal to the score). `isLate` = overdue.
 ({String text, bool isLate}) _subtitle(AppLocalizations l, Task task) {
   final parts = <String>[];
   var isLate = false;
@@ -94,7 +94,7 @@ class TaskCard extends StatelessWidget {
   return (text: parts.join(' · '), isLate: isLate);
 }
 
-/// Pastille de priorité : carré arrondi teinté + numéro dans la couleur.
+/// Priority badge: tinted rounded square + number in the color.
 class _PriorityBadge extends StatelessWidget {
   const _PriorityBadge({required this.priority});
   final int priority;
@@ -122,7 +122,7 @@ class _PriorityBadge extends StatelessWidget {
   }
 }
 
-/// Petit affichage discret du score — aide au réglage de k/τ.
+/// Small discreet score display — helps with tuning k/τ.
 class _ScorePill extends StatelessWidget {
   const _ScorePill({required this.score});
   final double score;
