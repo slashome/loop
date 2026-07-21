@@ -12,10 +12,10 @@ import 'task_edit_view.dart';
 import 'widgets/task_card.dart';
 
 String _viewLabel(AppLocalizations l, TaskView v) => switch (v) {
-      TaskView.aFaire => l.viewTodo,
-      TaskView.enRetard => l.viewOverdue,
-      TaskView.aVenir => l.viewUpcoming,
-      TaskView.nonDatees => l.viewUndated,
+      TaskView.todo => l.viewTodo,
+      TaskView.overdue => l.viewOverdue,
+      TaskView.upcoming => l.viewUpcoming,
+      TaskView.undated => l.viewUndated,
     };
 
 /// Onglet 1 — Prochaines actions. Cœur de l'app : la liste triée par score.
@@ -133,7 +133,7 @@ class _ViewBar extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Divider(height: 1, color: theme.colorScheme.outlineVariant),
-        if (view == TaskView.aFaire)
+        if (view == TaskView.todo)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
             child: Text(

@@ -9,7 +9,7 @@ class TaskRows extends Table {
   TextColumn get ownerId => text().withDefault(const Constant('local'))();
   TextColumn get title => text()();
   TextColumn get description => text().nullable()();
-  RealColumn get envie => real().nullable()();
+  RealColumn get desire => real().nullable()();
   RealColumn get impactSelf => real().nullable()();
   RealColumn get impactOthers => real().nullable()();
   IntColumn get priority => integer().withDefault(const Constant(3))();
@@ -83,22 +83,26 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
         onUpgrade: (m, from, to) async {
-          // v2 : cadence de récurrence multi-valuée (byWeekdays/byMonthDays).
-          // La table des récurrences est recréée (données re-seedées au
-          // bootstrap) ; les tâches et leurs éditions sont préservées.
+          // v2: multi-valued recurrence cadence (byWeekdays/byMonthDays).
+          // The recurrences table is recreated (data re-seeded at bootstrap);
+          // tasks and their edits are preserved.
           if (from < 2) {
             await m.deleteTable(recurrenceRows.actualTableName);
             await m.createTable(recurrenceRows);
           }
-          // v3 : nettoyage des occurrences manquées, paramétrable par récurrence.
+          // v3: per-recurrence cleanup of missed occurrences.
           if (from < 3) {
             await m.addColumn(recurrenceRows, recurrenceRows.autoCleanMissed);
+          }
+          // v4: rename the `envie` column to `desire` (English identifiers).
+          if (from < 4) {
+            await m.renameColumn(taskRows, 'envie', taskRows.desire);
           }
         },
       );

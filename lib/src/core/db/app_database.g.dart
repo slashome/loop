@@ -32,10 +32,10 @@ class $TaskRowsTable extends TaskRows with TableInfo<$TaskRowsTable, TaskRow> {
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _envieMeta = const VerificationMeta('envie');
+  static const VerificationMeta _desireMeta = const VerificationMeta('desire');
   @override
-  late final GeneratedColumn<double> envie = GeneratedColumn<double>(
-      'envie', aliasedName, true,
+  late final GeneratedColumn<double> desire = GeneratedColumn<double>(
+      'desire', aliasedName, true,
       type: DriftSqlType.double, requiredDuringInsert: false);
   static const VerificationMeta _impactSelfMeta =
       const VerificationMeta('impactSelf');
@@ -128,7 +128,7 @@ class $TaskRowsTable extends TaskRows with TableInfo<$TaskRowsTable, TaskRow> {
         ownerId,
         title,
         description,
-        envie,
+        desire,
         impactSelf,
         impactOthers,
         priority,
@@ -175,9 +175,9 @@ class $TaskRowsTable extends TaskRows with TableInfo<$TaskRowsTable, TaskRow> {
           description.isAcceptableOrUnknown(
               data['description']!, _descriptionMeta));
     }
-    if (data.containsKey('envie')) {
-      context.handle(
-          _envieMeta, envie.isAcceptableOrUnknown(data['envie']!, _envieMeta));
+    if (data.containsKey('desire')) {
+      context.handle(_desireMeta,
+          desire.isAcceptableOrUnknown(data['desire']!, _desireMeta));
     }
     if (data.containsKey('impact_self')) {
       context.handle(
@@ -268,8 +268,8 @@ class $TaskRowsTable extends TaskRows with TableInfo<$TaskRowsTable, TaskRow> {
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
-      envie: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}envie']),
+      desire: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}desire']),
       impactSelf: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}impact_self']),
       impactOthers: attachedDatabase.typeMapping
@@ -312,7 +312,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
   final String ownerId;
   final String title;
   final String? description;
-  final double? envie;
+  final double? desire;
   final double? impactSelf;
   final double? impactOthers;
   final int priority;
@@ -332,7 +332,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
       required this.ownerId,
       required this.title,
       this.description,
-      this.envie,
+      this.desire,
       this.impactSelf,
       this.impactOthers,
       required this.priority,
@@ -356,8 +356,8 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
     }
-    if (!nullToAbsent || envie != null) {
-      map['envie'] = Variable<double>(envie);
+    if (!nullToAbsent || desire != null) {
+      map['desire'] = Variable<double>(desire);
     }
     if (!nullToAbsent || impactSelf != null) {
       map['impact_self'] = Variable<double>(impactSelf);
@@ -404,8 +404,8 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
-      envie:
-          envie == null && nullToAbsent ? const Value.absent() : Value(envie),
+      desire:
+          desire == null && nullToAbsent ? const Value.absent() : Value(desire),
       impactSelf: impactSelf == null && nullToAbsent
           ? const Value.absent()
           : Value(impactSelf),
@@ -449,7 +449,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
       ownerId: serializer.fromJson<String>(json['ownerId']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
-      envie: serializer.fromJson<double?>(json['envie']),
+      desire: serializer.fromJson<double?>(json['desire']),
       impactSelf: serializer.fromJson<double?>(json['impactSelf']),
       impactOthers: serializer.fromJson<double?>(json['impactOthers']),
       priority: serializer.fromJson<int>(json['priority']),
@@ -474,7 +474,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
       'ownerId': serializer.toJson<String>(ownerId),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
-      'envie': serializer.toJson<double?>(envie),
+      'desire': serializer.toJson<double?>(desire),
       'impactSelf': serializer.toJson<double?>(impactSelf),
       'impactOthers': serializer.toJson<double?>(impactOthers),
       'priority': serializer.toJson<int>(priority),
@@ -497,7 +497,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
           String? ownerId,
           String? title,
           Value<String?> description = const Value.absent(),
-          Value<double?> envie = const Value.absent(),
+          Value<double?> desire = const Value.absent(),
           Value<double?> impactSelf = const Value.absent(),
           Value<double?> impactOthers = const Value.absent(),
           int? priority,
@@ -517,7 +517,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
         ownerId: ownerId ?? this.ownerId,
         title: title ?? this.title,
         description: description.present ? description.value : this.description,
-        envie: envie.present ? envie.value : this.envie,
+        desire: desire.present ? desire.value : this.desire,
         impactSelf: impactSelf.present ? impactSelf.value : this.impactSelf,
         impactOthers:
             impactOthers.present ? impactOthers.value : this.impactOthers,
@@ -543,7 +543,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
       title: data.title.present ? data.title.value : this.title,
       description:
           data.description.present ? data.description.value : this.description,
-      envie: data.envie.present ? data.envie.value : this.envie,
+      desire: data.desire.present ? data.desire.value : this.desire,
       impactSelf:
           data.impactSelf.present ? data.impactSelf.value : this.impactSelf,
       impactOthers: data.impactOthers.present
@@ -577,7 +577,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
           ..write('ownerId: $ownerId, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
-          ..write('envie: $envie, ')
+          ..write('desire: $desire, ')
           ..write('impactSelf: $impactSelf, ')
           ..write('impactOthers: $impactOthers, ')
           ..write('priority: $priority, ')
@@ -602,7 +602,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
       ownerId,
       title,
       description,
-      envie,
+      desire,
       impactSelf,
       impactOthers,
       priority,
@@ -625,7 +625,7 @@ class TaskRow extends DataClass implements Insertable<TaskRow> {
           other.ownerId == this.ownerId &&
           other.title == this.title &&
           other.description == this.description &&
-          other.envie == this.envie &&
+          other.desire == this.desire &&
           other.impactSelf == this.impactSelf &&
           other.impactOthers == this.impactOthers &&
           other.priority == this.priority &&
@@ -647,7 +647,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
   final Value<String> ownerId;
   final Value<String> title;
   final Value<String?> description;
-  final Value<double?> envie;
+  final Value<double?> desire;
   final Value<double?> impactSelf;
   final Value<double?> impactOthers;
   final Value<int> priority;
@@ -668,7 +668,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
     this.ownerId = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
-    this.envie = const Value.absent(),
+    this.desire = const Value.absent(),
     this.impactSelf = const Value.absent(),
     this.impactOthers = const Value.absent(),
     this.priority = const Value.absent(),
@@ -690,7 +690,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
     this.ownerId = const Value.absent(),
     required String title,
     this.description = const Value.absent(),
-    this.envie = const Value.absent(),
+    this.desire = const Value.absent(),
     this.impactSelf = const Value.absent(),
     this.impactOthers = const Value.absent(),
     this.priority = const Value.absent(),
@@ -715,7 +715,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
     Expression<String>? ownerId,
     Expression<String>? title,
     Expression<String>? description,
-    Expression<double>? envie,
+    Expression<double>? desire,
     Expression<double>? impactSelf,
     Expression<double>? impactOthers,
     Expression<int>? priority,
@@ -737,7 +737,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
       if (ownerId != null) 'owner_id': ownerId,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
-      if (envie != null) 'envie': envie,
+      if (desire != null) 'desire': desire,
       if (impactSelf != null) 'impact_self': impactSelf,
       if (impactOthers != null) 'impact_others': impactOthers,
       if (priority != null) 'priority': priority,
@@ -761,7 +761,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
       Value<String>? ownerId,
       Value<String>? title,
       Value<String?>? description,
-      Value<double?>? envie,
+      Value<double?>? desire,
       Value<double?>? impactSelf,
       Value<double?>? impactOthers,
       Value<int>? priority,
@@ -782,7 +782,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
       ownerId: ownerId ?? this.ownerId,
       title: title ?? this.title,
       description: description ?? this.description,
-      envie: envie ?? this.envie,
+      desire: desire ?? this.desire,
       impactSelf: impactSelf ?? this.impactSelf,
       impactOthers: impactOthers ?? this.impactOthers,
       priority: priority ?? this.priority,
@@ -816,8 +816,8 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
-    if (envie.present) {
-      map['envie'] = Variable<double>(envie.value);
+    if (desire.present) {
+      map['desire'] = Variable<double>(desire.value);
     }
     if (impactSelf.present) {
       map['impact_self'] = Variable<double>(impactSelf.value);
@@ -874,7 +874,7 @@ class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
           ..write('ownerId: $ownerId, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
-          ..write('envie: $envie, ')
+          ..write('desire: $desire, ')
           ..write('impactSelf: $impactSelf, ')
           ..write('impactOthers: $impactOthers, ')
           ..write('priority: $priority, ')
@@ -1793,7 +1793,7 @@ typedef $$TaskRowsTableCreateCompanionBuilder = TaskRowsCompanion Function({
   Value<String> ownerId,
   required String title,
   Value<String?> description,
-  Value<double?> envie,
+  Value<double?> desire,
   Value<double?> impactSelf,
   Value<double?> impactOthers,
   Value<int> priority,
@@ -1815,7 +1815,7 @@ typedef $$TaskRowsTableUpdateCompanionBuilder = TaskRowsCompanion Function({
   Value<String> ownerId,
   Value<String> title,
   Value<String?> description,
-  Value<double?> envie,
+  Value<double?> desire,
   Value<double?> impactSelf,
   Value<double?> impactOthers,
   Value<int> priority,
@@ -1854,8 +1854,8 @@ class $$TaskRowsTableFilterComposer
   ColumnFilters<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<double> get envie => $composableBuilder(
-      column: $table.envie, builder: (column) => ColumnFilters(column));
+  ColumnFilters<double> get desire => $composableBuilder(
+      column: $table.desire, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<double> get impactSelf => $composableBuilder(
       column: $table.impactSelf, builder: (column) => ColumnFilters(column));
@@ -1922,8 +1922,8 @@ class $$TaskRowsTableOrderingComposer
   ColumnOrderings<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<double> get envie => $composableBuilder(
-      column: $table.envie, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<double> get desire => $composableBuilder(
+      column: $table.desire, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<double> get impactSelf => $composableBuilder(
       column: $table.impactSelf, builder: (column) => ColumnOrderings(column));
@@ -1992,8 +1992,8 @@ class $$TaskRowsTableAnnotationComposer
   GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
 
-  GeneratedColumn<double> get envie =>
-      $composableBuilder(column: $table.envie, builder: (column) => column);
+  GeneratedColumn<double> get desire =>
+      $composableBuilder(column: $table.desire, builder: (column) => column);
 
   GeneratedColumn<double> get impactSelf => $composableBuilder(
       column: $table.impactSelf, builder: (column) => column);
@@ -2065,7 +2065,7 @@ class $$TaskRowsTableTableManager extends RootTableManager<
             Value<String> ownerId = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<String?> description = const Value.absent(),
-            Value<double?> envie = const Value.absent(),
+            Value<double?> desire = const Value.absent(),
             Value<double?> impactSelf = const Value.absent(),
             Value<double?> impactOthers = const Value.absent(),
             Value<int> priority = const Value.absent(),
@@ -2087,7 +2087,7 @@ class $$TaskRowsTableTableManager extends RootTableManager<
             ownerId: ownerId,
             title: title,
             description: description,
-            envie: envie,
+            desire: desire,
             impactSelf: impactSelf,
             impactOthers: impactOthers,
             priority: priority,
@@ -2109,7 +2109,7 @@ class $$TaskRowsTableTableManager extends RootTableManager<
             Value<String> ownerId = const Value.absent(),
             required String title,
             Value<String?> description = const Value.absent(),
-            Value<double?> envie = const Value.absent(),
+            Value<double?> desire = const Value.absent(),
             Value<double?> impactSelf = const Value.absent(),
             Value<double?> impactOthers = const Value.absent(),
             Value<int> priority = const Value.absent(),
@@ -2131,7 +2131,7 @@ class $$TaskRowsTableTableManager extends RootTableManager<
             ownerId: ownerId,
             title: title,
             description: description,
-            envie: envie,
+            desire: desire,
             impactSelf: impactSelf,
             impactOthers: impactOthers,
             priority: priority,

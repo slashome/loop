@@ -34,7 +34,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   late final TextEditingController _title;
   late final TextEditingController _description;
   late int _priority;
-  double? _envie; // 0..1
+  double? _desire; // 0..1
   double? _impactSelf;
   double? _impactOthers;
   DateTime? _dueAt;
@@ -48,7 +48,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     _title = TextEditingController(text: task?.title ?? '');
     _description = TextEditingController(text: task?.description ?? '');
     _priority = task?.priority ?? 3;
-    _envie = task?.envie;
+    _desire = task?.desire;
     _impactSelf = task?.impactSelf;
     _impactOthers = task?.impactOthers;
     _dueAt = task?.dueAt;
@@ -103,7 +103,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
         title: title,
         description: desc.isEmpty ? null : desc,
         priority: _priority,
-        envie: _envie,
+        desire: _desire,
         impactSelf: _impactSelf,
         impactOthers: _impactOthers,
         dueAt: _dueAt,
@@ -114,7 +114,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
         title: title,
         description: desc.isEmpty ? null : desc,
         priority: _priority,
-        envie: _envie,
+        desire: _desire,
         impactSelf: _impactSelf,
         impactOthers: _impactOthers,
         dueAt: _dueAt,
@@ -223,8 +223,8 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
           const SizedBox(height: 24),
           _TenPointSlider(
             label: 'Envie',
-            value01: _envie,
-            onChanged: (v) => setState(() => _envie = v),
+            value01: _desire,
+            onChanged: (v) => setState(() => _desire = v),
           ),
           const SizedBox(height: 8),
           _TenPointSlider(

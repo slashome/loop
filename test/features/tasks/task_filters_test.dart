@@ -28,28 +28,28 @@ void main() {
 
   group('matchesView', () {
     test('À faire = en retard + aujourd\'hui (PAS sans-date, PAS futur)', () {
-      expect(matchesView(overdue, TaskView.aFaire, kNow), isTrue);
-      expect(matchesView(todayFuture, TaskView.aFaire, kNow), isTrue);
-      expect(matchesView(noDate, TaskView.aFaire, kNow), isFalse);
-      expect(matchesView(upcoming, TaskView.aFaire, kNow), isFalse);
+      expect(matchesView(overdue, TaskView.todo, kNow), isTrue);
+      expect(matchesView(todayFuture, TaskView.todo, kNow), isTrue);
+      expect(matchesView(noDate, TaskView.todo, kNow), isFalse);
+      expect(matchesView(upcoming, TaskView.todo, kNow), isFalse);
     });
 
     test('En retard = uniquement les échéances passées', () {
-      expect(matchesView(overdue, TaskView.enRetard, kNow), isTrue);
-      expect(matchesView(noDate, TaskView.enRetard, kNow), isFalse);
-      expect(matchesView(todayFuture, TaskView.enRetard, kNow), isFalse);
+      expect(matchesView(overdue, TaskView.overdue, kNow), isTrue);
+      expect(matchesView(noDate, TaskView.overdue, kNow), isFalse);
+      expect(matchesView(todayFuture, TaskView.overdue, kNow), isFalse);
     });
 
     test('À venir = uniquement le futur', () {
-      expect(matchesView(upcoming, TaskView.aVenir, kNow), isTrue);
-      expect(matchesView(todayFuture, TaskView.aVenir, kNow), isFalse);
-      expect(matchesView(noDate, TaskView.aVenir, kNow), isFalse);
+      expect(matchesView(upcoming, TaskView.upcoming, kNow), isTrue);
+      expect(matchesView(todayFuture, TaskView.upcoming, kNow), isFalse);
+      expect(matchesView(noDate, TaskView.upcoming, kNow), isFalse);
     });
 
     test('Non datées = uniquement le backlog sans échéance', () {
-      expect(matchesView(noDate, TaskView.nonDatees, kNow), isTrue);
-      expect(matchesView(overdue, TaskView.nonDatees, kNow), isFalse);
-      expect(matchesView(upcoming, TaskView.nonDatees, kNow), isFalse);
+      expect(matchesView(noDate, TaskView.undated, kNow), isTrue);
+      expect(matchesView(overdue, TaskView.undated, kNow), isFalse);
+      expect(matchesView(upcoming, TaskView.undated, kNow), isFalse);
     });
   });
 
@@ -62,7 +62,7 @@ void main() {
       createdAt: kNow,
       updatedAt: kNow,
     );
-    final ids = tasksForView([overdue, done, noDate], TaskView.aFaire, kNow)
+    final ids = tasksForView([overdue, done, noDate], TaskView.todo, kNow)
         .map((t) => t.id)
         .toSet();
     expect(ids, {'overdue'}); // done exclu (non vivant), noDate exclu (vue)

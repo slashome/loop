@@ -14,7 +14,7 @@ enum TaskNature { noDate, dated, recurring }
 enum TaskState { overdue, today, upcoming }
 
 /// Les 4 vues nommées de l'onglet Actions.
-enum TaskView { aFaire, enRetard, aVenir, nonDatees }
+enum TaskView { todo, overdue, upcoming, undated }
 
 TaskNature natureOf(Task t) {
   if (t.recurrenceId != null) return TaskNature.recurring;
@@ -34,18 +34,18 @@ TaskState? stateOf(Task t, DateTime now) {
 
 /// Prédicat d'appartenance d'une tâche à une vue.
 ///
-/// - [TaskView.aFaire] (défaut) : ce qui est dû MAINTENANT = en retard OU
+/// - [TaskView.todo] (défaut) : ce qui est dû MAINTENANT = en retard OU
 ///   aujourd'hui. PAS de sans-date (backlog), PAS de futur.
-/// - [TaskView.enRetard] : datée & échéance passée.
-/// - [TaskView.aVenir] : datée & future.
-/// - [TaskView.nonDatees] : le backlog (aucune échéance).
+/// - [TaskView.overdue] : datée & échéance passée.
+/// - [TaskView.upcoming] : datée & future.
+/// - [TaskView.undated] : le backlog (aucune échéance).
 bool matchesView(Task t, TaskView v, DateTime now) {
   final s = stateOf(t, now);
   return switch (v) {
-    TaskView.aFaire => s == TaskState.overdue || s == TaskState.today,
-    TaskView.enRetard => s == TaskState.overdue,
-    TaskView.aVenir => s == TaskState.upcoming,
-    TaskView.nonDatees => t.dueAt == null,
+    TaskView.todo => s == TaskState.overdue || s == TaskState.today,
+    TaskView.overdue => s == TaskState.overdue,
+    TaskView.upcoming => s == TaskState.upcoming,
+    TaskView.undated => t.dueAt == null,
   };
 }
 

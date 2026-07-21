@@ -32,28 +32,28 @@ void main() {
     expect(n2, n1);
   });
 
-  test('applyEdit met à jour priorité/envie et peut effacer envie', () async {
+  test('applyEdit met à jour priorité/desire et peut effacer desire', () async {
     await repo.bootstrap(clock: monday);
     final id = (await db.allTasks()).first.id;
 
-    await repo.applyEdit(id, title: 'Modifié', priority: 5, envie: 1.0);
+    await repo.applyEdit(id, title: 'Modifié', priority: 5, desire: 1.0);
     var t = await repo.getById(id);
     expect(t!.priority, 5);
-    expect(t.envie, 1.0);
+    expect(t.desire, 1.0);
     expect(t.title, 'Modifié');
 
     await repo.applyEdit(id, title: 'Modifié', priority: 3);
     t = await repo.getById(id);
-    expect(t!.envie, isNull);
+    expect(t!.desire, isNull);
   });
 
   test('create insère une nouvelle tâche vivante', () async {
-    final id = await repo.create(title: 'Nouvelle', priority: 4, envie: 0.5);
+    final id = await repo.create(title: 'Nouvelle', priority: 4, desire: 0.5);
     final live = await repo.watchTasks().first;
     final t = live.firstWhere((t) => t.id == id);
     expect(t.title, 'Nouvelle');
     expect(t.priority, 4);
-    expect(t.envie, 0.5);
+    expect(t.desire, 0.5);
   });
 
   test('softDelete retire la tâche du flux', () async {

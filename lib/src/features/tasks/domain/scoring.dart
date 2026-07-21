@@ -37,18 +37,18 @@ class ScoringConfig {
   final double tauDays;
 
   /// Largeur d'une BANDE de score. Les tâches d'une même bande (≈ un palier de
-  /// priorité) sont départagées par envie/impact, jamais entre bandes → la
+  /// priorité) sont départagées par desire/impact, jamais entre bandes → la
   /// priorité domine par construction. Voir [compareByScore].
   final double bandWidth;
 
   static const ScoringConfig defaults = ScoringConfig();
 }
 
-/// Clé de préférence (0..1) : mélange envie/impact, `null` = neutre (0.5).
+/// Clé de préférence (0..1) : mélange desire/impact, `null` = neutre (0.5).
 /// Sert à départager les tâches d'une même bande de score. Envie compte double.
 double preferenceBlend(Task t) {
   double v(double? x) => x ?? 0.5;
-  return 0.5 * v(t.envie) + 0.25 * v(t.impactSelf) + 0.25 * v(t.impactOthers);
+  return 0.5 * v(t.desire) + 0.25 * v(t.impactSelf) + 0.25 * v(t.impactOthers);
 }
 
 /// Score d'une tâche : `priorité + k · (1 − e^(−âge/τ))`.
@@ -71,7 +71,7 @@ double taskScore(Task task, ScoringConfig config, {required DateTime now}) {
 /// [ScoringConfig.bandWidth] : la priorité (et l'anti-famine) décide de la
 /// BANDE, jamais franchie par les préférences → « la priorité domine » est
 /// garanti par construction. À l'intérieur d'une bande, départage déterministe :
-///  1. par PRÉFÉRENCE (envie/impact) décroissante — c'est là qu'envie/impact
+///  1. par PRÉFÉRENCE (desire/impact) décroissante — c'est là qu'desire/impact
 ///     agissent, sans jamais faire franchir un palier ;
 ///  2. par URGENCE d'échéance (la plus proche d'abord, sans date en dernier) ;
 ///  3. par ancienneté ; puis priorité ; puis id.

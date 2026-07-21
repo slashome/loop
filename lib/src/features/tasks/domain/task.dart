@@ -17,7 +17,7 @@ class Task {
     required this.updatedAt,
     this.ownerId = 'local',
     this.description,
-    this.envie,
+    this.desire,
     this.impactSelf,
     this.impactOthers,
     this.priority = 3,
@@ -31,8 +31,8 @@ class Task {
     this.completedAt,
     this.deletedAt,
   })  : assert(priority >= 1 && priority <= 5, 'priority doit être dans 1..5'),
-        assert(envie == null || (envie >= 0 && envie <= 1),
-            'envie doit être dans 0..1'),
+        assert(desire == null || (desire >= 0 && desire <= 1),
+            'desire doit être dans 0..1'),
         assert(impactSelf == null || (impactSelf >= 0 && impactSelf <= 1),
             'impactSelf doit être dans 0..1'),
         assert(impactOthers == null || (impactOthers >= 0 && impactOthers <= 1),
@@ -50,7 +50,7 @@ class Task {
   final String? description;
 
   /// Envie — stockée en 0..1. Le slider 1..10 vit uniquement côté UI.
-  final double? envie;
+  final double? desire;
 
   /// Impact sur soi — 0..1.
   final double? impactSelf;
@@ -92,7 +92,7 @@ class Task {
   Task copyWith({
     String? title,
     String? description,
-    double? envie,
+    double? desire,
     double? impactSelf,
     double? impactOthers,
     int? priority,
@@ -108,7 +108,7 @@ class Task {
       ownerId: ownerId,
       title: title ?? this.title,
       description: description ?? this.description,
-      envie: envie ?? this.envie,
+      desire: desire ?? this.desire,
       impactSelf: impactSelf ?? this.impactSelf,
       impactOthers: impactOthers ?? this.impactOthers,
       priority: priority ?? this.priority,

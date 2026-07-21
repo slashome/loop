@@ -43,7 +43,7 @@ final tasksProvider = StreamProvider<List<Task>>(
 
 /// Vue active de l'onglet 1 (Smart Lists). NON persistée entre sessions :
 /// on rouvre toujours sur « À faire ».
-final viewProvider = StateProvider<TaskView>((ref) => TaskView.aFaire);
+final viewProvider = StateProvider<TaskView>((ref) => TaskView.todo);
 
 /// L'onglet 1 : tâches de la vue active, triées par score.
 final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {

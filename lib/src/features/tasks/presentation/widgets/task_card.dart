@@ -78,7 +78,7 @@ class TaskCard extends StatelessWidget {
   }
 }
 
-/// Sous-titre : échéance si définie, + envie si réglée. Rien pour une tâche
+/// Sous-titre : échéance si définie, + desire si réglée. Rien pour une tâche
 /// sans date (l'âge de création reste interne au score). `isLate` = en retard.
 ({String text, bool isLate}) _subtitle(AppLocalizations l, Task task) {
   final parts = <String>[];
@@ -88,8 +88,8 @@ class TaskCard extends StatelessWidget {
     parts.add(humanRelative(l, due, DateTime.now()));
     isLate = due.isBefore(DateTime.now());
   }
-  if (task.envie != null) {
-    parts.add(l.desireShort((task.envie! * 9 + 1).round()));
+  if (task.desire != null) {
+    parts.add(l.desireShort((task.desire! * 9 + 1).round()));
   }
   return (text: parts.join(' · '), isLate: isLate);
 }
