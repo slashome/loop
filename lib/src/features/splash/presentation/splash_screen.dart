@@ -93,7 +93,11 @@ class _SplashScreenState extends State<SplashScreen>
           animation: _bg,
           builder: (context, child) {
             final t = _bg.value; // 0..1
-            return DecoratedBox(
+            return Container(
+              // Fill the whole screen: otherwise the DecoratedBox shrinks to
+              // the Column's widest child and the gradient wouldn't span it.
+              width: double.infinity,
+              height: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   // Slowly rotating brand-tinted gradient (soft, keeps the

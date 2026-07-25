@@ -63,6 +63,15 @@ class LoopApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+      // In "system" mode: match the device language if supported, else fall
+      // back to English (never to French). Explicit choices (fr/en) win via
+      // [locale] above.
+      localeResolutionCallback: (deviceLocale, supported) {
+        for (final l in supported) {
+          if (l.languageCode == deviceLocale?.languageCode) return l;
+        }
+        return const Locale('en');
+      },
       home: const _Root(),
     );
   }
