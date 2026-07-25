@@ -39,6 +39,8 @@
   "relativeInYears": "{count, plural, one{Dans {count} an} other{Dans {count} ans}}",
 
   "commonSave": "Enregistrer",
+  "commonError": "Erreur : {message}",
+  "taskComplete": "Terminer",
   "commonTitle": "Titre",
   "commonDescriptionOptional": "Description (optionnel)",
   "commonNotSet": "non défini",

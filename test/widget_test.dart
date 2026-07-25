@@ -41,6 +41,9 @@ void main() {
         overrides: [
           tasksProvider.overrideWith((ref) => Stream.value(tasks)),
           sharedPreferencesProvider.overrideWithValue(prefs),
+          // Fixed clock: the periodic tick would leave a pending timer that
+          // testWidgets rejects at teardown.
+          nowProvider.overrideWithValue(now),
         ],
         child: const LoopApp(),
       ),

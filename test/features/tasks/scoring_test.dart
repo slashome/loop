@@ -190,19 +190,19 @@ void main() {
 
     test('impact (self + others) also breaks ties', () {
       final ordered = nextActions([
-        pref('faible', impactSelf: 0, impactOthers: 0),
-        pref('fort', impactSelf: 1, impactOthers: 1),
+        pref('weak', impactSelf: 0, impactOthers: 0),
+        pref('strong', impactSelf: 1, impactOthers: 1),
       ], now: kNow);
-      expect(ordered.first.id, 'fort');
+      expect(ordered.first.id, 'strong');
     });
 
     test('preference NEVER crosses a priority tier', () {
       // Max-preference P2 vs neutral P3: the P3 stays ahead (higher band).
       final ordered = nextActions([
         pref('p2max', priority: 2, desire: 1, impactSelf: 1, impactOthers: 1),
-        pref('p3neutre', priority: 3),
+        pref('p3neutral', priority: 3),
       ], now: kNow);
-      expect(ordered.first.id, 'p3neutre');
+      expect(ordered.first.id, 'p3neutral');
     });
   });
 

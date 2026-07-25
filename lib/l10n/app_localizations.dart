@@ -326,6 +326,18 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get commonSave;
 
+  /// No description provided for @commonError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String commonError(String message);
+
+  /// No description provided for @taskComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get taskComplete;
+
   /// No description provided for @commonTitle.
   ///
   /// In en, this message translates to:

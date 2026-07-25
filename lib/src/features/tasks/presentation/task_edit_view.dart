@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../recurrences/application/recurrences_providers.dart';
 import '../../recurrences/domain/recurrence.dart';
 import '../../recurrences/presentation/recurrence_edit_view.dart';
 import '../application/tasks_providers.dart';
+import '../data/task_repository.dart' show PriorityCapExceeded;
 import '../domain/scoring.dart';
 import '../domain/task.dart';
-
-/// Priority palette — consistent with the card's dot.
-const Map<int, Color> kPriorityColors = {
-  5: Color(0xFFE5484D),
-  4: Color(0xFFF76B15),
-  3: Color(0xFF3B82C4),
-  2: Color(0xFF46A758),
-  1: Color(0xFF8B8D98),
-};
 
 /// Slider conversion 1..10 (UI) <-> 0..1 storage. 1 → 0.0, 10 → 1.0.
 double? _fromUi(double? ui) => ui == null ? null : (ui - 1) / 9;
@@ -58,11 +52,18 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   Future<void> _pickDueAt() async {
     final now = DateTime.now();
     final base = _dueAt ?? now;
+    final firstDate = DateTime(now.year - 1);
+    final lastDate = DateTime(now.year + 5);
+    // Clamp: an out-of-range initialDate (e.g. a task overdue for more than a
+    // year) would trip showDatePicker's assertion.
+    final initial = base.isBefore(firstDate)
+        ? firstDate
+        : (base.isAfter(lastDate) ? lastDate : base);
     final date = await showDatePicker(
       context: context,
-      initialDate: base,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
+      initialDate: initial,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (date == null || !mounted) return;
     final time = await showTimePicker(
@@ -88,40 +89,51 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
+    final l = AppLocalizations.of(context);
     final title = _title.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).titleRequired)),
+        SnackBar(content: Text(l.titleRequired)),
       );
       return;
     }
     final desc = _description.text.trim();
     final repo = ref.read(taskRepositoryProvider);
     final task = widget.task;
-    if (task == null) {
-      repo.create(
-        title: title,
-        description: desc.isEmpty ? null : desc,
-        priority: _priority,
-        desire: _desire,
-        impactSelf: _impactSelf,
-        impactOthers: _impactOthers,
-        dueAt: _dueAt,
-      );
-    } else {
-      repo.applyEdit(
-        task.id,
-        title: title,
-        description: desc.isEmpty ? null : desc,
-        priority: _priority,
-        desire: _desire,
-        impactSelf: _impactSelf,
-        impactOthers: _impactOthers,
-        dueAt: _dueAt,
-      );
+    try {
+      if (task == null) {
+        await repo.create(
+          title: title,
+          description: desc.isEmpty ? null : desc,
+          priority: _priority,
+          desire: _desire,
+          impactSelf: _impactSelf,
+          impactOthers: _impactOthers,
+          dueAt: _dueAt,
+        );
+      } else {
+        await repo.applyEdit(
+          task.id,
+          title: title,
+          description: desc.isEmpty ? null : desc,
+          priority: _priority,
+          desire: _desire,
+          impactSelf: _impactSelf,
+          impactOthers: _impactOthers,
+          dueAt: _dueAt,
+        );
+      }
+    } on PriorityCapExceeded catch (e) {
+      // Backstop: the UI disables full bands, but the repository is the gate.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.priorityFull(e.priority))),
+        );
+      }
+      return;
     }
-    Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
   }
 
   /// Turns the one-off task into a recurrence (opens the pre-filled editor).
@@ -285,7 +297,7 @@ class _PrioritySelector extends StatelessWidget {
 
   Widget _priorityChip(BuildContext context, int p) {
     final l = AppLocalizations.of(context);
-    final color = kPriorityColors[p]!;
+    final color = AppColors.priority[p]!;
     final isSelected = p == selected;
     // Room available for THIS task (itself excluded from the count).
     final canSelect = caps.canAssign(p, tasks, excludeId: taskId);
@@ -336,7 +348,11 @@ class _DueAtTile extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              dueAt == null ? l.taskDueNone : l.taskDueOn(_fmt(dueAt!)),
+              dueAt == null
+                  ? l.taskDueNone
+                  : l.taskDueOn(
+                      DateFormat.yMd(l.localeName).add_Hm().format(dueAt!),
+                    ),
             ),
           ),
           if (dueAt != null)
@@ -347,11 +363,6 @@ class _DueAtTile extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  static String _fmt(DateTime d) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(d.day)}/${two(d.month)}/${d.year} ${two(d.hour)}:${two(d.minute)}';
   }
 }
 

@@ -33,8 +33,25 @@ final priorityCapsProvider = Provider<PriorityCaps>(
 );
 
 final taskRepositoryProvider = Provider<TaskRepository>(
-  (ref) => TaskRepository(ref.watch(appDatabaseProvider)),
+  (ref) => TaskRepository(
+    ref.watch(appDatabaseProvider),
+    caps: ref.watch(priorityCapsProvider),
+  ),
 );
+
+/// Periodic tick so time-dependent state (overdue/today boundaries, relative
+/// dates) refreshes while the app stays open — e.g. across midnight.
+final _clockProvider = StreamProvider<int>(
+  (ref) => Stream<int>.periodic(const Duration(minutes: 1), (i) => i),
+);
+
+/// Single source of "now" for the tasks feature. Re-evaluated every clock
+/// tick; list, view counters and cards must all read this same instant so
+/// they can never contradict each other.
+final nowProvider = Provider<DateTime>((ref) {
+  ref.watch(_clockProvider);
+  return DateTime.now();
+});
 
 /// Stream of non-deleted tasks (source of truth for tab 1).
 final tasksProvider = StreamProvider<List<Task>>(
@@ -50,8 +67,8 @@ final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {
   final async = ref.watch(tasksProvider);
   final config = ref.watch(scoringConfigProvider);
   final view = ref.watch(viewProvider);
+  final now = ref.watch(nowProvider);
   return async.whenData((tasks) {
-    final now = DateTime.now();
     final selected = tasksForView(tasks, view, now)
       ..sort((a, b) => compareByScore(a, b, config, now));
     return [

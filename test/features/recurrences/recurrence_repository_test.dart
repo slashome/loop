@@ -42,6 +42,22 @@ void main() {
     expect(r.active, isFalse);
   });
 
+  test('deactivating purges the open future occurrences', () async {
+    await repo.save(make('r1'));
+    await TaskRepository(db).generateOccurrences(on: now);
+    expect(
+      (await db.allTasks()).where((t) => t.recurrenceId == 'r1').isNotEmpty,
+      isTrue,
+    );
+
+    await repo.setActive('r1', false, clock: now);
+    // All generated occurrences were in the future (relative to now).
+    expect(
+      (await db.allTasks()).where((t) => t.recurrenceId == 'r1'),
+      isEmpty,
+    );
+  });
+
   test('delete removes the recurrence and its open occurrences', () async {
     await repo.save(make('r1'));
     // generate the occurrences for a Monday

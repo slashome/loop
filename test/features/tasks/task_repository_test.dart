@@ -8,6 +8,9 @@ import 'package:loop/src/features/tasks/domain/task.dart';
 void main() {
   late AppDatabase db;
   late TaskRepository repo;
+  // Midnight anchor: occurrences before a recurrence's dtstart are never
+  // materialized, so control recurrences start at the beginning of the day.
+  final mondayStart = DateTime(2026, 7, 6);
   // Monday 6 July 2026 (the demo weekly recurrence is a Monday).
   final monday = DateTime(2026, 7, 6, 12);
 
@@ -48,10 +51,10 @@ void main() {
   });
 
   test('create inserts a new live task', () async {
-    final id = await repo.create(title: 'Nouvelle', priority: 4, desire: 0.5);
+    final id = await repo.create(title: 'Fresh', priority: 4, desire: 0.5);
     final live = await repo.watchTasks().first;
     final t = live.firstWhere((t) => t.id == id);
-    expect(t.title, 'Nouvelle');
+    expect(t.title, 'Fresh');
     expect(t.priority, 4);
     expect(t.desire, 0.5);
   });
@@ -77,10 +80,10 @@ void main() {
     await db.insertRecurrence(
       RecurrenceRowsCompanion.insert(
         id: 'r-daily',
-        title: 'Quotidien',
+        title: 'Daily',
         freq: 'daily',
         byHours: const Value('8,20'),
-        dtstart: monday,
+        dtstart: mondayStart,
         createdAt: monday,
         updatedAt: monday,
       ),
@@ -88,10 +91,10 @@ void main() {
     await db.insertRecurrence(
       RecurrenceRowsCompanion.insert(
         id: 'r-weekly-mon',
-        title: 'Hebdo lundi',
+        title: 'Weekly Monday',
         freq: 'weekly',
         byWeekdays: const Value('1'), // Monday
-        dtstart: monday,
+        dtstart: mondayStart,
         createdAt: monday,
         updatedAt: monday,
       ),
@@ -117,7 +120,7 @@ void main() {
         title: 'Clean',
         freq: 'daily',
         autoCleanMissed: const Value(true),
-        dtstart: monday,
+        dtstart: mondayStart,
         createdAt: monday,
         updatedAt: monday,
       ),
@@ -128,7 +131,7 @@ void main() {
         title: 'Keep',
         freq: 'daily',
         autoCleanMissed: const Value(false),
-        dtstart: monday,
+        dtstart: mondayStart,
         createdAt: monday,
         updatedAt: monday,
       ),
@@ -166,10 +169,10 @@ void main() {
     await db.insertRecurrence(
       RecurrenceRowsCompanion.insert(
         id: 'r-daily',
-        title: 'Quotidien',
+        title: 'Daily',
         freq: 'daily',
         byHours: const Value('8,20'),
-        dtstart: monday,
+        dtstart: mondayStart,
         createdAt: monday,
         updatedAt: monday,
       ),
@@ -178,5 +181,82 @@ void main() {
     await repo.generateOccurrences(on: monday, horizonDays: 2);
     expect(
         (await db.allTasks()).where((r) => r.recurrenceId != null).length, 6);
+  });
+
+  test('never materializes occurrences before dtstart', () async {
+    // Recurrence created Monday at noon with a 9:00 slot: today's 9:00 is in
+    // the past relative to dtstart and must NOT spawn an overdue occurrence.
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-noon',
+        title: 'Noon-created',
+        freq: 'daily',
+        byHours: const Value('9,20'),
+        dtstart: monday, // 12:00
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+    await repo.generateOccurrences(on: monday, horizonDays: 1);
+    final occs = (await db.allTasks())
+        .where((r) => r.recurrenceId == 'r-noon')
+        .map((r) => r.dueAt!)
+        .toList();
+    // Monday 20:00, Tuesday 9:00, Tuesday 20:00 — but NOT Monday 9:00.
+    expect(occs.length, 3);
+    expect(occs.any((d) => d.isBefore(monday)), isFalse);
+  });
+
+  test('reconcileOccurrences drops stale future occurrences after an edit',
+      () async {
+    await db.insertRecurrence(
+      RecurrenceRowsCompanion.insert(
+        id: 'r-edit',
+        title: 'Editable',
+        freq: 'daily',
+        byHours: const Value('9'),
+        dtstart: mondayStart,
+        createdAt: monday,
+        updatedAt: monday,
+      ),
+    );
+    await repo.generateOccurrences(on: monday, horizonDays: 2);
+    // Edit: the 9:00 slot becomes 18:00.
+    await (db.update(db.recurrenceRows)..where((r) => r.id.equals('r-edit')))
+        .write(const RecurrenceRowsCompanion(byHours: Value('18')));
+
+    await repo.reconcileOccurrences(recurrenceId: 'r-edit', on: monday);
+    // PAST occurrences are never rewritten (Monday 9:00, already overdue,
+    // survives); all FUTURE slots must follow the new 18:00 definition.
+    final futureHours = (await db.allTasks())
+        .where((r) =>
+            r.recurrenceId == 'r-edit' &&
+            r.deletedAt == null &&
+            !r.dueAt!.isBefore(monday))
+        .map((r) => r.dueAt!.hour)
+        .toSet();
+    expect(futureHours, {18});
+  });
+
+  test('create and applyEdit enforce the priority caps', () async {
+    // Default caps: max 3 tasks in P5. Fill the band.
+    for (var i = 0; i < 3; i++) {
+      await repo.create(title: 'P5 #$i', priority: 5);
+    }
+    expect(
+      () => repo.create(title: 'One too many', priority: 5),
+      throwsA(isA<PriorityCapExceeded>()),
+    );
+
+    // Editing an existing P5 task keeps its own slot (no self-count).
+    final id = (await db.allTasks()).first.id;
+    await repo.applyEdit(id, title: 'Still P5', priority: 5);
+
+    // But promoting a P3 into the full band throws.
+    final p3 = await repo.create(title: 'P3', priority: 3);
+    expect(
+      () => repo.applyEdit(p3, title: 'P3', priority: 5),
+      throwsA(isA<PriorityCapExceeded>()),
+    );
   });
 }

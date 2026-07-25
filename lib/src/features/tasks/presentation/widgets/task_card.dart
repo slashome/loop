@@ -64,7 +64,7 @@ class TaskCard extends StatelessWidget {
               const SizedBox(width: 8),
               _ScorePill(score: score),
               IconButton(
-                tooltip: 'Terminer',
+                tooltip: AppLocalizations.of(context).taskComplete,
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.check_circle_outline),
                 color: theme.colorScheme.onSurfaceVariant,
@@ -85,8 +85,10 @@ class TaskCard extends StatelessWidget {
   var isLate = false;
   final due = task.dueAt;
   if (due != null) {
-    parts.add(humanRelative(l, due, DateTime.now()));
-    isLate = due.isBefore(DateTime.now());
+    // Single instant for both the label and the overdue flag.
+    final now = DateTime.now();
+    parts.add(humanRelative(l, due, now));
+    isLate = due.isBefore(now);
   }
   if (task.desire != null) {
     parts.add(l.desireShort((task.desire! * 9 + 1).round()));

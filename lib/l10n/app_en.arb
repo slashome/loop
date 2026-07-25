@@ -52,6 +52,9 @@
   "@relativeInYears": { "placeholders": { "count": { "type": "int" } } },
 
   "commonSave": "Save",
+  "commonError": "Error: {message}",
+  "@commonError": { "placeholders": { "message": { "type": "String" } } },
+  "taskComplete": "Complete",
   "commonTitle": "Title",
   "commonDescriptionOptional": "Description (optional)",
   "commonNotSet": "Not set",

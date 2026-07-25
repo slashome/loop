@@ -43,7 +43,7 @@ class LoopApp extends ConsumerWidget {
     final tag = ref.watch(settingsProvider.select((s) => s.languageTag));
     final locale = tag == 'system' ? null : Locale(tag);
     return MaterialApp(
-      title: 'Loop',
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       locale: locale,

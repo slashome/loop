@@ -4,7 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../features/recurrences/presentation/repeats_view.dart';
 import '../features/tasks/presentation/next_actions_view.dart';
 
-/// Coquille de l'app : navigation par onglets (ordre identique mobile/PC).
+/// App shell: tab navigation (same order on mobile and desktop).
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 

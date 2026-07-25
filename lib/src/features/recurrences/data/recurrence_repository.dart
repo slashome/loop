@@ -16,13 +16,20 @@ class RecurrenceRepository {
   Future<void> save(Recurrence r) =>
       _db.upsertRecurrence(recurrenceToCompanion(r));
 
-  Future<void> setActive(String id, bool active) async {
+  /// Toggles a recurrence. Deactivating also purges its still-open future
+  /// occurrences (symmetric with [delete]) so they stop showing in Actions.
+  /// [clock] is injectable for tests.
+  Future<void> setActive(String id, bool active, {DateTime? clock}) async {
+    final now = clock ?? DateTime.now();
     await (_db.update(_db.recurrenceRows)..where((r) => r.id.equals(id))).write(
       RecurrenceRowsCompanion(
         active: Value(active),
-        updatedAt: Value(DateTime.now()),
+        updatedAt: Value(now),
       ),
     );
+    if (!active) {
+      await _db.purgeOpenFutureOccurrences(id, now);
+    }
   }
 
   Future<void> delete(String id) => _db.deleteRecurrenceCascade(id);

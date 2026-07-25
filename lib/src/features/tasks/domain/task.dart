@@ -89,42 +89,8 @@ class Task {
   /// A task is "live" if not deleted and still open.
   bool get isLive => deletedAt == null && status == TaskStatus.open;
 
-  Task copyWith({
-    String? title,
-    String? description,
-    double? desire,
-    double? impactSelf,
-    double? impactOthers,
-    int? priority,
-    String? categoryId,
-    TaskStatus? status,
-    DateTime? dueAt,
-    DateTime? updatedAt,
-    DateTime? completedAt,
-    DateTime? deletedAt,
-  }) {
-    return Task(
-      id: id,
-      ownerId: ownerId,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      desire: desire ?? this.desire,
-      impactSelf: impactSelf ?? this.impactSelf,
-      impactOthers: impactOthers ?? this.impactOthers,
-      priority: priority ?? this.priority,
-      categoryId: categoryId ?? this.categoryId,
-      status: status ?? this.status,
-      dueAt: dueAt ?? this.dueAt,
-      recurrenceId: recurrenceId,
-      occurrenceDate: occurrenceDate,
-      source: source,
-      sourceRef: sourceRef,
-      createdAt: createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      completedAt: completedAt ?? this.completedAt,
-      deletedAt: deletedAt ?? this.deletedAt,
-    );
-  }
+  // NOTE: no copyWith on purpose. A `?? this.x` copyWith cannot clear optional
+  // fields back to null; writes go through the Drift Companions instead.
 
   @override
   bool operator ==(Object other) => other is Task && other.id == id;

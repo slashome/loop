@@ -1,5 +1,5 @@
 name: loop
-description: "Loop — gestionnaire de tâches local-first (v1)."
+description: "Loop — local-first personal task manager."
 publish_to: "none"
 version: 0.1.0
 

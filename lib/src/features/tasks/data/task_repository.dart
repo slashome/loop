@@ -3,16 +3,31 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../recurrences/data/recurrence_repository.dart';
+import '../domain/scoring.dart';
 import '../domain/task.dart';
 import 'fixtures.dart';
+
+/// Thrown when a write would exceed the per-band priority cap.
+class PriorityCapExceeded implements Exception {
+  const PriorityCapExceeded(this.priority);
+  final int priority;
+
+  @override
+  String toString() => 'PriorityCapExceeded(P$priority)';
+}
 
 /// Source of truth for tasks (data layer). Maps Drift <-> domain, exposes a
 /// reactive stream for tab 1, and handles seeding + generation of recurrence
 /// occurrences.
 class TaskRepository {
-  TaskRepository(this._db);
+  TaskRepository(this._db, {this.caps = PriorityCaps.defaults});
 
   final AppDatabase _db;
+
+  /// Priority caps enforced on write (the UI also disables full bands, but the
+  /// repository is the actual gate — stale lists or programmatic callers
+  /// cannot silently exceed a cap).
+  final PriorityCaps caps;
 
   /// Stream of non-deleted tasks. Sorting by score and the "live" filter are
   /// done downstream (application layer).
@@ -20,14 +35,19 @@ class TaskRepository {
       _db.watchTasks().map((rows) => rows.map(_toTask).toList());
 
   Future<Task?> getById(String id) async {
-    final rows = await _db.allTasks();
-    for (final r in rows) {
-      if (r.id == id) return _toTask(r);
+    final row = await _db.taskById(id);
+    return row == null ? null : _toTask(row);
+  }
+
+  Future<void> _enforceCap(int priority, {String? excludeId}) async {
+    final live = (await _db.watchTasks().first).map(_toTask);
+    if (!caps.canAssign(priority, live, excludeId: excludeId)) {
+      throw PriorityCapExceeded(priority);
     }
-    return null;
   }
 
   /// Creates a new one-off task. Returns its id.
+  /// Throws [PriorityCapExceeded] if the priority band is full.
   Future<String> create({
     required String title,
     String? description,
@@ -37,8 +57,9 @@ class TaskRepository {
     double? impactOthers,
     DateTime? dueAt,
   }) async {
+    await _enforceCap(priority);
     final now = DateTime.now();
-    final id = const Uuid().v4();
+    final id = const Uuid().v7();
     await _db.upsertTask(
       TaskRowsCompanion.insert(
         id: id,
@@ -81,6 +102,7 @@ class TaskRepository {
 
   /// Applies an edit. `Value(null)` clears an optional field;
   /// `Value.absent()` leaves it unchanged.
+  /// Throws [PriorityCapExceeded] if the priority band is full.
   Future<void> applyEdit(
     String id, {
     required String title,
@@ -91,6 +113,7 @@ class TaskRepository {
     double? impactOthers,
     DateTime? dueAt,
   }) async {
+    await _enforceCap(priority, excludeId: id);
     await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
       TaskRowsCompanion(
         title: Value(title),
@@ -131,10 +154,26 @@ class TaskRepository {
     return _db.cleanMissedOccurrences(DateTime(on.year, on.month, on.day));
   }
 
+  /// Realigns the materialized occurrences of one recurrence with its current
+  /// definition: purges its still-open FUTURE occurrences (stale cadence,
+  /// title, priority…), then regenerates. Call after editing a recurrence —
+  /// plain [generateOccurrences] only ADDS and would leave stale duplicates.
+  Future<void> reconcileOccurrences({
+    required String recurrenceId,
+    required DateTime on,
+    int horizonDays = 14,
+  }) async {
+    await _db.purgeOpenFutureOccurrences(recurrenceId, on);
+    await generateOccurrences(on: on, horizonDays: horizonDays);
+  }
+
   /// Materializes the occurrences of each active recurrence from [on] up to
   /// [on] + [horizonDays] (rolling). Re-runnable without duplicates
-  /// (deterministic id + insertOrIgnore). The Actions tab hides "upcoming"
-  /// occurrences by default; they remain accessible via the "Upcoming" filter.
+  /// (deterministic id + insertOrIgnore). Occurrences before the recurrence's
+  /// `dtstart` are never materialized (a recurrence created at 18:00 must not
+  /// spawn an already-overdue 9:00 occurrence for the same day). The Actions
+  /// tab hides "upcoming" occurrences by default; they remain accessible via
+  /// the "Upcoming" filter.
   Future<void> generateOccurrences({
     required DateTime on,
     int horizonDays = 14,
@@ -146,6 +185,7 @@ class TaskRepository {
       for (var d = 0; d <= horizonDays; d++) {
         final day = today.add(Duration(days: d));
         for (final occ in rec.occurrencesOn(day)) {
+          if (occ.isBefore(rec.dtstart)) continue;
           final id = 'occ_${rec.id}_${occ.toIso8601String()}';
           await _db.insertOccurrenceIfAbsent(
             TaskRowsCompanion.insert(

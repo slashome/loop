@@ -54,7 +54,7 @@ class NextActionsView extends ConsumerWidget {
       bottomNavigationBar: const _ViewBar(),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(l.commonError(e.toString()))),
         data: (items) => items.isEmpty
             ? Center(
                 child: Column(
@@ -126,7 +126,8 @@ class _ViewBar extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final view = ref.watch(viewProvider);
     final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
-    final now = DateTime.now();
+    // Same instant as the sorted list: counters can never contradict it.
+    final now = ref.watch(nowProvider);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

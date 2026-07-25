@@ -62,7 +62,8 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
     _freq = r?.freq ?? RecurrenceFreq.daily;
     _weekdays = {...?r?.byWeekdays};
     _monthDays = {...?r?.byMonthDays};
-    _hours = {...?r?.byHours}.isEmpty ? {9} : {...?r?.byHours};
+    final hours = {...?r?.byHours};
+    _hours = hours.isEmpty ? {9} : hours;
     _priority = r?.defPriority ?? t?.priority ?? 3;
     _active = r?.active ?? true;
     _autoCleanMissed = r?.autoCleanMissed ?? true;
@@ -99,12 +100,12 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
     final existing = widget.recurrence;
     final desc = _description.text.trim();
     final rec = Recurrence(
-      id: existing?.id ?? const Uuid().v4(),
+      id: existing?.id ?? const Uuid().v7(),
       ownerId: existing?.ownerId ?? 'local',
       title: _title.text.trim(),
       description: desc.isEmpty ? null : desc,
       freq: _freq,
-      byWeekdays: (_sorted(_weekdays)),
+      byWeekdays: _sorted(_weekdays),
       byMonthDays: _sorted(_monthDays),
       byHours: _sorted(_hours),
       defPriority: _priority,
@@ -120,8 +121,11 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
     if (convertId != null) {
       await ref.read(taskRepositoryProvider).softDelete(convertId);
     }
-    // Realign today's occurrences with the new definition.
-    await ref.read(taskRepositoryProvider).generateOccurrences(on: now);
+    // Realign the materialized occurrences with the (possibly new) definition:
+    // stale open future occurrences are purged, then regenerated.
+    await ref
+        .read(taskRepositoryProvider)
+        .reconcileOccurrences(recurrenceId: rec.id, on: now);
     if (!mounted) return;
     if (convertId != null) {
       // Explain where the task went (it only shows up in Actions on the days

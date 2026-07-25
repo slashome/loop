@@ -186,6 +186,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonSave => 'Enregistrer';
 
   @override
+  String commonError(String message) {
+    return 'Erreur : $message';
+  }
+
+  @override
+  String get taskComplete => 'Terminer';
+
+  @override
   String get commonTitle => 'Titre';
 
   @override

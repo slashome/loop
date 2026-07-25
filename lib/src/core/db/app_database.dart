@@ -97,7 +97,10 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(recurrenceRows);
           }
           // v3: per-recurrence cleanup of missed occurrences.
-          if (from < 3) {
+          // Only for from == 2: the v2 block above recreates the recurrences
+          // table with the CURRENT schema (which already has the column) —
+          // adding it again would fail with "duplicate column".
+          if (from >= 2 && from < 3) {
             await m.addColumn(recurrenceRows, recurrenceRows.autoCleanMissed);
           }
           // v4: rename the `envie` column to `desire` (English identifiers).
@@ -112,6 +115,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<TaskRow>> allTasks() => select(taskRows).get();
+
+  Future<TaskRow?> taskById(String id) =>
+      (select(taskRows)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<List<RecurrenceRow>> activeRecurrences() {
     return (select(recurrenceRows)
@@ -164,11 +170,27 @@ class AppDatabase extends _$AppDatabase {
     return into(taskRows).insert(row, mode: InsertMode.insertOrIgnore);
   }
 
+  /// Hard-deletes the still-open FUTURE occurrences (due on/after [from]) of a
+  /// recurrence. Occurrences are derived, regenerable artifacts — a hard
+  /// delete (not soft) is required so that a later regeneration with the same
+  /// deterministic id is not swallowed by insertOrIgnore. Edited or past
+  /// occurrences are left untouched.
+  Future<int> purgeOpenFutureOccurrences(String recurrenceId, DateTime from) {
+    return (delete(taskRows)
+          ..where((t) =>
+              t.recurrenceId.equals(recurrenceId) &
+              t.status.equals('open') &
+              t.deletedAt.isNull() &
+              t.dueAt.isBiggerOrEqualValue(from)))
+        .go();
+  }
+
   /// Soft-deletes MISSED open occurrences (due before [dayStart]) of
   /// recurrences whose `autoCleanMissed` is true. Returns the count cleaned.
   Future<int> cleanMissedOccurrences(DateTime dayStart) async {
     final autoIds = (await (select(recurrenceRows)
-              ..where((r) => r.autoCleanMissed.equals(true)))
+              ..where(
+                  (r) => r.autoCleanMissed.equals(true) & r.deletedAt.isNull()))
             .get())
         .map((r) => r.id)
         .toList();
