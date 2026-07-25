@@ -28,13 +28,29 @@ double compassMetric(Task t, Compass compass, ImpactFocus focus) {
   };
 }
 
-/// Below this metric a task is folded away (Desire/Impact modes only).
-/// Neutral (0.5, incl. unset fields) stays visible.
+/// Fold value (0..1) of the FOCUSED field(s). Unlike [compassMetric], an unset
+/// field counts as 0 here: in a focused lens ("Others", "Desire"…), a task you
+/// never rated on that axis doesn't belong in the main view.
+double _foldValue(Task t, Compass compass, ImpactFocus focus) {
+  double v(double? x) => x ?? 0;
+  return switch (compass) {
+    Compass.auto => 1, // never folds
+    Compass.desire => v(t.desire),
+    Compass.impact => switch (focus) {
+        ImpactFocus.self => v(t.impactSelf),
+        ImpactFocus.others => v(t.impactOthers),
+        ImpactFocus.both => 0.5 * v(t.impactSelf) + 0.5 * v(t.impactOthers),
+      },
+  };
+}
+
+/// Below this fold value a task is tucked away (Desire/Impact modes only).
+/// A slider at 6+/10 stays visible; 1–5/10 and unset fold away.
 const double kCompassFoldThreshold = 0.5;
 
 /// Whether [t] should be folded under the "needs energy / low impact"
-/// separator for the active compass. Auto never folds.
+/// separator for the active compass. Auto never folds; unset fields fold.
 bool isFolded(Task t, Compass compass, ImpactFocus focus) {
   if (compass == Compass.auto) return false;
-  return compassMetric(t, compass, focus) < kCompassFoldThreshold - 1e-9;
+  return _foldValue(t, compass, focus) < kCompassFoldThreshold - 1e-9;
 }

@@ -48,10 +48,11 @@ void main() {
       expect(
           isFolded(t('a', desire: 0), Compass.auto, ImpactFocus.both), isFalse);
     });
-    test('desire below threshold folds; neutral/unset stays', () {
+    test('folds below threshold AND when unset (focused lens)', () {
       expect(isFolded(t('a', desire: 0.2), Compass.desire, ImpactFocus.both),
           isTrue);
-      expect(isFolded(t('a'), Compass.desire, ImpactFocus.both), isFalse);
+      // Unset desire folds too: not rated → not in the focused view.
+      expect(isFolded(t('a'), Compass.desire, ImpactFocus.both), isTrue);
       expect(isFolded(t('a', desire: 0.8), Compass.desire, ImpactFocus.both),
           isFalse);
     });
@@ -59,6 +60,12 @@ void main() {
       final task = t('a', impactSelf: 0.9, impactOthers: 0.1);
       expect(isFolded(task, Compass.impact, ImpactFocus.others), isTrue);
       expect(isFolded(task, Compass.impact, ImpactFocus.self), isFalse);
+    });
+    test('unset impact-others folds under the Others lens', () {
+      // The reported bug: a task with no impact-on-others must not clutter the
+      // "Others" view.
+      final task = t('a', impactSelf: 0.9); // impactOthers unset
+      expect(isFolded(task, Compass.impact, ImpactFocus.others), isTrue);
     });
   });
 
