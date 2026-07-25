@@ -158,6 +158,54 @@ abstract class AppLocalizations {
   /// **'overdue + today'**
   String get todoHint;
 
+  /// No description provided for @compassAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get compassAuto;
+
+  /// No description provided for @compassDesire.
+  ///
+  /// In en, this message translates to:
+  /// **'Desire'**
+  String get compassDesire;
+
+  /// No description provided for @compassImpact.
+  ///
+  /// In en, this message translates to:
+  /// **'Impact'**
+  String get compassImpact;
+
+  /// No description provided for @impactFocusSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get impactFocusSelf;
+
+  /// No description provided for @impactFocusOthers.
+  ///
+  /// In en, this message translates to:
+  /// **'Others'**
+  String get impactFocusOthers;
+
+  /// No description provided for @impactFocusBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get impactFocusBoth;
+
+  /// No description provided for @foldedNeedsEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs energy ({count})'**
+  String foldedNeedsEnergy(int count);
+
+  /// No description provided for @foldedLowImpact.
+  ///
+  /// In en, this message translates to:
+  /// **'Low impact ({count})'**
+  String foldedLowImpact(int count);
+
   /// No description provided for @emptyList.
   ///
   /// In en, this message translates to:

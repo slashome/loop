@@ -9,6 +9,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'compass.dart';
 import 'task.dart';
 
 /// Scoring constants — configurable in the GLOBAL settings, never per task.
@@ -43,13 +44,6 @@ class ScoringConfig {
   static const ScoringConfig defaults = ScoringConfig();
 }
 
-/// Preference key (0..1): blend of desire/impact, `null` = neutral (0.5).
-/// Used to break ties among tasks in the same score band. Desire counts double.
-double preferenceBlend(Task t) {
-  double v(double? x) => x ?? 0.5;
-  return 0.5 * v(t.desire) + 0.25 * v(t.impactSelf) + 0.25 * v(t.impactOthers);
-}
-
 /// Score of a task: `priority + k · (1 − e^(−age/τ))`.
 ///
 /// Age is measured in (fractional) days from [Task.createdAt] up to [now].
@@ -69,17 +63,24 @@ double taskScore(Task task, ScoringConfig config, {required DateTime now}) {
 /// [ScoringConfig.bandWidth]: priority (and anti-starvation) decides the BAND,
 /// never crossed by preferences → "priority dominates" is guaranteed by
 /// construction. Within a band, deterministic tie-breaking:
-///  1. by PREFERENCE (desire/impact) descending — this is where desire/impact
-///     act, without ever crossing a tier;
+///  1. by the active COMPASS metric (desire/impact) descending — this is where
+///     desire/impact act, without ever crossing a tier;
 ///  2. by due-date URGENCY (nearest first, no date last);
 ///  3. by age; then priority; then id.
-int compareByScore(Task a, Task b, ScoringConfig config, DateTime now) {
+int compareByScore(
+  Task a,
+  Task b,
+  ScoringConfig config,
+  DateTime now, {
+  Compass compass = Compass.auto,
+  ImpactFocus focus = ImpactFocus.both,
+}) {
   final ba = (taskScore(a, config, now: now) / config.bandWidth).floor();
   final bb = (taskScore(b, config, now: now) / config.bandWidth).floor();
   if (ba != bb) return bb.compareTo(ba); // band descending
 
-  final pa = preferenceBlend(a);
-  final pb = preferenceBlend(b);
+  final pa = compassMetric(a, compass, focus);
+  final pb = compassMetric(b, compass, focus);
   if ((pa - pb).abs() > 1e-9) return pb.compareTo(pa); // preference desc
 
   final da = a.dueAt;

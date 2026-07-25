@@ -39,6 +39,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoHint => 'overdue + today';
 
   @override
+  String get compassAuto => 'Auto';
+
+  @override
+  String get compassDesire => 'Desire';
+
+  @override
+  String get compassImpact => 'Impact';
+
+  @override
+  String get impactFocusSelf => 'Me';
+
+  @override
+  String get impactFocusOthers => 'Others';
+
+  @override
+  String get impactFocusBoth => 'Both';
+
+  @override
+  String foldedNeedsEnergy(int count) {
+    return 'Needs energy ($count)';
+  }
+
+  @override
+  String foldedLowImpact(int count) {
+    return 'Low impact ($count)';
+  }
+
+  @override
   String get emptyList => 'Nothing to show.';
 
   @override

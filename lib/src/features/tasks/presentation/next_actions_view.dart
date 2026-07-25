@@ -6,6 +6,7 @@ import '../../../core/theme/brand_fab.dart';
 import '../../settings/application/settings_providers.dart';
 import '../../settings/presentation/settings_view.dart';
 import '../application/tasks_providers.dart';
+import '../domain/compass.dart';
 import '../domain/task.dart';
 import '../domain/task_filters.dart';
 import 'task_edit_view.dart';
@@ -55,52 +56,189 @@ class NextActionsView extends ConsumerWidget {
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.commonError(e.toString()))),
-        data: (items) => items.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Opacity(
-                      opacity: 0.9,
-                      child: Image.asset(
-                        'assets/branding/logo_tight.png',
-                        width: 140,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l.emptyList,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
+        data: (list) {
+          if (list.visible.isEmpty && list.folded.isEmpty) {
+            return _EmptyState(message: l.emptyList);
+          }
+          final compass = ref.watch(settingsProvider.select((s) => s.compass));
+          Widget card(ScoredTask s) => TaskCard(
+                task: s.task,
+                score: s.score,
+                onComplete: () =>
+                    ref.read(taskRepositoryProvider).complete(s.task.id),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => TaskEditView(task: s.task),
+                  ),
                 ),
-              )
-            : ListView.builder(
-                // Bottom anchoring (best score near the thumb) or top (classic),
-                // depending on user preference.
-                reverse: newestAtBottom,
-                padding: const EdgeInsets.only(top: 4, bottom: 8),
-                itemCount: items.length,
-                itemBuilder: (context, i) {
-                  final scored = items[i];
-                  return TaskCard(
-                    task: scored.task,
-                    score: scored.score,
-                    onComplete: () => ref
-                        .read(taskRepositoryProvider)
-                        .complete(scored.task.id),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => TaskEditView(task: scored.task),
-                      ),
-                    ),
-                  );
-                },
+              );
+          final children = <Widget>[
+            for (final s in list.visible) card(s),
+            if (list.folded.isNotEmpty)
+              _FoldedSection(
+                compass: compass,
+                folded: list.folded,
+                cardBuilder: card,
               ),
+          ];
+          return Column(
+            children: [
+              const _CompassBar(),
+              Expanded(
+                child: ListView(
+                  // Bottom anchoring (best score near the thumb) or top
+                  // (classic). The folded section, appended last, ends up at
+                  // the far end from the thumb in both cases.
+                  reverse: newestAtBottom,
+                  padding: const EdgeInsets.only(top: 4, bottom: 8),
+                  children: children,
+                ),
+              ),
+            ],
+          );
+        },
       ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Opacity(
+            opacity: 0.9,
+            child: Image.asset('assets/branding/logo_tight.png', width: 140),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compass selector (Étage 2): Auto / Desire / Impact, plus a Me/Others/Both
+/// sub-toggle in Impact mode. Persisted via settings.
+class _CompassBar extends ConsumerWidget {
+  const _CompassBar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final compass = ref.watch(settingsProvider.select((s) => s.compass));
+    final focus = ref.watch(settingsProvider.select((s) => s.impactFocus));
+    final notifier = ref.read(settingsProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Column(
+        children: [
+          SegmentedButton<Compass>(
+            style: const ButtonStyle(visualDensity: VisualDensity.compact),
+            segments: [
+              ButtonSegment(value: Compass.auto, label: Text(l.compassAuto)),
+              ButtonSegment(
+                  value: Compass.desire, label: Text(l.compassDesire)),
+              ButtonSegment(
+                  value: Compass.impact, label: Text(l.compassImpact)),
+            ],
+            selected: {compass},
+            showSelectedIcon: false,
+            onSelectionChanged: (s) => notifier.setCompass(s.first),
+          ),
+          if (compass == Compass.impact) ...[
+            const SizedBox(height: 6),
+            SegmentedButton<ImpactFocus>(
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              segments: [
+                ButtonSegment(
+                    value: ImpactFocus.self, label: Text(l.impactFocusSelf)),
+                ButtonSegment(
+                    value: ImpactFocus.others,
+                    label: Text(l.impactFocusOthers)),
+                ButtonSegment(
+                    value: ImpactFocus.both, label: Text(l.impactFocusBoth)),
+              ],
+              selected: {focus},
+              showSelectedIcon: false,
+              onSelectionChanged: (s) => notifier.setImpactFocus(s.first),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Collapsible section for the low-desire / low-impact tasks tucked away by
+/// the active compass. Collapsed by default; a tap reveals them.
+class _FoldedSection extends StatefulWidget {
+  const _FoldedSection({
+    required this.compass,
+    required this.folded,
+    required this.cardBuilder,
+  });
+
+  final Compass compass;
+  final List<ScoredTask> folded;
+  final Widget Function(ScoredTask) cardBuilder;
+
+  @override
+  State<_FoldedSection> createState() => _FoldedSectionState();
+}
+
+class _FoldedSectionState extends State<_FoldedSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final label = widget.compass == Compass.impact
+        ? l.foldedLowImpact(widget.folded.length)
+        : l.foldedNeedsEnergy(widget.folded.length);
+
+    return Column(
+      children: [
+        const SizedBox(height: 4),
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  size: 20,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded)
+          for (final s in widget.folded)
+            Opacity(opacity: 0.7, child: widget.cardBuilder(s)),
+      ],
     );
   }
 }

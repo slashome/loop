@@ -8,7 +8,9 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/database_provider.dart';
+import '../../settings/application/settings_providers.dart';
 import '../data/task_repository.dart';
+import '../domain/compass.dart';
 import '../domain/scoring.dart';
 import '../domain/task.dart';
 import '../domain/task_filters.dart';
@@ -20,6 +22,15 @@ class ScoredTask {
   const ScoredTask(this.task, this.score);
   final Task task;
   final double score;
+}
+
+/// The Actions list split by the active compass: [visible] on top, [folded]
+/// (low desire/impact) tucked under a separator. In Auto mode [folded] is
+/// empty.
+class ActionsList {
+  const ActionsList({required this.visible, required this.folded});
+  final List<ScoredTask> visible;
+  final List<ScoredTask> folded;
 }
 
 /// Global scoring constants. Default = bounded anti-starvation (k=2, τ=14d).
@@ -71,17 +82,24 @@ final viewProvider = NotifierProvider<ViewNotifier, TaskView>(
   ViewNotifier.new,
 );
 
-/// Tab 1: tasks of the active view, sorted by score.
-final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {
+/// Tab 1: tasks of the active view, sorted by score and split by compass.
+final nextActionsProvider = Provider<AsyncValue<ActionsList>>((ref) {
   final async = ref.watch(tasksProvider);
   final config = ref.watch(scoringConfigProvider);
   final view = ref.watch(viewProvider);
   final now = ref.watch(nowProvider);
+  final compass = ref.watch(settingsProvider.select((s) => s.compass));
+  final focus = ref.watch(settingsProvider.select((s) => s.impactFocus));
   return async.whenData((tasks) {
     final selected = tasksForView(tasks, view, now)
-      ..sort((a, b) => compareByScore(a, b, config, now));
-    return [
-      for (final t in selected) ScoredTask(t, taskScore(t, config, now: now)),
-    ];
+      ..sort((a, b) =>
+          compareByScore(a, b, config, now, compass: compass, focus: focus));
+    final visible = <ScoredTask>[];
+    final folded = <ScoredTask>[];
+    for (final t in selected) {
+      final st = ScoredTask(t, taskScore(t, config, now: now));
+      (isFolded(t, compass, focus) ? folded : visible).add(st);
+    }
+    return ActionsList(visible: visible, folded: folded);
   });
 });
