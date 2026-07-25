@@ -149,7 +149,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
 
   Recurrence? _recurrenceFor(String? id) {
     if (id == null) return null;
-    final recs = ref.watch(recurrencesProvider).valueOrNull ?? const [];
+    final recs = ref.watch(recurrencesProvider).value ?? const [];
     for (final r in recs) {
       if (r.id == id) return r;
     }
@@ -160,7 +160,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context);
-    final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
+    final tasks = ref.watch(tasksProvider).value ?? const <Task>[];
     final caps = ref.watch(priorityCapsProvider);
 
     // Source recurrence, if this task is an occurrence (final -> promotion

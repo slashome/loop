@@ -60,7 +60,16 @@ final tasksProvider = StreamProvider<List<Task>>(
 
 /// Active view of tab 1 (Smart Lists). NOT persisted across sessions:
 /// we always reopen on "To do".
-final viewProvider = StateProvider<TaskView>((ref) => TaskView.todo);
+class ViewNotifier extends Notifier<TaskView> {
+  @override
+  TaskView build() => TaskView.todo;
+
+  void select(TaskView view) => state = view;
+}
+
+final viewProvider = NotifierProvider<ViewNotifier, TaskView>(
+  ViewNotifier.new,
+);
 
 /// Tab 1: tasks of the active view, sorted by score.
 final nextActionsProvider = Provider<AsyncValue<List<ScoredTask>>>((ref) {

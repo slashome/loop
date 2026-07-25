@@ -125,7 +125,7 @@ class _ViewBar extends ConsumerWidget {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context);
     final view = ref.watch(viewProvider);
-    final tasks = ref.watch(tasksProvider).valueOrNull ?? const <Task>[];
+    final tasks = ref.watch(tasksProvider).value ?? const <Task>[];
     // Same instant as the sorted list: counters can never contradict it.
     final now = ref.watch(nowProvider);
 
@@ -161,7 +161,7 @@ class _ViewBar extends ConsumerWidget {
                     selected: view == v,
                     showCheckmark: false,
                     onSelected: (_) =>
-                        ref.read(viewProvider.notifier).state = v,
+                        ref.read(viewProvider.notifier).select(v),
                   ),
                 ),
             ],
