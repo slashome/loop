@@ -183,6 +183,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get splashTip1 => 'Sorting your priorities…';
+
+  @override
+  String get splashTip2 => 'Waking up sleepy tasks…';
+
+  @override
+  String get splashTip3 => 'Measuring your procrastination…';
+
+  @override
+  String get splashTip4 => 'Polishing the checkboxes…';
+
+  @override
+  String get splashTip5 => 'Negotiating with your motivation…';
+
+  @override
+  String get splashTip6 => 'Spinning up the infinite loop…';
+
+  @override
+  String get splashTip7 => 'Aligning the stars and the deadlines…';
+
+  @override
+  String get splashTip8 => 'Dusting off the backlog…';
+
+  @override
+  String get splashTip9 => 'Counting sheep… er, tasks…';
+
+  @override
+  String get splashTip10 => 'Pretending this takes a while…';
+
+  @override
   String get commonSave => 'Save';
 
   @override

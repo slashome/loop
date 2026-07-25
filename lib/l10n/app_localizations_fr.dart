@@ -183,6 +183,36 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get splashTip1 => 'Tri de vos priorités…';
+
+  @override
+  String get splashTip2 => 'Réveil des tâches endormies…';
+
+  @override
+  String get splashTip3 => 'Mesure de votre procrastination…';
+
+  @override
+  String get splashTip4 => 'Polissage des cases à cocher…';
+
+  @override
+  String get splashTip5 => 'Négociation avec votre motivation…';
+
+  @override
+  String get splashTip6 => 'Démarrage de la boucle infinie…';
+
+  @override
+  String get splashTip7 => 'Alignement des astres et des échéances…';
+
+  @override
+  String get splashTip8 => 'Époussetage du backlog…';
+
+  @override
+  String get splashTip9 => 'Comptage des moutons… euh, des tâches…';
+
+  @override
+  String get splashTip10 => 'On fait semblant que ça prend du temps…';
+
+  @override
   String get commonSave => 'Enregistrer';
 
   @override

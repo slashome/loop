@@ -38,6 +38,17 @@
   "relativeYearsAgo": "{count, plural, one{Il y a {count} an} other{Il y a {count} ans}}",
   "relativeInYears": "{count, plural, one{Dans {count} an} other{Dans {count} ans}}",
 
+  "splashTip1": "Tri de vos priorités…",
+  "splashTip2": "Réveil des tâches endormies…",
+  "splashTip3": "Mesure de votre procrastination…",
+  "splashTip4": "Polissage des cases à cocher…",
+  "splashTip5": "Négociation avec votre motivation…",
+  "splashTip6": "Démarrage de la boucle infinie…",
+  "splashTip7": "Alignement des astres et des échéances…",
+  "splashTip8": "Époussetage du backlog…",
+  "splashTip9": "Comptage des moutons… euh, des tâches…",
+  "splashTip10": "On fait semblant que ça prend du temps…",
+
   "commonSave": "Enregistrer",
   "commonError": "Erreur : {message}",
   "taskComplete": "Terminer",

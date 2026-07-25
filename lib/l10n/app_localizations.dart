@@ -320,6 +320,66 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{In {count} year} other{In {count} years}}'**
   String relativeInYears(int count);
 
+  /// No description provided for @splashTip1.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting your priorities…'**
+  String get splashTip1;
+
+  /// No description provided for @splashTip2.
+  ///
+  /// In en, this message translates to:
+  /// **'Waking up sleepy tasks…'**
+  String get splashTip2;
+
+  /// No description provided for @splashTip3.
+  ///
+  /// In en, this message translates to:
+  /// **'Measuring your procrastination…'**
+  String get splashTip3;
+
+  /// No description provided for @splashTip4.
+  ///
+  /// In en, this message translates to:
+  /// **'Polishing the checkboxes…'**
+  String get splashTip4;
+
+  /// No description provided for @splashTip5.
+  ///
+  /// In en, this message translates to:
+  /// **'Negotiating with your motivation…'**
+  String get splashTip5;
+
+  /// No description provided for @splashTip6.
+  ///
+  /// In en, this message translates to:
+  /// **'Spinning up the infinite loop…'**
+  String get splashTip6;
+
+  /// No description provided for @splashTip7.
+  ///
+  /// In en, this message translates to:
+  /// **'Aligning the stars and the deadlines…'**
+  String get splashTip7;
+
+  /// No description provided for @splashTip8.
+  ///
+  /// In en, this message translates to:
+  /// **'Dusting off the backlog…'**
+  String get splashTip8;
+
+  /// No description provided for @splashTip9.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting sheep… er, tasks…'**
+  String get splashTip9;
+
+  /// No description provided for @splashTip10.
+  ///
+  /// In en, this message translates to:
+  /// **'Pretending this takes a while…'**
+  String get splashTip10;
+
   /// No description provided for @commonSave.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,7 @@ import 'src/app/app_shell.dart';
 import 'src/core/db/app_database.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/settings/application/settings_providers.dart';
+import 'src/features/splash/presentation/splash_screen.dart';
 import 'src/features/tasks/application/tasks_providers.dart';
 import 'src/features/tasks/data/task_repository.dart';
 
@@ -62,7 +63,29 @@ class LoopApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const AppShell(),
+      home: const _Root(),
+    );
+  }
+}
+
+/// Shows the animated splash first, then swaps to the app shell.
+class _Root extends StatefulWidget {
+  const _Root();
+
+  @override
+  State<_Root> createState() => _RootState();
+}
+
+class _RootState extends State<_Root> {
+  bool _ready = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      child: _ready
+          ? const AppShell()
+          : SplashScreen(onDone: () => setState(() => _ready = true)),
     );
   }
 }

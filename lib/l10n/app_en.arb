@@ -51,6 +51,17 @@
   "relativeInYears": "{count, plural, one{In {count} year} other{In {count} years}}",
   "@relativeInYears": { "placeholders": { "count": { "type": "int" } } },
 
+  "splashTip1": "Sorting your priorities…",
+  "splashTip2": "Waking up sleepy tasks…",
+  "splashTip3": "Measuring your procrastination…",
+  "splashTip4": "Polishing the checkboxes…",
+  "splashTip5": "Negotiating with your motivation…",
+  "splashTip6": "Spinning up the infinite loop…",
+  "splashTip7": "Aligning the stars and the deadlines…",
+  "splashTip8": "Dusting off the backlog…",
+  "splashTip9": "Counting sheep… er, tasks…",
+  "splashTip10": "Pretending this takes a while…",
+
   "commonSave": "Save",
   "commonError": "Error: {message}",
   "@commonError": { "placeholders": { "message": { "type": "String" } } },
