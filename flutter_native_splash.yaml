@@ -1,0 +1,23 @@
+# Splash natif (web + iOS + Android + desktop), généré par flutter_native_splash.
+# Régénérer après modif : dart run flutter_native_splash:create
+flutter_native_splash:
+  # Fond identique au scaffold de l'app (AppColors.bg) → transition fondue.
+  color: "#F6F8FB"
+  # Lockup ∞ + "loop" détouré, centré.
+  image: assets/branding/logo_tight.png
+
+  # Mode sombre : même logo, fond ardoise.
+  color_dark: "#1B1F27"
+  image_dark: assets/branding/logo_tight.png
+
+  # Android 12+ : l'OS masque l'icône dans un cercle → le symbole ∞ seul rend
+  # mieux que le lockup complet.
+  android_12:
+    image: assets/branding/logo_mark.png
+    color: "#F6F8FB"
+    image_dark: assets/branding/logo_mark.png
+    color_dark: "#1B1F27"
+
+  web: true
+  android: true
+  ios: true

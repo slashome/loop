@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +13,10 @@ import 'src/features/tasks/application/tasks_providers.dart';
 import 'src/features/tasks/data/task_repository.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  // Hold the native splash through the async bootstrap so it doesn't flash to
+  // a blank frame before the first UI is ready.
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
   final prefs = await SharedPreferences.getInstance();
   final db = AppDatabase();
   // Seed on first launch + generate today's occurrences.
@@ -40,6 +44,10 @@ class LoopApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Remove the native splash once the first frame is on screen.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => FlutterNativeSplash.remove(),
+    );
     final tag = ref.watch(settingsProvider.select((s) => s.languageTag));
     final locale = tag == 'system' ? null : Locale(tag);
     return MaterialApp(
