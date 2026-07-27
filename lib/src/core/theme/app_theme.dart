@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Brand colors, derived from the logo (∞ blue→green gradient, slate wordmark).
 abstract final class AppColors {
@@ -45,7 +44,10 @@ ThemeData buildAppTheme() {
     error: const Color(0xFFE5484D),
   );
 
-  final text = GoogleFonts.manropeTextTheme().apply(
+  // Bundled Manrope (offline-safe; no runtime CDN fetch).
+  final base = ThemeData(brightness: Brightness.light);
+  final text = base.textTheme.apply(
+    fontFamily: 'Manrope',
     bodyColor: AppColors.ink,
     displayColor: AppColors.ink,
   );
@@ -54,6 +56,7 @@ ThemeData buildAppTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.bg,
+    fontFamily: 'Manrope',
     textTheme: text,
     splashFactory: InkSparkle.splashFactory,
     appBarTheme: const AppBarTheme(
