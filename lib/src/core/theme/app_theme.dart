@@ -44,10 +44,13 @@ ThemeData buildAppTheme() {
     error: const Color(0xFFE5484D),
   );
 
-  // Bundled Manrope (offline-safe; no runtime CDN fetch).
+  // Bundled Manrope (offline-safe; no runtime CDN fetch). Emoji/symbol
+  // fallbacks are bundled too so CanvasKit never reaches for Noto on the CDN.
+  const fallback = ['NotoColorEmoji', 'NotoSansSymbols'];
   final base = ThemeData(brightness: Brightness.light);
   final text = base.textTheme.apply(
     fontFamily: 'Manrope',
+    fontFamilyFallback: fallback,
     bodyColor: AppColors.ink,
     displayColor: AppColors.ink,
   );
@@ -57,6 +60,7 @@ ThemeData buildAppTheme() {
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.bg,
     fontFamily: 'Manrope',
+    fontFamilyFallback: fallback,
     textTheme: text,
     splashFactory: InkSparkle.splashFactory,
     appBarTheme: const AppBarTheme(

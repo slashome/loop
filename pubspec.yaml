@@ -39,3 +39,11 @@ flutter:
     - family: Manrope
       fonts:
         - asset: assets/fonts/Manrope.ttf
+    # Offline fallbacks so CanvasKit uses local fonts for emoji/symbols
+    # instead of fetching Noto from the Google Fonts CDN.
+    - family: NotoColorEmoji
+      fonts:
+        - asset: assets/fonts/NotoColorEmoji.ttf
+    - family: NotoSansSymbols
+      fonts:
+        - asset: assets/fonts/NotoSansSymbols.ttf
