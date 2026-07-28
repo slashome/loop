@@ -38,10 +38,16 @@ Set<int> daysWithTasks(Iterable<Task> tasks, DateTime month) {
 
 /// The 42 cells (6 weeks × 7 days) of the month grid for [month], starting on
 /// Monday. Cells before/after the month belong to adjacent months.
+///
+/// Uses calendar-field arithmetic — `DateTime(y, m, dayNumber)` with over/under
+/// -flowing day numbers, which Dart normalizes across month/year boundaries —
+/// instead of `Duration(days:)`. The latter is 24h-based and drifts by a day
+/// across a DST transition; field arithmetic stays on calendar days.
 List<DateTime> monthGrid(DateTime month) {
   final first = monthStart(month);
-  // weekday: Mon=1..Sun=7 → offset to the Monday on/before the 1st.
-  final leading = first.weekday - 1;
-  final start = first.subtract(Duration(days: leading));
-  return [for (var i = 0; i < 42; i++) start.add(Duration(days: i))];
+  final leading = first.weekday - 1; // Mon=0 … Sun=6
+  return [
+    for (var i = 0; i < 42; i++)
+      DateTime(first.year, first.month, 1 - leading + i),
+  ];
 }

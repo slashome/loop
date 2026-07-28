@@ -54,4 +54,21 @@ void main() {
     expect(grid.first, DateTime(2026, 6, 29));
     expect(grid.first.weekday, DateTime.monday);
   });
+
+  test('monthGrid cells are strictly consecutive calendar days (DST-safe)', () {
+    // March 2026 contains the spring-forward DST transition in most of Europe
+    // (last Sunday, 29 Mar). Field arithmetic must keep the days consecutive —
+    // a Duration(days:) grid would drift a day around the transition.
+    for (final month in [DateTime(2026, 3), DateTime(2026, 10)]) {
+      final grid = monthGrid(month);
+      for (var i = 1; i < grid.length; i++) {
+        final prev = grid[i - 1];
+        final cur = grid[i];
+        // Each cell is exactly the next calendar day.
+        expect(isSameDay(cur, DateTime(prev.year, prev.month, prev.day + 1)),
+            isTrue,
+            reason: 'gap between $prev and $cur');
+      }
+    }
+  });
 }
