@@ -128,6 +128,18 @@ abstract class AppLocalizations {
   /// **'Calendar view — coming soon.'**
   String get calendarComingSoon;
 
+  /// No description provided for @calendarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get calendarToday;
+
+  /// No description provided for @calendarNoTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'No task on this day.'**
+  String get calendarNoTasks;
+
   /// No description provided for @viewTodo.
   ///
   /// In en, this message translates to:

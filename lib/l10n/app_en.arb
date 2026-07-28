@@ -5,6 +5,8 @@
   "navRepeats": "Repeats",
   "navCalendar": "Calendar",
   "calendarComingSoon": "Calendar view — coming soon.",
+  "calendarToday": "Today",
+  "calendarNoTasks": "No task on this day.",
   "viewTodo": "To do",
   "viewOverdue": "Overdue",
   "viewUpcoming": "Upcoming",

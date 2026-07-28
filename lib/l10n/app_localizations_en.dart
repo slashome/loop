@@ -24,6 +24,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarComingSoon => 'Calendar view — coming soon.';
 
   @override
+  String get calendarToday => 'Today';
+
+  @override
+  String get calendarNoTasks => 'No task on this day.';
+
+  @override
   String get viewTodo => 'To do';
 
   @override

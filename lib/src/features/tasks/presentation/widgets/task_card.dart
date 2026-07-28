@@ -12,12 +12,17 @@ class TaskCard extends StatelessWidget {
     super.key,
     required this.task,
     required this.score,
+    this.showScore = true,
     this.onComplete,
     this.onTap,
   });
 
   final Task task;
   final double score;
+
+  /// The score pill helps tune k/τ on the Actions tab; hidden elsewhere
+  /// (e.g. the calendar day list).
+  final bool showScore;
   final VoidCallback? onComplete;
   final VoidCallback? onTap;
 
@@ -62,7 +67,7 @@ class TaskCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _ScorePill(score: score),
+              if (showScore) _ScorePill(score: score),
               IconButton(
                 tooltip: AppLocalizations.of(context).taskComplete,
                 visualDensity: VisualDensity.compact,

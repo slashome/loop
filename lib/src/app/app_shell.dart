@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/app_localizations.dart';
+import '../features/calendar/presentation/calendar_view.dart';
 import '../features/recurrences/presentation/repeats_view.dart';
 import '../features/tasks/presentation/next_actions_view.dart';
+import '../../l10n/app_localizations.dart';
 
 /// App shell: tab navigation (same order on mobile and desktop).
 class AppShell extends StatefulWidget {
@@ -18,7 +19,7 @@ class _AppShellState extends State<AppShell> {
   static const _pages = [
     NextActionsView(),
     RepeatsView(),
-    _CalendarPlaceholder(),
+    CalendarView(),
   ];
 
   @override
@@ -47,19 +48,6 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _CalendarPlaceholder extends StatelessWidget {
-  const _CalendarPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l.navCalendar)),
-      body: Center(child: Text(l.calendarComingSoon)),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'l10n/app_localizations.dart';
@@ -18,6 +19,7 @@ Future<void> main() async {
   // Hold the native splash through the async bootstrap so it doesn't flash to
   // a blank frame before the first UI is ready.
   FlutterNativeSplash.preserve(widgetsBinding: binding);
+  await initializeDateFormatting(); // localized month/weekday names
   final prefs = await SharedPreferences.getInstance();
   final db = AppDatabase();
   // Seed on first launch + generate today's occurrences.
