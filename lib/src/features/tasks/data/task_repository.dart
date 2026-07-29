@@ -89,6 +89,14 @@ class TaskRepository {
     );
   }
 
+  /// Moves a task's due date (e.g. drag-and-drop onto a calendar day).
+  Future<void> reschedule(String id, DateTime dueAt) async {
+    final now = DateTime.now();
+    await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
+      TaskRowsCompanion(dueAt: Value(dueAt), updatedAt: Value(now)),
+    );
+  }
+
   Future<void> complete(String id) async {
     final now = DateTime.now();
     await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(

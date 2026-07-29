@@ -55,6 +55,24 @@ void main() {
     expect(grid.first.weekday, DateTime.monday);
   });
 
+  test('weekOf returns Monday..Sunday containing the day', () {
+    // 2026-07-08 is a Wednesday.
+    final week = weekOf(DateTime(2026, 7, 8, 15));
+    expect(week.length, 7);
+    expect(week.first, DateTime(2026, 7, 6)); // Monday
+    expect(week.last, DateTime(2026, 7, 12)); // Sunday
+    expect(week.first.weekday, DateTime.monday);
+  });
+
+  test('rescheduledDueAt keeps the time of day, changes the date', () {
+    final old = DateTime(2026, 7, 8, 20, 30);
+    final moved = rescheduledDueAt(old, DateTime(2026, 7, 12));
+    expect(moved, DateTime(2026, 7, 12, 20, 30));
+    // No time → default 09:00.
+    expect(rescheduledDueAt(null, DateTime(2026, 7, 12)),
+        DateTime(2026, 7, 12, 9, 0));
+  });
+
   test('monthGrid cells are strictly consecutive calendar days (DST-safe)', () {
     // March 2026 contains the spring-forward DST transition in most of Europe
     // (last Sunday, 29 Mar). Field arithmetic must keep the days consecutive —

@@ -140,6 +140,18 @@ abstract class AppLocalizations {
   /// **'No task on this day.'**
   String get calendarNoTasks;
 
+  /// No description provided for @calendarMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get calendarMonth;
+
+  /// No description provided for @calendarWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get calendarWeek;
+
   /// No description provided for @viewTodo.
   ///
   /// In en, this message translates to:

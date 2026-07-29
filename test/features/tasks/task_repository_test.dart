@@ -59,6 +59,14 @@ void main() {
     expect(t.desire, 0.5);
   });
 
+  test('reschedule moves the due date', () async {
+    final id = await repo.create(
+        title: 'Movable', dueAt: DateTime(2026, 7, 8, 20, 30));
+    await repo.reschedule(id, DateTime(2026, 7, 12, 20, 30));
+    final t = await repo.getById(id);
+    expect(t!.dueAt, DateTime(2026, 7, 12, 20, 30));
+  });
+
   test('softDelete removes the task from the stream', () async {
     await repo.bootstrap(clock: monday);
     final id = (await db.allTasks()).first.id;

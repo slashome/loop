@@ -30,6 +30,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get calendarNoTasks => 'Aucune tâche ce jour.';
 
   @override
+  String get calendarMonth => 'Mois';
+
+  @override
+  String get calendarWeek => 'Semaine';
+
+  @override
   String get viewTodo => 'À faire';
 
   @override

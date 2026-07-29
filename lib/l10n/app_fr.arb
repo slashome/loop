@@ -7,6 +7,8 @@
   "calendarComingSoon": "Vue calendrier — à venir.",
   "calendarToday": "Aujourd'hui",
   "calendarNoTasks": "Aucune tâche ce jour.",
+  "calendarMonth": "Mois",
+  "calendarWeek": "Semaine",
   "viewTodo": "À faire",
   "viewOverdue": "En retard",
   "viewUpcoming": "À venir",

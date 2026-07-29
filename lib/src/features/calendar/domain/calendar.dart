@@ -36,6 +36,26 @@ Set<int> daysWithTasks(Iterable<Task> tasks, DateTime month) {
   return days;
 }
 
+/// The 7 days of the week containing [d], Monday-first (field arithmetic).
+List<DateTime> weekOf(DateTime d) {
+  final leading = d.weekday - 1; // Mon=0 … Sun=6
+  return [
+    for (var i = 0; i < 7; i++) DateTime(d.year, d.month, d.day - leading + i),
+  ];
+}
+
+/// New due date when a task is dropped on [targetDay]: keep its time of day
+/// (default 09:00 if it somehow had none).
+DateTime rescheduledDueAt(DateTime? old, DateTime targetDay) {
+  return DateTime(
+    targetDay.year,
+    targetDay.month,
+    targetDay.day,
+    old?.hour ?? 9,
+    old?.minute ?? 0,
+  );
+}
+
 /// The 42 cells (6 weeks × 7 days) of the month grid for [month], starting on
 /// Monday. Cells before/after the month belong to adjacent months.
 ///

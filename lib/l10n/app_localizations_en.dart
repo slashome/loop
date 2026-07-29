@@ -30,6 +30,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarNoTasks => 'No task on this day.';
 
   @override
+  String get calendarMonth => 'Month';
+
+  @override
+  String get calendarWeek => 'Week';
+
+  @override
   String get viewTodo => 'To do';
 
   @override
