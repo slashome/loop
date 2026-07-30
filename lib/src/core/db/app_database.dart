@@ -144,11 +144,11 @@ class AppDatabase extends _$AppDatabase {
       (update(profileRows)..where((p) => p.id.equals(id)))
           .write(ProfileRowsCompanion(name: Value(name)));
 
-  // ── Tasks / recurrences (scoped to a profile via [owner]) ─────────────────
+  // ── Tasks / recurrences (scoped to a profile via [ownerId]) ───────────────
 
-  Stream<List<TaskRow>> watchTasks(String owner) {
+  Stream<List<TaskRow>> watchTasks(String ownerId) {
     return (select(taskRows)
-          ..where((t) => t.deletedAt.isNull() & t.ownerId.equals(owner)))
+          ..where((t) => t.deletedAt.isNull() & t.ownerId.equals(ownerId)))
         .watch();
   }
 
@@ -157,18 +157,18 @@ class AppDatabase extends _$AppDatabase {
   Future<TaskRow?> taskById(String id) =>
       (select(taskRows)..where((t) => t.id.equals(id))).getSingleOrNull();
 
-  Future<List<RecurrenceRow>> activeRecurrences(String owner) {
+  Future<List<RecurrenceRow>> activeRecurrences(String ownerId) {
     return (select(recurrenceRows)
           ..where((r) =>
               r.active.equals(true) &
               r.deletedAt.isNull() &
-              r.ownerId.equals(owner)))
+              r.ownerId.equals(ownerId)))
         .get();
   }
 
-  Stream<List<RecurrenceRow>> watchRecurrences(String owner) {
+  Stream<List<RecurrenceRow>> watchRecurrences(String ownerId) {
     return (select(recurrenceRows)
-          ..where((r) => r.deletedAt.isNull() & r.ownerId.equals(owner))
+          ..where((r) => r.deletedAt.isNull() & r.ownerId.equals(ownerId))
           ..orderBy([(r) => OrderingTerm(expression: r.title)]))
         .watch();
   }
@@ -185,20 +185,20 @@ class AppDatabase extends _$AppDatabase {
     await (delete(recurrenceRows)..where((r) => r.id.equals(id))).go();
   }
 
-  Future<int> countTasks(String owner) async {
+  Future<int> countTasks(String ownerId) async {
     final c = countAll();
     final q = selectOnly(taskRows)
       ..addColumns([c])
-      ..where(taskRows.ownerId.equals(owner));
+      ..where(taskRows.ownerId.equals(ownerId));
     final row = await q.getSingle();
     return row.read(c) ?? 0;
   }
 
-  Future<int> countRecurrences(String owner) async {
+  Future<int> countRecurrences(String ownerId) async {
     final c = countAll();
     final q = selectOnly(recurrenceRows)
       ..addColumns([c])
-      ..where(recurrenceRows.ownerId.equals(owner));
+      ..where(recurrenceRows.ownerId.equals(ownerId));
     final row = await q.getSingle();
     return row.read(c) ?? 0;
   }
@@ -232,12 +232,12 @@ class AppDatabase extends _$AppDatabase {
 
   /// Soft-deletes MISSED open occurrences (due before [dayStart]) of
   /// recurrences whose `autoCleanMissed` is true. Returns the count cleaned.
-  Future<int> cleanMissedOccurrences(DateTime dayStart, String owner) async {
+  Future<int> cleanMissedOccurrences(DateTime dayStart, String ownerId) async {
     final autoIds = (await (select(recurrenceRows)
               ..where((r) =>
                   r.autoCleanMissed.equals(true) &
                   r.deletedAt.isNull() &
-                  r.ownerId.equals(owner)))
+                  r.ownerId.equals(ownerId)))
             .get())
         .map((r) => r.id)
         .toList();
