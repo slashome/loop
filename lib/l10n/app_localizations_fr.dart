@@ -100,6 +100,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsLanguage => 'Langue';
 
   @override
+  String get settingsProfiles => 'Profils';
+
+  @override
+  String get profileDefaultName => 'Profil 1';
+
+  @override
+  String get profileAdd => 'Ajouter un profil';
+
+  @override
+  String get profileNewTitle => 'Nouveau profil';
+
+  @override
+  String get profileRenameTitle => 'Renommer le profil';
+
+  @override
+  String get profileNameHint => 'Nom du profil';
+
+  @override
+  String get commonCancel => 'Annuler';
+
+  @override
+  String get commonOk => 'OK';
+
+  @override
   String get newestAtBottomTitle => 'Prioritaire en bas';
 
   @override

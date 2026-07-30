@@ -65,7 +65,18 @@ class RecurrenceRows extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [TaskRows, RecurrenceRows])
+/// Local profiles (multi-account on the same device, no server). A profile's
+/// id is the `ownerId` stamped on that profile's tasks and recurrences.
+class ProfileRows extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [TaskRows, RecurrenceRows, ProfileRows])
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(
@@ -83,7 +94,10 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
+
+  /// Reserved id of the first, default profile (owns pre-multi-account data).
+  static const defaultProfileId = 'local';
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -107,11 +121,35 @@ class AppDatabase extends _$AppDatabase {
           if (from < 4) {
             await m.renameColumn(taskRows, 'envie', taskRows.desire);
           }
+          // v5: local profiles. Existing data has ownerId 'local' → seed the
+          // matching default profile so it stays visible.
+          if (from < 5) {
+            await m.createTable(profileRows);
+          }
         },
       );
 
-  Stream<List<TaskRow>> watchTasks() {
-    return (select(taskRows)..where((t) => t.deletedAt.isNull())).watch();
+  // ── Profiles ─────────────────────────────────────────────────────────────
+
+  Stream<List<ProfileRow>> watchProfiles() => (select(profileRows)
+        ..orderBy([(p) => OrderingTerm(expression: p.createdAt)]))
+      .watch();
+
+  Future<List<ProfileRow>> allProfiles() => select(profileRows).get();
+
+  Future<void> upsertProfile(ProfileRowsCompanion row) =>
+      into(profileRows).insertOnConflictUpdate(row);
+
+  Future<void> renameProfile(String id, String name) =>
+      (update(profileRows)..where((p) => p.id.equals(id)))
+          .write(ProfileRowsCompanion(name: Value(name)));
+
+  // ── Tasks / recurrences (scoped to a profile via [owner]) ─────────────────
+
+  Stream<List<TaskRow>> watchTasks(String owner) {
+    return (select(taskRows)
+          ..where((t) => t.deletedAt.isNull() & t.ownerId.equals(owner)))
+        .watch();
   }
 
   Future<List<TaskRow>> allTasks() => select(taskRows).get();
@@ -119,15 +157,18 @@ class AppDatabase extends _$AppDatabase {
   Future<TaskRow?> taskById(String id) =>
       (select(taskRows)..where((t) => t.id.equals(id))).getSingleOrNull();
 
-  Future<List<RecurrenceRow>> activeRecurrences() {
+  Future<List<RecurrenceRow>> activeRecurrences(String owner) {
     return (select(recurrenceRows)
-          ..where((r) => r.active.equals(true) & r.deletedAt.isNull()))
+          ..where((r) =>
+              r.active.equals(true) &
+              r.deletedAt.isNull() &
+              r.ownerId.equals(owner)))
         .get();
   }
 
-  Stream<List<RecurrenceRow>> watchRecurrences() {
+  Stream<List<RecurrenceRow>> watchRecurrences(String owner) {
     return (select(recurrenceRows)
-          ..where((r) => r.deletedAt.isNull())
+          ..where((r) => r.deletedAt.isNull() & r.ownerId.equals(owner))
           ..orderBy([(r) => OrderingTerm(expression: r.title)]))
         .watch();
   }
@@ -144,16 +185,20 @@ class AppDatabase extends _$AppDatabase {
     await (delete(recurrenceRows)..where((r) => r.id.equals(id))).go();
   }
 
-  Future<int> countTasks() async {
+  Future<int> countTasks(String owner) async {
     final c = countAll();
-    final q = selectOnly(taskRows)..addColumns([c]);
+    final q = selectOnly(taskRows)
+      ..addColumns([c])
+      ..where(taskRows.ownerId.equals(owner));
     final row = await q.getSingle();
     return row.read(c) ?? 0;
   }
 
-  Future<int> countRecurrences() async {
+  Future<int> countRecurrences(String owner) async {
     final c = countAll();
-    final q = selectOnly(recurrenceRows)..addColumns([c]);
+    final q = selectOnly(recurrenceRows)
+      ..addColumns([c])
+      ..where(recurrenceRows.ownerId.equals(owner));
     final row = await q.getSingle();
     return row.read(c) ?? 0;
   }
@@ -187,10 +232,12 @@ class AppDatabase extends _$AppDatabase {
 
   /// Soft-deletes MISSED open occurrences (due before [dayStart]) of
   /// recurrences whose `autoCleanMissed` is true. Returns the count cleaned.
-  Future<int> cleanMissedOccurrences(DateTime dayStart) async {
+  Future<int> cleanMissedOccurrences(DateTime dayStart, String owner) async {
     final autoIds = (await (select(recurrenceRows)
-              ..where(
-                  (r) => r.autoCleanMissed.equals(true) & r.deletedAt.isNull()))
+              ..where((r) =>
+                  r.autoCleanMissed.equals(true) &
+                  r.deletedAt.isNull() &
+                  r.ownerId.equals(owner)))
             .get())
         .map((r) => r.id)
         .toList();

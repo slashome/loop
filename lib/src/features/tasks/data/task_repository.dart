@@ -20,19 +20,26 @@ class PriorityCapExceeded implements Exception {
 /// reactive stream for tab 1, and handles seeding + generation of recurrence
 /// occurrences.
 class TaskRepository {
-  TaskRepository(this._db, {this.caps = PriorityCaps.defaults});
+  TaskRepository(
+    this._db, {
+    this.ownerId = AppDatabase.defaultProfileId,
+    this.caps = PriorityCaps.defaults,
+  });
 
   final AppDatabase _db;
+
+  /// Current profile that owns the tasks read/written here (local multi-account).
+  final String ownerId;
 
   /// Priority caps enforced on write (the UI also disables full bands, but the
   /// repository is the actual gate — stale lists or programmatic callers
   /// cannot silently exceed a cap).
   final PriorityCaps caps;
 
-  /// Stream of non-deleted tasks. Sorting by score and the "live" filter are
-  /// done downstream (application layer).
+  /// Stream of the current profile's non-deleted tasks. Sorting by score and
+  /// the "live" filter are done downstream (application layer).
   Stream<List<Task>> watchTasks() =>
-      _db.watchTasks().map((rows) => rows.map(_toTask).toList());
+      _db.watchTasks(ownerId).map((rows) => rows.map(_toTask).toList());
 
   Future<Task?> getById(String id) async {
     final row = await _db.taskById(id);
@@ -40,7 +47,7 @@ class TaskRepository {
   }
 
   Future<void> _enforceCap(int priority, {String? excludeId}) async {
-    final live = (await _db.watchTasks().first).map(_toTask);
+    final live = (await _db.watchTasks(ownerId).first).map(_toTask);
     if (!caps.canAssign(priority, live, excludeId: excludeId)) {
       throw PriorityCapExceeded(priority);
     }
@@ -63,6 +70,7 @@ class TaskRepository {
     await _db.upsertTask(
       TaskRowsCompanion.insert(
         id: id,
+        ownerId: Value(ownerId),
         title: title,
         description: Value(description),
         priority: Value(priority),
@@ -136,30 +144,37 @@ class TaskRepository {
     );
   }
 
-  /// On startup: seeds the database if empty, then materializes today's
-  /// occurrences. Idempotent (occurrences deduplicated by deterministic id).
+  /// On startup: ensures this profile exists, seeds demo data for the default
+  /// profile only (once, when empty), then materializes/cleans the current
+  /// profile's occurrences. Idempotent.
   Future<void> bootstrap({DateTime? clock}) async {
     final now = clock ?? DateTime.now();
-    // Per-entity independent seeding: after a migration that recreates the
-    // recurrences table, they re-seed without touching the tasks.
-    if (await _db.countTasks() == 0) {
-      for (final t in seedTasks(now)) {
-        await _db.upsertTask(_toCompanion(t));
+    if (ownerId == AppDatabase.defaultProfileId) {
+      // Default profile owns any pre-multi-account data; ensure its row exists.
+      await _db.upsertProfile(
+        ProfileRowsCompanion.insert(id: ownerId, name: '', createdAt: now),
+      );
+      // Per-entity independent seeding (demo). New profiles start empty.
+      if (await _db.countTasks(ownerId) == 0) {
+        for (final t in seedTasks(now)) {
+          await _db.upsertTask(_toCompanion(t));
+        }
       }
-    }
-    if (await _db.countRecurrences() == 0) {
-      for (final r in seedRecurrences(now)) {
-        await _db.insertRecurrence(recurrenceToCompanion(r));
+      if (await _db.countRecurrences(ownerId) == 0) {
+        for (final r in seedRecurrences(now)) {
+          await _db.insertRecurrence(recurrenceToCompanion(r));
+        }
       }
     }
     await generateOccurrences(on: now);
     await cleanMissedOccurrences(on: now);
   }
 
-  /// Soft-deletes missed occurrences of recurrences set to auto-cleanup.
-  /// Returns the number cleaned up.
+  /// Soft-deletes missed occurrences of the current profile's auto-cleanup
+  /// recurrences. Returns the number cleaned up.
   Future<int> cleanMissedOccurrences({required DateTime on}) {
-    return _db.cleanMissedOccurrences(DateTime(on.year, on.month, on.day));
+    return _db.cleanMissedOccurrences(
+        DateTime(on.year, on.month, on.day), ownerId);
   }
 
   /// Realigns the materialized occurrences of one recurrence with its current
@@ -186,18 +201,19 @@ class TaskRepository {
     required DateTime on,
     int horizonDays = 14,
   }) async {
-    final recs = await _db.activeRecurrences();
+    final recs = await _db.activeRecurrences(ownerId);
     final today = DateTime(on.year, on.month, on.day);
     for (final row in recs) {
       final rec = recurrenceFromRow(row);
       for (var d = 0; d <= horizonDays; d++) {
-        final day = today.add(Duration(days: d));
+        final day = DateTime(today.year, today.month, today.day + d);
         for (final occ in rec.occurrencesOn(day)) {
           if (occ.isBefore(rec.dtstart)) continue;
           final id = 'occ_${rec.id}_${occ.toIso8601String()}';
           await _db.insertOccurrenceIfAbsent(
             TaskRowsCompanion.insert(
               id: id,
+              ownerId: Value(ownerId),
               title: rec.title,
               description: Value(rec.description),
               priority: Value(rec.defPriority),

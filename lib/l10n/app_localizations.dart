@@ -272,6 +272,54 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get settingsLanguage;
 
+  /// No description provided for @settingsProfiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Profiles'**
+  String get settingsProfiles;
+
+  /// No description provided for @profileDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile 1'**
+  String get profileDefaultName;
+
+  /// No description provided for @profileAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a profile'**
+  String get profileAdd;
+
+  /// No description provided for @profileNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New profile'**
+  String get profileNewTitle;
+
+  /// No description provided for @profileRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename profile'**
+  String get profileRenameTitle;
+
+  /// No description provided for @profileNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile name'**
+  String get profileNameHint;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @commonOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get commonOk;
+
   /// No description provided for @newestAtBottomTitle.
   ///
   /// In en, this message translates to:

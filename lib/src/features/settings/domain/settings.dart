@@ -9,6 +9,7 @@ class Settings {
     this.languageTag = 'system',
     this.compass = Compass.auto,
     this.impactFocus = ImpactFocus.both,
+    this.currentProfileId = 'local',
   });
 
   /// If true, the Actions list is anchored at the bottom (highest score near
@@ -25,17 +26,22 @@ class Settings {
   /// Which impact drives the Impact compass.
   final ImpactFocus impactFocus;
 
+  /// Active local profile (owner) whose data is shown.
+  final String currentProfileId;
+
   Settings copyWith({
     bool? newestAtBottom,
     String? languageTag,
     Compass? compass,
     ImpactFocus? impactFocus,
+    String? currentProfileId,
   }) =>
       Settings(
         newestAtBottom: newestAtBottom ?? this.newestAtBottom,
         languageTag: languageTag ?? this.languageTag,
         compass: compass ?? this.compass,
         impactFocus: impactFocus ?? this.impactFocus,
+        currentProfileId: currentProfileId ?? this.currentProfileId,
       );
 
   static const Settings defaults = Settings();

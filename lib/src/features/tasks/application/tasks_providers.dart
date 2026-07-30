@@ -46,6 +46,7 @@ final priorityCapsProvider = Provider<PriorityCaps>(
 final taskRepositoryProvider = Provider<TaskRepository>(
   (ref) => TaskRepository(
     ref.watch(appDatabaseProvider),
+    ownerId: ref.watch(settingsProvider.select((s) => s.currentProfileId)),
     caps: ref.watch(priorityCapsProvider),
   ),
 );

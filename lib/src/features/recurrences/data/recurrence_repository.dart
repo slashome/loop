@@ -5,16 +5,45 @@ import '../domain/recurrence.dart';
 
 /// Source of truth for recurrence definitions (Repeats tab).
 class RecurrenceRepository {
-  RecurrenceRepository(this._db);
+  RecurrenceRepository(this._db, {this.ownerId = AppDatabase.defaultProfileId});
 
   final AppDatabase _db;
 
+  /// Current profile that owns the recurrences read/written here.
+  final String ownerId;
+
   Stream<List<Recurrence>> watchAll() => _db
-      .watchRecurrences()
+      .watchRecurrences(ownerId)
       .map((rows) => rows.map(recurrenceFromRow).toList());
 
-  Future<void> save(Recurrence r) =>
-      _db.upsertRecurrence(recurrenceToCompanion(r));
+  /// Saves a recurrence, stamping it with the current profile's owner.
+  Future<void> save(Recurrence r) => _db.upsertRecurrence(
+        recurrenceToCompanion(_withOwner(r)),
+      );
+
+  Recurrence _withOwner(Recurrence r) => r.ownerId == ownerId
+      ? r
+      : Recurrence(
+          id: r.id,
+          ownerId: ownerId,
+          title: r.title,
+          description: r.description,
+          freq: r.freq,
+          byWeekdays: r.byWeekdays,
+          byMonthDays: r.byMonthDays,
+          byHours: r.byHours,
+          byMinute: r.byMinute,
+          rrule: r.rrule,
+          dtstart: r.dtstart,
+          timezone: r.timezone,
+          nextOccurrence: r.nextOccurrence,
+          defPriority: r.defPriority,
+          active: r.active,
+          autoCleanMissed: r.autoCleanMissed,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          deletedAt: r.deletedAt,
+        );
 
   /// Toggles a recurrence. Deactivating also purges its still-open future
   /// occurrences (symmetric with [delete]) so they stop showing in Actions.

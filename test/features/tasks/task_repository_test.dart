@@ -23,15 +23,16 @@ void main() {
   test('bootstrap seeds tasks and recurrences when the database is empty',
       () async {
     await repo.bootstrap(clock: monday);
-    expect(await db.countTasks(), greaterThan(0));
-    expect(await db.countRecurrences(), greaterThan(0));
+    expect(await db.countTasks(AppDatabase.defaultProfileId), greaterThan(0));
+    expect(await db.countRecurrences(AppDatabase.defaultProfileId),
+        greaterThan(0));
   });
 
   test('bootstrap is idempotent (does not re-seed)', () async {
     await repo.bootstrap(clock: monday);
-    final n1 = await db.countTasks();
+    final n1 = await db.countTasks(AppDatabase.defaultProfileId);
     await repo.bootstrap(clock: monday);
-    final n2 = await db.countTasks();
+    final n2 = await db.countTasks(AppDatabase.defaultProfileId);
     expect(n2, n1);
   });
 

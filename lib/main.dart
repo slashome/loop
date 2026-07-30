@@ -26,7 +26,15 @@ Future<void> main() async {
   // Resilient: a bootstrap error must never prevent the app from
   // displaying (tab 1 will then show the stream's error state).
   try {
+    // Default profile: ensures it exists, seeds demo once, generates its
+    // occurrences.
     await TaskRepository(db).bootstrap();
+    // If a different local profile is active, generate/clean its occurrences
+    // too (no seeding for non-default profiles).
+    final current = prefs.getString('currentProfileId');
+    if (current != null && current != AppDatabase.defaultProfileId) {
+      await TaskRepository(db, ownerId: current).bootstrap();
+    }
   } catch (e, st) {
     debugPrint('bootstrap failed: $e\n$st');
   }

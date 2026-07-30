@@ -100,6 +100,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguage => 'Language';
 
   @override
+  String get settingsProfiles => 'Profiles';
+
+  @override
+  String get profileDefaultName => 'Profile 1';
+
+  @override
+  String get profileAdd => 'Add a profile';
+
+  @override
+  String get profileNewTitle => 'New profile';
+
+  @override
+  String get profileRenameTitle => 'Rename profile';
+
+  @override
+  String get profileNameHint => 'Profile name';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonOk => 'OK';
+
+  @override
   String get newestAtBottomTitle => 'Top priority at the bottom';
 
   @override

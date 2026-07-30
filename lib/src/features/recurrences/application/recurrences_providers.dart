@@ -1,11 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/database_provider.dart';
+import '../../settings/application/settings_providers.dart';
 import '../data/recurrence_repository.dart';
 import '../domain/recurrence.dart';
 
 final recurrenceRepositoryProvider = Provider<RecurrenceRepository>(
-  (ref) => RecurrenceRepository(ref.watch(appDatabaseProvider)),
+  (ref) => RecurrenceRepository(
+    ref.watch(appDatabaseProvider),
+    ownerId: ref.watch(settingsProvider.select((s) => s.currentProfileId)),
+  ),
 );
 
 /// Stream of all recurrences (not deleted), for the Repeats tab.
