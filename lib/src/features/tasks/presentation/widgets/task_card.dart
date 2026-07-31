@@ -40,6 +40,10 @@ class _TaskCardState extends State<TaskCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c;
 
+  /// A fresh random seed per completion → the scribble is never the same, yet
+  /// stable across the many rebuilds of one animation.
+  int _scribbleSeed = 0;
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +62,10 @@ class _TaskCardState extends State<TaskCard>
   }
 
   void _startComplete() {
-    if (!_c.isAnimating && !_c.isCompleted) _c.forward();
+    if (!_c.isAnimating && !_c.isCompleted) {
+      _scribbleSeed = math.Random().nextInt(1 << 31);
+      _c.forward();
+    }
   }
 
   @override
@@ -119,7 +126,7 @@ class _TaskCardState extends State<TaskCard>
                   children: [
                     _Strikeable(
                       progress: strike,
-                      seed: task.id.hashCode,
+                      seed: _scribbleSeed,
                       child: Text(
                         task.title,
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -191,7 +198,7 @@ class _Strikeable extends StatelessWidget {
             painter: _ScribblePainter(
               progress: progress,
               seed: seed,
-              color: AppColors.green,
+              color: const Color(0xFF3F4149), // graphite pencil
             ),
           ),
         ),
@@ -221,16 +228,18 @@ class _ScribblePainter extends CustomPainter {
     final startX = -overshoot;
     final endX = size.width + overshoot;
     final span = endX - startX;
-    // Amplitude of the hand tremor, capped so it stays on the text line.
-    final amp = math.min(size.height * 0.22, 5.0);
+    // Vertical amplitude of the hand tremor — larger, freely seeded per run.
+    final amp = math.min(size.height * 0.45, 10.0);
     final steps = math.max(8, (span / 7).round());
-    // Slight overall slope, as if scratched by hand.
-    final slope = (rnd.nextDouble() - 0.5) * 4;
+    // Overall slope + wave count vary per seed so no two look alike.
+    final slope = (rnd.nextDouble() - 0.5) * 7;
+    final waves = 3.0 + rnd.nextDouble() * 2.5; // 3 … 5.5 oscillations
+    final phase = rnd.nextDouble() * math.pi * 2;
 
     double yAt(double p) {
       // p in 0..1 along the pass. Sine waviness + seeded jitter.
-      final wave = math.sin(p * math.pi * 3.4 + rnd.nextDouble()) * amp;
-      final jitter = (rnd.nextDouble() - 0.5) * amp * 0.6;
+      final wave = math.sin(p * math.pi * waves + phase) * amp;
+      final jitter = (rnd.nextDouble() - 0.5) * amp * 0.7;
       return cy + wave + jitter + slope * (p - 0.5);
     }
 
@@ -245,7 +254,7 @@ class _ScribblePainter extends CustomPainter {
     for (var i = 1; i <= backSteps; i++) {
       final p = i / backSteps;
       final x = endX - span * 0.55 * p;
-      path.lineTo(x, cy + (rnd.nextDouble() - 0.5) * amp * 1.4 + 1.5);
+      path.lineTo(x, cy + (rnd.nextDouble() - 0.5) * amp * 1.6 + 2.0);
     }
     return path;
   }
