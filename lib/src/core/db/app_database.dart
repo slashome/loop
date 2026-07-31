@@ -54,6 +54,7 @@ class RecurrenceRows extends Table {
       text().withDefault(const Constant('Europe/Paris'))();
   DateTimeColumn get nextOccurrence => dateTime().nullable()();
   IntColumn get defPriority => integer().withDefault(const Constant(3))();
+  TextColumn get categoryId => text().nullable()();
   BoolColumn get active => boolean().withDefault(const Constant(true))();
   BoolColumn get autoCleanMissed =>
       boolean().withDefault(const Constant(true))();
@@ -107,7 +108,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   /// Reserved id of the first, default profile (owns pre-multi-account data).
   static const defaultProfileId = 'local';
@@ -142,6 +143,10 @@ class AppDatabase extends _$AppDatabase {
           // v6: task categories.
           if (from < 6) {
             await m.createTable(categoryRows);
+          }
+          // v7: recurrences carry a category, inherited by their occurrences.
+          if (from < 7) {
+            await m.addColumn(recurrenceRows, recurrenceRows.categoryId);
           }
         },
       );
@@ -271,6 +276,17 @@ class AppDatabase extends _$AppDatabase {
               t.deletedAt.isNull() &
               t.dueAt.isBiggerOrEqualValue(from)))
         .go();
+  }
+
+  /// Syncs the category onto all still-open occurrences of a recurrence, so an
+  /// edit to the recurrence's category is reflected on occurrences already
+  /// materialized (including today's / overdue ones that regeneration leaves
+  /// in place). Done occurrences keep the category they were finished with.
+  Future<void> syncOccurrenceCategory(String recurrenceId, String? categoryId) {
+    return (update(taskRows)
+          ..where((t) =>
+              t.recurrenceId.equals(recurrenceId) & t.status.equals('open')))
+        .write(TaskRowsCompanion(categoryId: Value(categoryId)));
   }
 
   /// Soft-deletes MISSED open occurrences (due before [dayStart]) of

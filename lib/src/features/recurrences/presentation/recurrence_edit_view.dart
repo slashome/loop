@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/time/relative_time.dart';
+import '../../categories/presentation/category_selector.dart';
 import '../../tasks/application/tasks_providers.dart';
 import '../../tasks/domain/task.dart';
 import '../application/recurrences_providers.dart';
@@ -46,6 +47,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
   late Set<int> _monthDays; // 1..31
   late Set<int> _hours; // 0..23
   late int _priority;
+  String? _categoryId;
   late bool _active;
   late bool _autoCleanMissed;
 
@@ -65,6 +67,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
     final hours = {...?r?.byHours};
     _hours = hours.isEmpty ? {9} : hours;
     _priority = r?.defPriority ?? t?.priority ?? 3;
+    _categoryId = r?.categoryId ?? t?.categoryId;
     _active = r?.active ?? true;
     _autoCleanMissed = r?.autoCleanMissed ?? true;
   }
@@ -109,6 +112,7 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
       byMonthDays: _sorted(_monthDays),
       byHours: _sorted(_hours),
       defPriority: _priority,
+      categoryId: _categoryId,
       active: _active,
       autoCleanMissed: _autoCleanMissed,
       dtstart: existing?.dtstart ?? now,
@@ -245,6 +249,13 @@ class _RecurrenceEditViewState extends ConsumerState<RecurrenceEditView> {
             selected: {_priority},
             onToggle: (v) => setState(() => _priority = v),
             single: true,
+          ),
+          const SizedBox(height: 24),
+          Text(l.taskCategory, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          CategorySelector(
+            selectedId: _categoryId,
+            onChanged: (id) => setState(() => _categoryId = id),
           ),
           const SizedBox(height: 16),
           SwitchListTile(

@@ -29,6 +29,7 @@ class Recurrence {
     this.timezone = 'Europe/Paris',
     this.nextOccurrence,
     this.defPriority = 3,
+    this.categoryId,
     this.active = true,
     this.autoCleanMissed = true,
     this.deletedAt,
@@ -39,6 +40,10 @@ class Recurrence {
   final String title;
   final String? description;
   final RecurrenceFreq freq;
+
+  /// Category applied to every generated occurrence (so e.g. a daily "Vitamins"
+  /// recurrence carries the health icon on each of its tasks). Null = none.
+  final String? categoryId;
 
   /// Weekdays 1..7 (Mon..Sun), for [RecurrenceFreq.weekly].
   final List<int> byWeekdays;

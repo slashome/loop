@@ -3,6 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loop/l10n/app_localizations.dart';
+import 'package:loop/src/features/categories/application/categories_providers.dart';
+import 'package:loop/src/features/categories/domain/category.dart';
 import 'package:loop/src/features/settings/application/settings_providers.dart';
 import 'package:loop/src/features/tasks/application/tasks_providers.dart';
 import 'package:loop/src/features/tasks/domain/task.dart';
@@ -18,8 +20,10 @@ void main() {
   testWidgets('displays tasks sorted by score', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now();
-    // Due today → present in the "To do" view by default.
+    // Fixed midday clock: using DateTime.now() made this flaky near midnight
+    // (now + 1h could roll into tomorrow → "Upcoming" instead of "To do").
+    final now = DateTime(2026, 1, 15, 12);
+    // Due later today → present in the "To do" view by default.
     final due = now.add(const Duration(hours: 1));
     final tasks = [
       Task(
@@ -44,6 +48,10 @@ void main() {
       ProviderScope(
         overrides: [
           tasksProvider.overrideWith((ref) => Stream.value(tasks)),
+          // Keep the test DB-free: the card badges read categories, don't touch
+          // the real database.
+          categoriesProvider
+              .overrideWith((ref) => Stream.value(const <Category>[])),
           sharedPreferencesProvider.overrideWithValue(prefs),
           // Fixed clock: the periodic tick would leave a pending timer that
           // testWidgets rejects at teardown.

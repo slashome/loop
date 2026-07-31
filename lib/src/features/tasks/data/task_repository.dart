@@ -192,6 +192,14 @@ class TaskRepository {
   }) async {
     await _db.purgeOpenFutureOccurrences(recurrenceId, on);
     await generateOccurrences(on: on, horizonDays: horizonDays);
+    // Regeneration leaves already-materialized (today/overdue) occurrences in
+    // place, so propagate the recurrence's current category onto every open one.
+    final rec = await (_db.select(_db.recurrenceRows)
+          ..where((r) => r.id.equals(recurrenceId)))
+        .getSingleOrNull();
+    if (rec != null) {
+      await _db.syncOccurrenceCategory(recurrenceId, rec.categoryId);
+    }
   }
 
   /// Materializes the occurrences of each active recurrence from [on] up to
@@ -221,6 +229,7 @@ class TaskRepository {
               title: rec.title,
               description: Value(rec.description),
               priority: Value(rec.defPriority),
+              categoryId: Value(rec.categoryId),
               recurrenceId: Value(rec.id),
               occurrenceDate: Value(occ),
               dueAt: Value(occ),

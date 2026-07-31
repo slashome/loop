@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loop/src/core/db/app_database.dart';
 import 'package:loop/src/features/categories/data/category_repository.dart';
 import 'package:loop/src/features/categories/domain/category.dart';
+import 'package:loop/src/features/recurrences/data/recurrence_repository.dart';
+import 'package:loop/src/features/recurrences/domain/recurrence.dart';
 import 'package:loop/src/features/tasks/data/task_repository.dart';
 
 void main() {
@@ -34,6 +36,75 @@ void main() {
     // The task falls back to uncategorized, not left dangling.
     expect((await taskRepo.getById(taskId))!.categoryId, isNull);
     expect(await catRepo.watchAll().first, isEmpty);
+  });
+
+  test('recurrence occurrences inherit the recurrence category', () async {
+    final catRepo = CategoryRepository(db);
+    final recRepo = RecurrenceRepository(db);
+    final taskRepo = TaskRepository(db);
+    final now = DateTime(2026, 7, 6, 8); // Monday, before the 18h occurrence
+    final healthId = await catRepo.create('Santé', 'health');
+
+    await recRepo.save(Recurrence(
+      id: 'r1',
+      title: 'Vitamins',
+      freq: RecurrenceFreq.weekly,
+      byWeekdays: const [DateTime.monday],
+      byHours: const [18],
+      categoryId: healthId,
+      dtstart: now,
+      createdAt: now,
+      updatedAt: now,
+    ));
+    await taskRepo.generateOccurrences(on: now);
+
+    final occ = (await db.allTasks()).firstWhere((t) => t.recurrenceId == 'r1');
+    expect(occ.categoryId, healthId);
+  });
+
+  test('editing a recurrence category syncs onto its open occurrences',
+      () async {
+    final catRepo = CategoryRepository(db);
+    final recRepo = RecurrenceRepository(db);
+    final taskRepo = TaskRepository(db);
+    final now = DateTime(2026, 7, 6, 8);
+    final healthId = await catRepo.create('Santé', 'health');
+
+    // First materialized without a category…
+    await recRepo.save(Recurrence(
+      id: 'r1',
+      title: 'Vitamins',
+      freq: RecurrenceFreq.weekly,
+      byWeekdays: const [DateTime.monday],
+      byHours: const [18],
+      dtstart: now,
+      createdAt: now,
+      updatedAt: now,
+    ));
+    await taskRepo.generateOccurrences(on: now);
+    expect(
+      (await db.allTasks()).firstWhere((t) => t.recurrenceId == 'r1').categoryId,
+      isNull,
+    );
+
+    // …then the recurrence gets a category and occurrences are reconciled.
+    await recRepo.save(Recurrence(
+      id: 'r1',
+      title: 'Vitamins',
+      freq: RecurrenceFreq.weekly,
+      byWeekdays: const [DateTime.monday],
+      byHours: const [18],
+      categoryId: healthId,
+      dtstart: now,
+      createdAt: now,
+      updatedAt: now,
+    ));
+    await taskRepo.reconcileOccurrences(recurrenceId: 'r1', on: now);
+
+    expect(
+      (await db.allTasks()).firstWhere((t) => t.recurrenceId == 'r1').categoryId,
+      healthId,
+    );
   });
 
   test('Category.icon resolves known keys and falls back gracefully', () {

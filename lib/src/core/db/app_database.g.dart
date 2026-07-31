@@ -995,6 +995,12 @@ class $RecurrenceRowsTable extends RecurrenceRows
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(3));
+  static const VerificationMeta _categoryIdMeta =
+      const VerificationMeta('categoryId');
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+      'category_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _activeMeta = const VerificationMeta('active');
   @override
   late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
@@ -1048,6 +1054,7 @@ class $RecurrenceRowsTable extends RecurrenceRows
         timezone,
         nextOccurrence,
         defPriority,
+        categoryId,
         active,
         autoCleanMissed,
         createdAt,
@@ -1137,6 +1144,12 @@ class $RecurrenceRowsTable extends RecurrenceRows
           defPriority.isAcceptableOrUnknown(
               data['def_priority']!, _defPriorityMeta));
     }
+    if (data.containsKey('category_id')) {
+      context.handle(
+          _categoryIdMeta,
+          categoryId.isAcceptableOrUnknown(
+              data['category_id']!, _categoryIdMeta));
+    }
     if (data.containsKey('active')) {
       context.handle(_activeMeta,
           active.isAcceptableOrUnknown(data['active']!, _activeMeta));
@@ -1200,6 +1213,8 @@ class $RecurrenceRowsTable extends RecurrenceRows
           DriftSqlType.dateTime, data['${effectivePrefix}next_occurrence']),
       defPriority: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}def_priority'])!,
+      categoryId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category_id']),
       active: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}active'])!,
       autoCleanMissed: attachedDatabase.typeMapping.read(
@@ -1234,6 +1249,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
   final String timezone;
   final DateTime? nextOccurrence;
   final int defPriority;
+  final String? categoryId;
   final bool active;
   final bool autoCleanMissed;
   final DateTime createdAt;
@@ -1254,6 +1270,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       required this.timezone,
       this.nextOccurrence,
       required this.defPriority,
+      this.categoryId,
       required this.active,
       required this.autoCleanMissed,
       required this.createdAt,
@@ -1282,6 +1299,9 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       map['next_occurrence'] = Variable<DateTime>(nextOccurrence);
     }
     map['def_priority'] = Variable<int>(defPriority);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
     map['active'] = Variable<bool>(active);
     map['auto_clean_missed'] = Variable<bool>(autoCleanMissed);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1313,6 +1333,9 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           ? const Value.absent()
           : Value(nextOccurrence),
       defPriority: Value(defPriority),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
       active: Value(active),
       autoCleanMissed: Value(autoCleanMissed),
       createdAt: Value(createdAt),
@@ -1341,6 +1364,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       timezone: serializer.fromJson<String>(json['timezone']),
       nextOccurrence: serializer.fromJson<DateTime?>(json['nextOccurrence']),
       defPriority: serializer.fromJson<int>(json['defPriority']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
       active: serializer.fromJson<bool>(json['active']),
       autoCleanMissed: serializer.fromJson<bool>(json['autoCleanMissed']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1366,6 +1390,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       'timezone': serializer.toJson<String>(timezone),
       'nextOccurrence': serializer.toJson<DateTime?>(nextOccurrence),
       'defPriority': serializer.toJson<int>(defPriority),
+      'categoryId': serializer.toJson<String?>(categoryId),
       'active': serializer.toJson<bool>(active),
       'autoCleanMissed': serializer.toJson<bool>(autoCleanMissed),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1389,6 +1414,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           String? timezone,
           Value<DateTime?> nextOccurrence = const Value.absent(),
           int? defPriority,
+          Value<String?> categoryId = const Value.absent(),
           bool? active,
           bool? autoCleanMissed,
           DateTime? createdAt,
@@ -1410,6 +1436,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
         nextOccurrence:
             nextOccurrence.present ? nextOccurrence.value : this.nextOccurrence,
         defPriority: defPriority ?? this.defPriority,
+        categoryId: categoryId.present ? categoryId.value : this.categoryId,
         active: active ?? this.active,
         autoCleanMissed: autoCleanMissed ?? this.autoCleanMissed,
         createdAt: createdAt ?? this.createdAt,
@@ -1438,6 +1465,8 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           : this.nextOccurrence,
       defPriority:
           data.defPriority.present ? data.defPriority.value : this.defPriority,
+      categoryId:
+          data.categoryId.present ? data.categoryId.value : this.categoryId,
       active: data.active.present ? data.active.value : this.active,
       autoCleanMissed: data.autoCleanMissed.present
           ? data.autoCleanMissed.value
@@ -1465,6 +1494,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           ..write('timezone: $timezone, ')
           ..write('nextOccurrence: $nextOccurrence, ')
           ..write('defPriority: $defPriority, ')
+          ..write('categoryId: $categoryId, ')
           ..write('active: $active, ')
           ..write('autoCleanMissed: $autoCleanMissed, ')
           ..write('createdAt: $createdAt, ')
@@ -1490,6 +1520,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
       timezone,
       nextOccurrence,
       defPriority,
+      categoryId,
       active,
       autoCleanMissed,
       createdAt,
@@ -1513,6 +1544,7 @@ class RecurrenceRow extends DataClass implements Insertable<RecurrenceRow> {
           other.timezone == this.timezone &&
           other.nextOccurrence == this.nextOccurrence &&
           other.defPriority == this.defPriority &&
+          other.categoryId == this.categoryId &&
           other.active == this.active &&
           other.autoCleanMissed == this.autoCleanMissed &&
           other.createdAt == this.createdAt &&
@@ -1535,6 +1567,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
   final Value<String> timezone;
   final Value<DateTime?> nextOccurrence;
   final Value<int> defPriority;
+  final Value<String?> categoryId;
   final Value<bool> active;
   final Value<bool> autoCleanMissed;
   final Value<DateTime> createdAt;
@@ -1556,6 +1589,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     this.timezone = const Value.absent(),
     this.nextOccurrence = const Value.absent(),
     this.defPriority = const Value.absent(),
+    this.categoryId = const Value.absent(),
     this.active = const Value.absent(),
     this.autoCleanMissed = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1578,6 +1612,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     this.timezone = const Value.absent(),
     this.nextOccurrence = const Value.absent(),
     this.defPriority = const Value.absent(),
+    this.categoryId = const Value.absent(),
     this.active = const Value.absent(),
     this.autoCleanMissed = const Value.absent(),
     required DateTime createdAt,
@@ -1605,6 +1640,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     Expression<String>? timezone,
     Expression<DateTime>? nextOccurrence,
     Expression<int>? defPriority,
+    Expression<String>? categoryId,
     Expression<bool>? active,
     Expression<bool>? autoCleanMissed,
     Expression<DateTime>? createdAt,
@@ -1627,6 +1663,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       if (timezone != null) 'timezone': timezone,
       if (nextOccurrence != null) 'next_occurrence': nextOccurrence,
       if (defPriority != null) 'def_priority': defPriority,
+      if (categoryId != null) 'category_id': categoryId,
       if (active != null) 'active': active,
       if (autoCleanMissed != null) 'auto_clean_missed': autoCleanMissed,
       if (createdAt != null) 'created_at': createdAt,
@@ -1651,6 +1688,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       Value<String>? timezone,
       Value<DateTime?>? nextOccurrence,
       Value<int>? defPriority,
+      Value<String?>? categoryId,
       Value<bool>? active,
       Value<bool>? autoCleanMissed,
       Value<DateTime>? createdAt,
@@ -1672,6 +1710,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
       timezone: timezone ?? this.timezone,
       nextOccurrence: nextOccurrence ?? this.nextOccurrence,
       defPriority: defPriority ?? this.defPriority,
+      categoryId: categoryId ?? this.categoryId,
       active: active ?? this.active,
       autoCleanMissed: autoCleanMissed ?? this.autoCleanMissed,
       createdAt: createdAt ?? this.createdAt,
@@ -1726,6 +1765,9 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
     if (defPriority.present) {
       map['def_priority'] = Variable<int>(defPriority.value);
     }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
     if (active.present) {
       map['active'] = Variable<bool>(active.value);
     }
@@ -1764,6 +1806,7 @@ class RecurrenceRowsCompanion extends UpdateCompanion<RecurrenceRow> {
           ..write('timezone: $timezone, ')
           ..write('nextOccurrence: $nextOccurrence, ')
           ..write('defPriority: $defPriority, ')
+          ..write('categoryId: $categoryId, ')
           ..write('active: $active, ')
           ..write('autoCleanMissed: $autoCleanMissed, ')
           ..write('createdAt: $createdAt, ')
@@ -2719,6 +2762,7 @@ typedef $$RecurrenceRowsTableCreateCompanionBuilder = RecurrenceRowsCompanion
   Value<String> timezone,
   Value<DateTime?> nextOccurrence,
   Value<int> defPriority,
+  Value<String?> categoryId,
   Value<bool> active,
   Value<bool> autoCleanMissed,
   required DateTime createdAt,
@@ -2742,6 +2786,7 @@ typedef $$RecurrenceRowsTableUpdateCompanionBuilder = RecurrenceRowsCompanion
   Value<String> timezone,
   Value<DateTime?> nextOccurrence,
   Value<int> defPriority,
+  Value<String?> categoryId,
   Value<bool> active,
   Value<bool> autoCleanMissed,
   Value<DateTime> createdAt,
@@ -2801,6 +2846,9 @@ class $$RecurrenceRowsTableFilterComposer
 
   ColumnFilters<int> get defPriority => $composableBuilder(
       column: $table.defPriority, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get active => $composableBuilder(
       column: $table.active, builder: (column) => ColumnFilters(column));
@@ -2871,6 +2919,9 @@ class $$RecurrenceRowsTableOrderingComposer
   ColumnOrderings<int> get defPriority => $composableBuilder(
       column: $table.defPriority, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get active => $composableBuilder(
       column: $table.active, builder: (column) => ColumnOrderings(column));
 
@@ -2939,6 +2990,9 @@ class $$RecurrenceRowsTableAnnotationComposer
   GeneratedColumn<int> get defPriority => $composableBuilder(
       column: $table.defPriority, builder: (column) => column);
 
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => column);
+
   GeneratedColumn<bool> get active =>
       $composableBuilder(column: $table.active, builder: (column) => column);
 
@@ -2996,6 +3050,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             Value<String> timezone = const Value.absent(),
             Value<DateTime?> nextOccurrence = const Value.absent(),
             Value<int> defPriority = const Value.absent(),
+            Value<String?> categoryId = const Value.absent(),
             Value<bool> active = const Value.absent(),
             Value<bool> autoCleanMissed = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
@@ -3018,6 +3073,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             timezone: timezone,
             nextOccurrence: nextOccurrence,
             defPriority: defPriority,
+            categoryId: categoryId,
             active: active,
             autoCleanMissed: autoCleanMissed,
             createdAt: createdAt,
@@ -3040,6 +3096,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             Value<String> timezone = const Value.absent(),
             Value<DateTime?> nextOccurrence = const Value.absent(),
             Value<int> defPriority = const Value.absent(),
+            Value<String?> categoryId = const Value.absent(),
             Value<bool> active = const Value.absent(),
             Value<bool> autoCleanMissed = const Value.absent(),
             required DateTime createdAt,
@@ -3062,6 +3119,7 @@ class $$RecurrenceRowsTableTableManager extends RootTableManager<
             timezone: timezone,
             nextOccurrence: nextOccurrence,
             defPriority: defPriority,
+            categoryId: categoryId,
             active: active,
             autoCleanMissed: autoCleanMissed,
             createdAt: createdAt,
