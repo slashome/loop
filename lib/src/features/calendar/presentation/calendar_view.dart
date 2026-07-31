@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../categories/application/categories_providers.dart';
 import '../../tasks/application/tasks_providers.dart';
 import '../../tasks/domain/task.dart';
 import '../../tasks/presentation/task_edit_view.dart';
@@ -160,10 +161,12 @@ class _DraggableTask extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cats = ref.watch(categoriesByIdProvider);
     final card = TaskCard(
       task: task,
       score: 0,
       showScore: false,
+      categoryIcon: cats[task.categoryId]?.icon,
       onComplete: () => ref.read(taskRepositoryProvider).complete(task.id),
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => TaskEditView(task: task)),

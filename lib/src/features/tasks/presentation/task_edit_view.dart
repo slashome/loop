@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../categories/application/categories_providers.dart';
+import '../../categories/domain/category.dart';
 import '../../recurrences/application/recurrences_providers.dart';
 import '../../recurrences/domain/recurrence.dart';
 import '../../recurrences/presentation/recurrence_edit_view.dart';
@@ -33,6 +35,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
   double? _impactSelf;
   double? _impactOthers;
   DateTime? _dueAt;
+  String? _categoryId;
 
   bool get _isNew => widget.task == null;
 
@@ -47,6 +50,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
     _impactSelf = task?.impactSelf;
     _impactOthers = task?.impactOthers;
     _dueAt = task?.dueAt;
+    _categoryId = task?.categoryId;
   }
 
   Future<void> _pickDueAt() async {
@@ -111,6 +115,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
           impactSelf: _impactSelf,
           impactOthers: _impactOthers,
           dueAt: _dueAt,
+          categoryId: _categoryId,
         );
       } else {
         await repo.applyEdit(
@@ -122,6 +127,7 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
           impactSelf: _impactSelf,
           impactOthers: _impactOthers,
           dueAt: _dueAt,
+          categoryId: _categoryId,
         );
       }
     } on PriorityCapExceeded catch (e) {
@@ -223,6 +229,13 @@ class _TaskEditViewState extends ConsumerState<TaskEditView> {
             dueAt: _dueAt,
             onPick: _pickDueAt,
             onClear: () => setState(() => _dueAt = null),
+          ),
+          const SizedBox(height: 24),
+          Text(l.taskCategory, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          _CategorySelector(
+            selectedId: _categoryId,
+            onChanged: (id) => setState(() => _categoryId = id),
           ),
           const SizedBox(height: 24),
           Text(l.commonPriority, style: theme.textTheme.titleSmall),
@@ -414,6 +427,132 @@ class _TenPointSlider extends StatelessWidget {
           divisions: 9,
           label: uiValue.round().toString(),
           onChanged: (v) => onChanged(_fromUi(v)),
+        ),
+      ],
+    );
+  }
+}
+
+/// Chip row to pick the task's category: "None", each existing category
+/// (icon + name), and a "+" to create one inline.
+class _CategorySelector extends ConsumerWidget {
+  const _CategorySelector({required this.selectedId, required this.onChanged});
+
+  final String? selectedId;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final cats = ref.watch(categoriesProvider).value ?? const <Category>[];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        ChoiceChip(
+          label: Text(l.categoryNone),
+          selected: selectedId == null,
+          onSelected: (_) => onChanged(null),
+        ),
+        for (final c in cats)
+          ChoiceChip(
+            avatar: Icon(c.icon, size: 18),
+            label: Text(c.name),
+            selected: selectedId == c.id,
+            onSelected: (_) => onChanged(c.id),
+          ),
+        ActionChip(
+          avatar: const Icon(Icons.add, size: 18),
+          label: Text(l.categoryNewTitle),
+          onPressed: () => _createDialog(context, ref),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _createDialog(BuildContext context, WidgetRef ref) async {
+    final result = await showDialog<(String, String)>(
+      context: context,
+      builder: (_) => const _NewCategoryDialog(),
+    );
+    if (result == null) return;
+    final id =
+        await ref.read(categoryRepositoryProvider).create(result.$1, result.$2);
+    onChanged(id);
+  }
+}
+
+/// Dialog to name a new category and pick its icon from the curated set.
+class _NewCategoryDialog extends StatefulWidget {
+  const _NewCategoryDialog();
+
+  @override
+  State<_NewCategoryDialog> createState() => _NewCategoryDialogState();
+}
+
+class _NewCategoryDialogState extends State<_NewCategoryDialog> {
+  final _name = TextEditingController();
+  String _iconKey = kCategoryIcons.keys.first;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l.categoryNewTitle),
+      content: SizedBox(
+        width: 320,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _name,
+              autofocus: true,
+              decoration: InputDecoration(hintText: l.categoryNameHint),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: GridView.count(
+                crossAxisCount: 5,
+                children: [
+                  for (final e in kCategoryIcons.entries)
+                    IconButton(
+                      icon: Icon(e.value),
+                      color: _iconKey == e.key ? AppColors.blue : null,
+                      isSelected: _iconKey == e.key,
+                      style: IconButton.styleFrom(
+                        backgroundColor: _iconKey == e.key
+                            ? AppColors.blue.withValues(alpha: 0.12)
+                            : null,
+                      ),
+                      onPressed: () => setState(() => _iconKey = e.key),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.commonCancel),
+        ),
+        TextButton(
+          onPressed: () {
+            final name = _name.text.trim();
+            if (name.isEmpty) return;
+            Navigator.of(context).pop((name, _iconKey));
+          },
+          child: Text(l.commonOk),
         ),
       ],
     );

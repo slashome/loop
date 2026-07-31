@@ -2003,18 +2003,325 @@ class ProfileRowsCompanion extends UpdateCompanion<ProfileRow> {
   }
 }
 
+class $CategoryRowsTable extends CategoryRows
+    with TableInfo<$CategoryRowsTable, CategoryRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CategoryRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _ownerIdMeta =
+      const VerificationMeta('ownerId');
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+      'owner_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('local'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _iconKeyMeta =
+      const VerificationMeta('iconKey');
+  @override
+  late final GeneratedColumn<String> iconKey = GeneratedColumn<String>(
+      'icon_key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, ownerId, name, iconKey, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'category_rows';
+  @override
+  VerificationContext validateIntegrity(Insertable<CategoryRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(_ownerIdMeta,
+          ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon_key')) {
+      context.handle(_iconKeyMeta,
+          iconKey.isAcceptableOrUnknown(data['icon_key']!, _iconKeyMeta));
+    } else if (isInserting) {
+      context.missing(_iconKeyMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CategoryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CategoryRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      ownerId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      iconKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}icon_key'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $CategoryRowsTable createAlias(String alias) {
+    return $CategoryRowsTable(attachedDatabase, alias);
+  }
+}
+
+class CategoryRow extends DataClass implements Insertable<CategoryRow> {
+  final String id;
+  final String ownerId;
+  final String name;
+  final String iconKey;
+  final DateTime createdAt;
+  const CategoryRow(
+      {required this.id,
+      required this.ownerId,
+      required this.name,
+      required this.iconKey,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['name'] = Variable<String>(name);
+    map['icon_key'] = Variable<String>(iconKey);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CategoryRowsCompanion toCompanion(bool nullToAbsent) {
+    return CategoryRowsCompanion(
+      id: Value(id),
+      ownerId: Value(ownerId),
+      name: Value(name),
+      iconKey: Value(iconKey),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CategoryRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CategoryRow(
+      id: serializer.fromJson<String>(json['id']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      name: serializer.fromJson<String>(json['name']),
+      iconKey: serializer.fromJson<String>(json['iconKey']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'name': serializer.toJson<String>(name),
+      'iconKey': serializer.toJson<String>(iconKey),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CategoryRow copyWith(
+          {String? id,
+          String? ownerId,
+          String? name,
+          String? iconKey,
+          DateTime? createdAt}) =>
+      CategoryRow(
+        id: id ?? this.id,
+        ownerId: ownerId ?? this.ownerId,
+        name: name ?? this.name,
+        iconKey: iconKey ?? this.iconKey,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  CategoryRow copyWithCompanion(CategoryRowsCompanion data) {
+    return CategoryRow(
+      id: data.id.present ? data.id.value : this.id,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      name: data.name.present ? data.name.value : this.name,
+      iconKey: data.iconKey.present ? data.iconKey.value : this.iconKey,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoryRow(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('name: $name, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, ownerId, name, iconKey, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CategoryRow &&
+          other.id == this.id &&
+          other.ownerId == this.ownerId &&
+          other.name == this.name &&
+          other.iconKey == this.iconKey &&
+          other.createdAt == this.createdAt);
+}
+
+class CategoryRowsCompanion extends UpdateCompanion<CategoryRow> {
+  final Value<String> id;
+  final Value<String> ownerId;
+  final Value<String> name;
+  final Value<String> iconKey;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const CategoryRowsCompanion({
+    this.id = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.iconKey = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CategoryRowsCompanion.insert({
+    required String id,
+    this.ownerId = const Value.absent(),
+    required String name,
+    required String iconKey,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        name = Value(name),
+        iconKey = Value(iconKey),
+        createdAt = Value(createdAt);
+  static Insertable<CategoryRow> custom({
+    Expression<String>? id,
+    Expression<String>? ownerId,
+    Expression<String>? name,
+    Expression<String>? iconKey,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (name != null) 'name': name,
+      if (iconKey != null) 'icon_key': iconKey,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CategoryRowsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? ownerId,
+      Value<String>? name,
+      Value<String>? iconKey,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return CategoryRowsCompanion(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      name: name ?? this.name,
+      iconKey: iconKey ?? this.iconKey,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (iconKey.present) {
+      map['icon_key'] = Variable<String>(iconKey.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoryRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('name: $name, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $TaskRowsTable taskRows = $TaskRowsTable(this);
   late final $RecurrenceRowsTable recurrenceRows = $RecurrenceRowsTable(this);
   late final $ProfileRowsTable profileRows = $ProfileRowsTable(this);
+  late final $CategoryRowsTable categoryRows = $CategoryRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [taskRows, recurrenceRows, profileRows];
+      [taskRows, recurrenceRows, profileRows, categoryRows];
 }
 
 typedef $$TaskRowsTableCreateCompanionBuilder = TaskRowsCompanion Function({
@@ -2921,6 +3228,179 @@ typedef $$ProfileRowsTableProcessedTableManager = ProcessedTableManager<
     (ProfileRow, BaseReferences<_$AppDatabase, $ProfileRowsTable, ProfileRow>),
     ProfileRow,
     PrefetchHooks Function()>;
+typedef $$CategoryRowsTableCreateCompanionBuilder = CategoryRowsCompanion
+    Function({
+  required String id,
+  Value<String> ownerId,
+  required String name,
+  required String iconKey,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$CategoryRowsTableUpdateCompanionBuilder = CategoryRowsCompanion
+    Function({
+  Value<String> id,
+  Value<String> ownerId,
+  Value<String> name,
+  Value<String> iconKey,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+class $$CategoryRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $CategoryRowsTable> {
+  $$CategoryRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+      column: $table.ownerId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get iconKey => $composableBuilder(
+      column: $table.iconKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$CategoryRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CategoryRowsTable> {
+  $$CategoryRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+      column: $table.ownerId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get iconKey => $composableBuilder(
+      column: $table.iconKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CategoryRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CategoryRowsTable> {
+  $$CategoryRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get iconKey =>
+      $composableBuilder(column: $table.iconKey, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$CategoryRowsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CategoryRowsTable,
+    CategoryRow,
+    $$CategoryRowsTableFilterComposer,
+    $$CategoryRowsTableOrderingComposer,
+    $$CategoryRowsTableAnnotationComposer,
+    $$CategoryRowsTableCreateCompanionBuilder,
+    $$CategoryRowsTableUpdateCompanionBuilder,
+    (
+      CategoryRow,
+      BaseReferences<_$AppDatabase, $CategoryRowsTable, CategoryRow>
+    ),
+    CategoryRow,
+    PrefetchHooks Function()> {
+  $$CategoryRowsTableTableManager(_$AppDatabase db, $CategoryRowsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CategoryRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoryRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoryRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> ownerId = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> iconKey = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryRowsCompanion(
+            id: id,
+            ownerId: ownerId,
+            name: name,
+            iconKey: iconKey,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            Value<String> ownerId = const Value.absent(),
+            required String name,
+            required String iconKey,
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryRowsCompanion.insert(
+            id: id,
+            ownerId: ownerId,
+            name: name,
+            iconKey: iconKey,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CategoryRowsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CategoryRowsTable,
+    CategoryRow,
+    $$CategoryRowsTableFilterComposer,
+    $$CategoryRowsTableOrderingComposer,
+    $$CategoryRowsTableAnnotationComposer,
+    $$CategoryRowsTableCreateCompanionBuilder,
+    $$CategoryRowsTableUpdateCompanionBuilder,
+    (
+      CategoryRow,
+      BaseReferences<_$AppDatabase, $CategoryRowsTable, CategoryRow>
+    ),
+    CategoryRow,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2931,4 +3411,6 @@ class $AppDatabaseManager {
       $$RecurrenceRowsTableTableManager(_db, _db.recurrenceRows);
   $$ProfileRowsTableTableManager get profileRows =>
       $$ProfileRowsTableTableManager(_db, _db.profileRows);
+  $$CategoryRowsTableTableManager get categoryRows =>
+      $$CategoryRowsTableTableManager(_db, _db.categoryRows);
 }

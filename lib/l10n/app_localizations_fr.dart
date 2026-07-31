@@ -323,6 +323,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get taskEditRecurrence => 'Modifier la récurrence';
 
   @override
+  String get taskCategory => 'Catégorie';
+
+  @override
+  String get categoryNone => 'Aucune';
+
+  @override
+  String get categoryNewTitle => 'Nouvelle catégorie';
+
+  @override
+  String get categoryNameHint => 'Nom de la catégorie';
+
+  @override
   String get taskDesire => 'Envie';
 
   @override

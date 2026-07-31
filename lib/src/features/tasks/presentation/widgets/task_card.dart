@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/time/relative_time.dart';
+import '../../../categories/domain/category.dart';
 import '../../domain/task.dart';
 
 /// Card for a task in tab 1. Cosmetic layer: reflects the score
@@ -18,6 +19,7 @@ class TaskCard extends StatefulWidget {
     super.key,
     required this.task,
     required this.score,
+    this.categoryIcon,
     this.showScore = true,
     this.onComplete,
     this.onTap,
@@ -25,6 +27,10 @@ class TaskCard extends StatefulWidget {
 
   final Task task;
   final double score;
+
+  /// Icon of the task's category, if any (resolved by the parent). Null →
+  /// uncategorized (a discreet priority-colored dot is shown).
+  final IconData? categoryIcon;
 
   /// The score pill helps tune k/τ on the Actions tab; hidden elsewhere
   /// (e.g. the calendar day list).
@@ -118,7 +124,10 @@ class _TaskCardState extends State<TaskCard>
           padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
           child: Row(
             children: [
-              _PriorityBadge(priority: task.priority),
+              _TaskBadge(
+                priority: task.priority,
+                categoryIcon: widget.categoryIcon,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -302,10 +311,13 @@ class _ScribblePainter extends CustomPainter {
   return (text: parts.join(' · '), isLate: isLate);
 }
 
-/// Priority badge: tinted rounded square + number in the color.
-class _PriorityBadge extends StatelessWidget {
-  const _PriorityBadge({required this.priority});
+/// Task badge: rounded square tinted (discreetly) with the priority color;
+/// the category icon (or a small dot when uncategorized) is drawn in that same
+/// priority color. Shape = category, color = priority.
+class _TaskBadge extends StatelessWidget {
+  const _TaskBadge({required this.priority, required this.categoryIcon});
   final int priority;
+  final IconData? categoryIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -318,14 +330,9 @@ class _PriorityBadge extends StatelessWidget {
         color: color.withValues(alpha: 0.13),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        'P$priority',
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w800,
-          fontSize: 13,
-        ),
-      ),
+      child: categoryIcon != null
+          ? Icon(categoryIcon, color: color, size: 20)
+          : Icon(kUncategorizedIcon, color: color, size: 8),
     );
   }
 }

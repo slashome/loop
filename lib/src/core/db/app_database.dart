@@ -76,7 +76,20 @@ class ProfileRows extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [TaskRows, RecurrenceRows, ProfileRows])
+/// Task categories (per profile). The badge shows [iconKey]'s icon tinted with
+/// the task's priority color — categories carry a shape, not a color.
+class CategoryRows extends Table {
+  TextColumn get id => text()();
+  TextColumn get ownerId => text().withDefault(const Constant('local'))();
+  TextColumn get name => text()();
+  TextColumn get iconKey => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [TaskRows, RecurrenceRows, ProfileRows, CategoryRows])
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(
@@ -94,7 +107,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   /// Reserved id of the first, default profile (owns pre-multi-account data).
   static const defaultProfileId = 'local';
@@ -126,6 +139,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 5) {
             await m.createTable(profileRows);
           }
+          // v6: task categories.
+          if (from < 6) {
+            await m.createTable(categoryRows);
+          }
         },
       );
 
@@ -143,6 +160,32 @@ class AppDatabase extends _$AppDatabase {
   Future<void> renameProfile(String id, String name) =>
       (update(profileRows)..where((p) => p.id.equals(id)))
           .write(ProfileRowsCompanion(name: Value(name)));
+
+  // ── Categories (scoped to a profile via [ownerId]) ────────────────────────
+
+  Stream<List<CategoryRow>> watchCategories(String ownerId) =>
+      (select(categoryRows)
+            ..where((c) => c.ownerId.equals(ownerId))
+            ..orderBy([(c) => OrderingTerm(expression: c.createdAt)]))
+          .watch();
+
+  Future<void> upsertCategory(CategoryRowsCompanion row) =>
+      into(categoryRows).insertOnConflictUpdate(row);
+
+  /// Deletes a category; tasks pointing to it fall back to "uncategorized".
+  Future<void> deleteCategory(String id) async {
+    await (update(taskRows)..where((t) => t.categoryId.equals(id)))
+        .write(const TaskRowsCompanion(categoryId: Value(null)));
+    await (delete(categoryRows)..where((c) => c.id.equals(id))).go();
+  }
+
+  Future<void> setTaskCategory(String taskId, String? categoryId) =>
+      (update(taskRows)..where((t) => t.id.equals(taskId))).write(
+        TaskRowsCompanion(
+          categoryId: Value(categoryId),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 
   // ── Tasks / recurrences (scoped to a profile via [ownerId]) ───────────────
 

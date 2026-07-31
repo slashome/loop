@@ -63,6 +63,7 @@ class TaskRepository {
     double? impactSelf,
     double? impactOthers,
     DateTime? dueAt,
+    String? categoryId,
   }) async {
     await _enforceCap(priority);
     final now = DateTime.now();
@@ -78,6 +79,7 @@ class TaskRepository {
         impactSelf: Value(impactSelf),
         impactOthers: Value(impactOthers),
         dueAt: Value(dueAt),
+        categoryId: Value(categoryId),
         source: const Value('manual'),
         createdAt: now,
         updatedAt: now,
@@ -128,6 +130,7 @@ class TaskRepository {
     double? impactSelf,
     double? impactOthers,
     DateTime? dueAt,
+    String? categoryId,
   }) async {
     await _enforceCap(priority, excludeId: id);
     await (_db.update(_db.taskRows)..where((t) => t.id.equals(id))).write(
@@ -139,6 +142,7 @@ class TaskRepository {
         impactSelf: Value(impactSelf),
         impactOthers: Value(impactOthers),
         dueAt: Value(dueAt),
+        categoryId: Value(categoryId),
         updatedAt: Value(DateTime.now()),
       ),
     );

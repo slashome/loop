@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/brand_fab.dart';
+import '../../categories/application/categories_providers.dart';
 import '../../settings/application/settings_providers.dart';
 import '../../settings/presentation/settings_view.dart';
 import '../application/tasks_providers.dart';
@@ -61,10 +62,12 @@ class NextActionsView extends ConsumerWidget {
             return _EmptyState(message: l.emptyList);
           }
           final compass = ref.watch(settingsProvider.select((s) => s.compass));
+          final cats = ref.watch(categoriesByIdProvider);
           Widget card(ScoredTask s) => TaskCard(
                 key: ValueKey(s.task.id),
                 task: s.task,
                 score: s.score,
+                categoryIcon: cats[s.task.categoryId]?.icon,
                 onComplete: () =>
                     ref.read(taskRepositoryProvider).complete(s.task.id),
                 onTap: () => Navigator.of(context).push(

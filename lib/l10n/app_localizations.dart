@@ -584,6 +584,30 @@ abstract class AppLocalizations {
   /// **'Edit recurrence'**
   String get taskEditRecurrence;
 
+  /// No description provided for @taskCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get taskCategory;
+
+  /// No description provided for @categoryNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get categoryNone;
+
+  /// No description provided for @categoryNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New category'**
+  String get categoryNewTitle;
+
+  /// No description provided for @categoryNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryNameHint;
+
   /// No description provided for @taskDesire.
   ///
   /// In en, this message translates to:
