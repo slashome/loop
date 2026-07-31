@@ -278,6 +278,36 @@ abstract class AppLocalizations {
   /// **'Profiles'**
   String get settingsProfiles;
 
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// No description provided for @notificationsToggleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task reminders'**
+  String get notificationsToggleTitle;
+
+  /// No description provided for @notificationsToggleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a notification at each dated task\'s due time.'**
+  String get notificationsToggleSubtitle;
+
+  /// No description provided for @notificationsDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied. Enable notifications in your system settings.'**
+  String get notificationsDenied;
+
+  /// No description provided for @notificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to get it done 🔔'**
+  String get notificationBody;
+
   /// No description provided for @profileDefaultName.
   ///
   /// In en, this message translates to:

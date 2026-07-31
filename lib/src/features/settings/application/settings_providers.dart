@@ -15,6 +15,7 @@ const _kLanguageTag = 'languageTag';
 const _kCompass = 'compass';
 const _kImpactFocus = 'impactFocus';
 const _kCurrentProfileId = 'currentProfileId';
+const _kNotificationsEnabled = 'notificationsEnabled';
 
 T _enumByName<T extends Enum>(List<T> values, String? name, T fallback) {
   for (final v in values) {
@@ -39,6 +40,8 @@ class SettingsNotifier extends Notifier<Settings> {
             _prefs.getString(_kImpactFocus), ImpactFocus.both),
         currentProfileId: _prefs.getString(_kCurrentProfileId) ??
             Settings.defaults.currentProfileId,
+        notificationsEnabled: _prefs.getBool(_kNotificationsEnabled) ??
+            Settings.defaults.notificationsEnabled,
       );
 
   void setNewestAtBottom(bool value) {
@@ -64,6 +67,11 @@ class SettingsNotifier extends Notifier<Settings> {
   void setCurrentProfileId(String id) {
     _prefs.setString(_kCurrentProfileId, id);
     state = state.copyWith(currentProfileId: id);
+  }
+
+  void setNotificationsEnabled(bool value) {
+    _prefs.setBool(_kNotificationsEnabled, value);
+    state = state.copyWith(notificationsEnabled: value);
   }
 }
 

@@ -103,6 +103,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsProfiles => 'Profiles';
 
   @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get notificationsToggleTitle => 'Task reminders';
+
+  @override
+  String get notificationsToggleSubtitle =>
+      'Get a notification at each dated task\'s due time.';
+
+  @override
+  String get notificationsDenied =>
+      'Permission denied. Enable notifications in your system settings.';
+
+  @override
+  String get notificationBody => 'Time to get it done 🔔';
+
+  @override
   String get profileDefaultName => 'Profile 1';
 
   @override

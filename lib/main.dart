@@ -9,6 +9,9 @@ import 'l10n/app_localizations.dart';
 import 'src/app/app_shell.dart';
 import 'src/core/db/app_database.dart';
 import 'src/core/theme/app_theme.dart';
+import 'src/features/notifications/application/notifications_providers.dart';
+import 'src/features/notifications/data/notification_service.dart';
+import 'src/features/notifications/domain/reminder.dart';
 import 'src/features/settings/application/settings_providers.dart';
 import 'src/features/splash/presentation/splash_screen.dart';
 import 'src/features/tasks/application/tasks_providers.dart';
@@ -38,11 +41,20 @@ Future<void> main() async {
   } catch (e, st) {
     debugPrint('bootstrap failed: $e\n$st');
   }
+  // Notification backend (native / web / stub). Init failures must never block
+  // the app — reminders just won't fire.
+  final notifications = createNotificationService();
+  try {
+    await notifications.init();
+  } catch (e, st) {
+    debugPrint('notifications init failed: $e\n$st');
+  }
   runApp(
     ProviderScope(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        notificationServiceProvider.overrideWithValue(notifications),
       ],
       child: const LoopApp(),
     ),
@@ -82,8 +94,35 @@ class LoopApp extends ConsumerWidget {
         }
         return const Locale('en');
       },
-      home: const _Root(),
+      home: const _NotificationScheduler(child: _Root()),
     );
+  }
+}
+
+/// Keeps the platform notification backend in sync with the planned reminders.
+/// Placed under [MaterialApp] so it can read the locale for the notification
+/// body text. Reconciles on the initial build and on every reminder change.
+class _NotificationScheduler extends ConsumerWidget {
+  const _NotificationScheduler({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    void syncNow(List<Reminder> reminders) {
+      final withBody = [for (final r in reminders) r.withBody(l.notificationBody)];
+      // Fire-and-forget: the backend diffs, so redundant calls are cheap.
+      ref.read(notificationServiceProvider).sync(withBody);
+    }
+
+    // `listen` covers subsequent changes; the direct read covers the first one
+    // (listen does not fire for the current value).
+    ref.listen<List<Reminder>>(
+      plannedRemindersProvider,
+      (_, next) => syncNow(next),
+    );
+    syncNow(ref.read(plannedRemindersProvider));
+    return child;
   }
 }
 

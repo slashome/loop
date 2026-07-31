@@ -103,6 +103,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsProfiles => 'Profils';
 
   @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get notificationsToggleTitle => 'Rappels de tâches';
+
+  @override
+  String get notificationsToggleSubtitle =>
+      'Reçois une notification à l\'heure d\'échéance de chaque tâche datée.';
+
+  @override
+  String get notificationsDenied =>
+      'Permission refusée. Active les notifications dans les réglages du système.';
+
+  @override
+  String get notificationBody => 'C\'est le moment 🔔';
+
+  @override
   String get profileDefaultName => 'Profil 1';
 
   @override

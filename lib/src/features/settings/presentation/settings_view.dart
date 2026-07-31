@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../notifications/application/notifications_providers.dart';
 import '../../profiles/application/profiles_providers.dart';
 import '../../profiles/domain/profile.dart';
 import '../../tasks/application/tasks_providers.dart';
@@ -53,6 +54,15 @@ class SettingsView extends ConsumerWidget {
             value: settings.newestAtBottom,
             onChanged: notifier.setNewestAtBottom,
           ),
+          if (ref.read(notificationServiceProvider).isSupported) ...[
+            _SectionTitle(l.settingsNotifications),
+            SwitchListTile(
+              title: Text(l.notificationsToggleTitle),
+              subtitle: Text(l.notificationsToggleSubtitle),
+              value: settings.notificationsEnabled,
+              onChanged: (v) => _toggleNotifications(context, ref, v),
+            ),
+          ],
           _SectionTitle(l.settingsLanguage),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -69,6 +79,32 @@ class SettingsView extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleNotifications(
+    BuildContext context,
+    WidgetRef ref,
+    bool enable,
+  ) async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final service = ref.read(notificationServiceProvider);
+    final notifier = ref.read(settingsProvider.notifier);
+    if (!enable) {
+      notifier.setNotificationsEnabled(false);
+      await service.cancelAll();
+      return;
+    }
+    // Enabling: ask the OS/browser first — only persist the opt-in if granted.
+    final granted = await service.requestPermission();
+    if (granted) {
+      notifier.setNotificationsEnabled(true);
+    } else {
+      notifier.setNotificationsEnabled(false);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l.notificationsDenied)),
+      );
+    }
   }
 
   Future<void> _switchProfile(WidgetRef ref, String id) async {

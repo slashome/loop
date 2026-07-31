@@ -22,6 +22,12 @@ dependencies:
   uuid: ^4.6.0
   shared_preferences: ^2.3.0
   flutter_native_splash: ^2.4.0
+  # Local notifications: native scheduling (Android/iOS/macOS) + timezone.
+  flutter_local_notifications: ^19.0.0
+  timezone: ^0.10.0
+  flutter_timezone: ^4.1.0
+  # Browser Notification API for the web backend.
+  web: ^1.1.0
 
 dev_dependencies:
   flutter_test:

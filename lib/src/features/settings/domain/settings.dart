@@ -10,6 +10,7 @@ class Settings {
     this.compass = Compass.auto,
     this.impactFocus = ImpactFocus.both,
     this.currentProfileId = 'local',
+    this.notificationsEnabled = false,
   });
 
   /// If true, the Actions list is anchored at the bottom (highest score near
@@ -29,12 +30,17 @@ class Settings {
   /// Active local profile (owner) whose data is shown.
   final String currentProfileId;
 
+  /// Opt-in for local reminders at each dated task's due time. Off by default
+  /// (notifications are a permissioned, interruptive feature).
+  final bool notificationsEnabled;
+
   Settings copyWith({
     bool? newestAtBottom,
     String? languageTag,
     Compass? compass,
     ImpactFocus? impactFocus,
     String? currentProfileId,
+    bool? notificationsEnabled,
   }) =>
       Settings(
         newestAtBottom: newestAtBottom ?? this.newestAtBottom,
@@ -42,6 +48,8 @@ class Settings {
         compass: compass ?? this.compass,
         impactFocus: impactFocus ?? this.impactFocus,
         currentProfileId: currentProfileId ?? this.currentProfileId,
+        notificationsEnabled:
+            notificationsEnabled ?? this.notificationsEnabled,
       );
 
   static const Settings defaults = Settings();
