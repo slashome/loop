@@ -62,6 +62,7 @@ class NextActionsView extends ConsumerWidget {
           }
           final compass = ref.watch(settingsProvider.select((s) => s.compass));
           Widget card(ScoredTask s) => TaskCard(
+                key: ValueKey(s.task.id),
                 task: s.task,
                 score: s.score,
                 onComplete: () =>

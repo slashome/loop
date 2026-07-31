@@ -133,7 +133,8 @@ class _CalendarViewState extends ConsumerState<CalendarView> {
                 : ListView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
-                      for (final t in dayTasks) _DraggableTask(task: t),
+                      for (final t in dayTasks)
+                        _DraggableTask(key: ValueKey(t.id), task: t),
                     ],
                   ),
           ),
@@ -154,7 +155,7 @@ String _weekLabel(String locale, DateTime day) {
 
 /// A task tile that can be long-press-dragged onto a calendar day.
 class _DraggableTask extends ConsumerWidget {
-  const _DraggableTask({required this.task});
+  const _DraggableTask({super.key, required this.task});
   final Task task;
 
   @override
