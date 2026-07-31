@@ -72,15 +72,22 @@ class _TaskCardState extends State<TaskCard>
         // Phase 1 (0..0.55 ≈ 0.5 s): check greens + strikethrough draws.
         final greenT = (t / 0.55).clamp(0.0, 1.0);
         final strike = (t / 0.55).clamp(0.0, 1.0);
-        // Phase 2 (0.55..1): slide out to the left + fade.
+        // Phase 2 (0.55..1): slide out to the left + fade + collapse height so
+        // the gap closes and the tasks below rise up smoothly.
         final exit = ((t - 0.55) / 0.45).clamp(0.0, 1.0);
         final width = MediaQuery.sizeOf(context).width;
 
-        return Opacity(
-          opacity: 1 - exit,
-          child: Transform.translate(
-            offset: Offset(-exit * width * 1.1, 0),
-            child: _cardBody(theme, subtitle, task, greenT, strike),
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: (1 - exit).clamp(0.0, 1.0),
+            child: Opacity(
+              opacity: 1 - exit,
+              child: Transform.translate(
+                offset: Offset(-exit * width * 1.1, 0),
+                child: _cardBody(theme, subtitle, task, greenT, strike),
+              ),
+            ),
           ),
         );
       },
