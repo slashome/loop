@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../../../l10n/app_localizations.dart';
@@ -117,6 +119,7 @@ class _TaskCardState extends State<TaskCard>
                   children: [
                     _Strikeable(
                       progress: strike,
+                      seed: task.id.hashCode,
                       child: Text(
                         task.title,
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -165,10 +168,16 @@ class _TaskCardState extends State<TaskCard>
   }
 }
 
-/// Draws a strikethrough over [child], growing left→right with [progress].
+/// Draws a hand-drawn scribble over [child], progressively revealed as
+/// [progress] goes 0→1. [seed] keeps the scribble shape stable per task.
 class _Strikeable extends StatelessWidget {
-  const _Strikeable({required this.progress, required this.child});
+  const _Strikeable({
+    required this.progress,
+    required this.seed,
+    required this.child,
+  });
   final double progress;
+  final int seed;
   final Widget child;
 
   @override
@@ -178,19 +187,92 @@ class _Strikeable extends StatelessWidget {
       children: [
         child,
         Positioned.fill(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: progress,
-              child: Center(
-                child: Container(height: 2, color: AppColors.green),
-              ),
+          child: CustomPaint(
+            painter: _ScribblePainter(
+              progress: progress,
+              seed: seed,
+              color: AppColors.green,
             ),
           ),
         ),
       ],
     );
   }
+}
+
+/// Paints a felt-pen-style scratch-out: a wavy, slightly jittered stroke with a
+/// short back-pass, revealed along its length by [progress]. Deterministic for
+/// a given [seed] so it doesn't shimmer across rebuilds.
+class _ScribblePainter extends CustomPainter {
+  _ScribblePainter({
+    required this.progress,
+    required this.seed,
+    required this.color,
+  });
+
+  final double progress;
+  final int seed;
+  final Color color;
+
+  Path _buildPath(Size size) {
+    final rnd = math.Random(seed);
+    final cy = size.height / 2;
+    final overshoot = 6.0;
+    final startX = -overshoot;
+    final endX = size.width + overshoot;
+    final span = endX - startX;
+    // Amplitude of the hand tremor, capped so it stays on the text line.
+    final amp = math.min(size.height * 0.22, 5.0);
+    final steps = math.max(8, (span / 7).round());
+    // Slight overall slope, as if scratched by hand.
+    final slope = (rnd.nextDouble() - 0.5) * 4;
+
+    double yAt(double p) {
+      // p in 0..1 along the pass. Sine waviness + seeded jitter.
+      final wave = math.sin(p * math.pi * 3.4 + rnd.nextDouble()) * amp;
+      final jitter = (rnd.nextDouble() - 0.5) * amp * 0.6;
+      return cy + wave + jitter + slope * (p - 0.5);
+    }
+
+    final path = Path()..moveTo(startX, yAt(0));
+    // Forward pass, left → right.
+    for (var i = 1; i <= steps; i++) {
+      final p = i / steps;
+      path.lineTo(startX + span * p, yAt(p));
+    }
+    // Short back-pass (right → left, offset) → scribble feel.
+    final backSteps = (steps * 0.55).round();
+    for (var i = 1; i <= backSteps; i++) {
+      final p = i / backSteps;
+      final x = endX - span * 0.55 * p;
+      path.lineTo(x, cy + (rnd.nextDouble() - 0.5) * amp * 1.4 + 1.5);
+    }
+    return path;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final full = _buildPath(size);
+    // Reveal only the first [progress] fraction of the total stroke length.
+    final revealed = Path();
+    for (final metric in full.computeMetrics()) {
+      revealed.addPath(
+        metric.extractPath(0, metric.length * progress),
+        Offset.zero,
+      );
+    }
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(revealed, paint);
+  }
+
+  @override
+  bool shouldRepaint(_ScribblePainter old) =>
+      old.progress != progress || old.seed != seed || old.color != color;
 }
 
 /// Subtitle: due date if set, + desire if set. Nothing for a task
