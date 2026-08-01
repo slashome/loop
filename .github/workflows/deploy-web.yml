@@ -1,0 +1,61 @@
+name: Deploy web to GitHub Pages
+
+# Builds the Flutter web app and publishes it to GitHub Pages on every push to
+# main (and on demand). The project site lives at https://slashome.github.io/loop/,
+# so the app is served under the /loop/ base href.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least-privilege token scoped for the Pages deployment.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push cancels an in-flight run.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # Pinned to the local toolchain (see loop-project memory) for
+          # reproducible builds.
+          flutter-version: 3.44.8
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Drift/l10n generated sources are committed, so no build_runner step is
+      # needed. CanvasKit and the bundled fonts are copied into build/web, so
+      # the deployed app stays self-contained (no CDN at runtime).
+      - name: Build web
+        run: flutter build web --release --base-href /loop/
+
+      # Serve every file as-is (no Jekyll processing of the Flutter output).
+      - name: Disable Jekyll
+        run: touch build/web/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
